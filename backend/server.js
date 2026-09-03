@@ -25,6 +25,24 @@ app.use('/api/dashboard',        require('./routes/dashboard'));
 app.use('/api/weather',          require('./routes/weather'));
 app.use('/api/report',           require('./routes/report'));
 
+// ── Downloadable Assets & Export Routes ────────────────────
+app.use('/downloads', express.static(path.join(__dirname, '..', 'downloads')));
+
+app.get('/download/farmer-plan-pdf', (req, res) => {
+  const filePath = path.join(__dirname, '..', 'downloads', 'CropSmart_Farmer_Soil_Health_Action_Plan.pdf');
+  res.download(filePath, 'CropSmart_Farmer_Soil_Health_Action_Plan.pdf');
+});
+
+app.get('/download/crops-csv', (req, res) => {
+  const filePath = path.join(__dirname, '..', 'downloads', 'CropSmart_Master_60_Crops_Agronomy_Mandi.csv');
+  res.download(filePath, 'CropSmart_Master_60_Crops_Agronomy_Mandi.csv');
+});
+
+app.get('/download/crops-json', (req, res) => {
+  const filePath = path.join(__dirname, '..', 'downloads', 'CropSmart_Master_60_Crops_Agronomy_Mandi.json');
+  res.download(filePath, 'CropSmart_Master_60_Crops_Agronomy_Mandi.json');
+});
+
 // Quick reference endpoints
 const db = require('./data/seed');
 

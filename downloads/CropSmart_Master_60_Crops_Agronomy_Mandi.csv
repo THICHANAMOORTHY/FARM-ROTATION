@@ -1,0 +1,61 @@
+crop_id,name,crop_family,is_nitrogen_fixer,growth_duration_days,water_requirement,ideal_ph_min,ideal_ph_max,n_demand,p_demand,k_demand,avg_yield_per_acre,avg_market_price,avg_cultivation_cost,disease_risk_index,suitable_seasons,avg_temperature_c,avg_humidity_pct,avg_rainfall_mm,total_records
+1,Apple,Fruit,False,120,Low,5.2,6.7,24.0,136.5,200.0,4000.0,92.0,50000,30.0,"Kharif, Rabi",22.6,92.3,113.0,682
+2,Arecanut,Fruit,False,120,High,6.0,7.2,57.2,42.9,42.9,522.0,220,16000,18.0,"Kharif, Rabi",26.5,70.0,1838.8,160
+3,Bajra,Cereal,False,110,Medium,5.8,7.2,72.2,36.1,36.1,420.9,22,11000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1052.8,524
+4,Banana,Fruit,False,120,Medium,5.2,6.7,100.5,81.0,50.0,7268.2,27.0,40000,18.0,"Kharif, Rabi, Zaid",27.4,80.4,1332.5,1254
+5,Barley,Cereal,False,110,Medium,5.8,7.2,72.2,36.1,36.1,554.4,20,12000,18.0,"Kharif, Rabi",26.5,70.0,1102.2,297
+6,Black Gram,Legume,True,75,Medium,6.4,7.9,41.0,67.0,19.0,230.7,35,10500,18.0,"Kharif, Rabi, Zaid",30.0,65.1,1252.7,830
+7,Black pepper,Spices,False,120,High,6.0,7.2,57.8,43.3,43.3,210.4,525.0,16000,18.0,"Kharif, Rabi",26.5,70.0,1848.3,159
+8,Cardamom,Spices,False,120,Medium,6.0,7.2,53.4,40.0,40.0,32.4,1200.0,16000,18.0,"Kharif, Rabi",26.5,70.0,1323.3,76
+9,Cashewnut,Fruit,False,120,Medium,6.0,7.2,60.4,45.3,45.3,190.2,180,16000,18.0,"Kharif, Rabi",26.5,70.0,1434.6,132
+10,Castor seed,Oilseed,False,120,Medium,6.0,7.2,57.8,43.3,43.3,238.8,35,16000,18.0,"Kharif, Rabi",26.5,70.0,1136.9,300
+11,Chickpea,Legume,True,75,Medium,6.6,8.1,39.0,68.0,79.0,331.8,53.58,11000,18.0,"Kharif, Rabi",18.9,16.9,1117.9,941
+12,Coconut,Fruit,False,120,Medium,5.2,6.7,24.0,15.5,31.0,3523362.2,20,22000,18.0,"Kharif, Rabi",27.4,94.8,1566.0,265
+13,Coffee,Commercial,False,120,Low,6.0,7.5,103.0,29.0,30.0,4000.0,200,30000,30.0,"Kharif, Rabi",25.5,58.9,157.8,100
+14,Coriander,Spices,False,120,Medium,6.0,7.2,60.3,45.2,45.2,194.2,58.25,16000,18.0,"Kharif, Rabi",26.5,70.0,1066.6,312
+15,Cotton,Commercial,False,120,Medium,6.2,7.7,117.0,46.0,19.0,582.7,66.12,24000,18.0,"Kharif, Rabi, Zaid",24.0,79.8,1220.5,693
+16,Cowpea,Legume,True,75,Medium,6.0,7.5,25.0,55.1,47.2,311.6,35,16000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1238.5,131
+17,Dry chillies,Other,False,120,Medium,6.0,7.2,57.8,43.3,43.3,408.7,35,16000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1235.6,419
+18,Garlic,Vegetable,False,120,Medium,6.0,7.2,57.8,43.3,43.3,1400.2,75.0,26000,18.0,"Kharif, Rabi",26.5,70.0,1117.8,567
+19,Ginger,Spices,False,120,Medium,6.0,7.2,57.8,43.3,43.3,2015.3,120.0,35000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1302.7,575
+20,Grapes,Fruit,False,120,Low,5.3,6.8,24.0,133.0,201.0,4000.0,80.0,45000,30.0,"Kharif, Rabi",23.9,81.9,69.5,131
+21,Green Gram,Legume,True,75,Medium,6.0,7.5,22.0,47.0,20.0,206.4,35,11000,18.0,"Kharif, Rabi, Zaid",28.5,85.5,1230.8,834
+22,Groundnut,Legume,True,75,Medium,6.0,7.5,25.0,52.8,45.2,485.6,69.4,18000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1283.1,862
+23,Guar seed,Other,False,120,Low,6.0,7.2,60.4,45.3,45.3,327.8,35,16000,18.0,"Kharif, Rabi",26.5,70.0,653.2,61
+24,Horse-gram,Legume,True,75,Medium,6.0,7.5,25.0,52.8,45.2,174.0,35,16000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1164.1,365
+25,Jowar,Cereal,False,110,Medium,5.8,7.2,72.2,36.1,36.1,396.6,26,12000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1057.8,513
+26,Jute,Commercial,False,120,High,6.0,7.5,78.0,46.0,40.0,3383.2,45,16000,18.0,"Kharif, Rabi, Zaid",25.0,79.6,1714.2,266
+27,Khesari,Legume,True,75,Medium,6.0,7.5,25.0,50.6,43.3,319.7,35,16000,18.0,"Kharif, Rabi",26.5,70.0,1302.7,75
+28,Kidney Bean,Legume,True,75,Low,5.0,6.5,22.0,67.0,20.0,550.0,80,12000,30.0,"Kharif, Rabi",20.1,21.6,107.4,100
+29,Linseed,Oilseed,False,120,Medium,6.0,7.2,57.2,42.9,42.9,178.1,35,16000,18.0,"Kharif, Rabi",26.5,70.0,1223.0,306
+30,Maize,Cereal,False,110,Medium,5.5,7.0,76.0,48.5,20.0,793.2,20.0,19000,18.0,"Kharif, Rabi, Zaid",22.4,65.1,1242.3,1371
+31,Mango,Fruit,False,120,Low,5.0,6.5,21.0,27.5,30.0,4000.0,30.0,20000,30.0,"Kharif, Rabi",31.2,50.2,94.9,470
+32,Mesta,Other,False,120,Medium,6.0,7.2,57.8,43.3,43.3,2112.5,35,16000,18.0,"Kharif, Rabi",26.5,70.0,1402.7,207
+33,Moth Bean,Legume,True,75,Medium,6.1,7.6,22.0,48.5,20.0,178.1,60,8500,18.0,"Kharif, Rabi",28.2,53.2,937.8,208
+34,Muskmelon,Fruit,False,120,Low,5.6,7.1,100.0,18.0,50.0,4000.0,35,14000,30.0,"Kharif, Rabi",28.7,92.3,24.7,100
+35,Mustard,Oilseed,False,120,Medium,6.0,7.2,57.8,43.3,43.3,299.5,54.75,12000,18.0,"Kharif, Rabi",26.5,70.0,1281.1,906
+36,Niger seed,Oilseed,False,120,Medium,6.0,7.2,57.8,43.3,43.3,145.7,35,16000,18.0,"Kharif, Rabi",26.5,70.0,1306.0,190
+37,Onion,Vegetable,False,120,Medium,6.0,7.2,60.3,45.2,45.2,3832.4,23.5,22000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1111.7,300041
+38,Orange,Fruit,False,120,Low,6.3,7.8,19.0,16.0,10.0,4000.0,70.0,22000,30.0,"Kharif, Rabi",22.8,92.2,110.7,120
+39,Papaya,Fruit,False,120,Low,6.0,7.5,49.0,60.0,50.0,4000.0,25.0,18000,30.0,"Kharif, Rabi",33.7,92.4,139.0,333
+40,Peas & Beans,Legume,True,75,Medium,6.0,7.5,25.0,52.8,45.2,376.4,35,16000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1317.2,369
+41,Pigeon Pea,Legume,True,75,Medium,5.0,6.5,20.0,69.5,20.0,315.7,87.2,12000,18.0,"Kharif, Rabi, Zaid",27.7,48.1,1178.9,747
+42,Pomegranate,Fruit,False,120,Low,5.7,7.2,18.0,20.0,40.0,4000.0,67.1,35000,30.0,"Kharif, Rabi",21.8,90.1,107.6,391
+43,Potato,Vegetable,False,120,Medium,6.0,7.2,60.3,45.2,45.2,4119.7,15.6,25000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1296.3,328141
+44,Ragi,Cereal,False,110,Medium,5.8,7.2,72.2,36.1,36.1,420.9,32,11000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1255.4,498
+45,Red Lentil,Legume,True,75,Medium,6.2,7.7,16.5,68.0,19.0,283.3,35,9500,18.0,"Kharif, Rabi",24.5,64.8,1250.8,424
+46,Rice,Cereal,False,110,Medium,5.7,7.2,80.0,47.0,40.0,890.3,33.0,24000,18.0,"Kharif, Rabi, Zaid",23.7,82.3,1402.7,9992
+47,Safflower,Oilseed,False,120,Medium,6.0,7.2,57.8,43.3,43.3,226.6,35,16000,18.0,"Kharif, Rabi",26.5,70.0,1157.0,168
+48,Sannhamp,Legume,True,75,Medium,6.0,7.5,25.0,50.1,42.9,190.2,35,16000,18.0,"Kharif, Rabi",26.5,70.0,1136.0,153
+49,Sesamum,Oilseed,False,120,Medium,6.0,7.2,60.3,45.2,45.2,178.1,110,11000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1309.0,684
+50,Small millets,Cereal,False,110,Medium,5.8,7.2,72.2,36.1,36.1,303.5,35,16000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1288.9,484
+51,Soybean,Legume,True,75,Medium,6.0,7.5,25.0,52.8,45.2,408.7,47.75,14000,18.0,"Kharif, Rabi",26.5,70.0,1319.8,487
+52,Sugarcane,Commercial,False,120,Medium,6.0,7.2,57.2,42.9,42.9,21513.1,3.5,38000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1329.1,605
+53,Sunflower,Oilseed,False,120,Medium,6.0,7.2,57.8,43.3,43.3,339.9,50,13000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1147.5,440
+54,Sweet Potato,Vegetable,False,120,Medium,6.0,7.2,57.8,43.3,43.3,3452.0,23.0,16000,18.0,"Kharif, Rabi",26.5,70.0,1291.5,293
+55,Tapioca,Vegetable,False,120,Medium,6.0,7.2,60.3,45.2,45.2,4508.2,30.0,16000,18.0,"Kharif, Rabi",26.5,70.0,1563.4,264
+56,Tobacco,Commercial,False,120,Medium,6.0,7.2,60.3,45.2,45.2,566.6,95,28000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1206.3,362
+57,Tomato,Solanaceae,False,120,Medium,6.0,7.2,48.0,36.0,36.0,4000.0,36.5,35000,30.0,"Kharif, Rabi",26.5,70.0,1000.0,27314
+58,Turmeric,Spices,False,120,Medium,6.0,7.2,57.8,43.3,43.3,817.5,35,32000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1349.5,334
+59,Watermelon,Fruit,False,120,Low,5.8,7.2,99.0,17.5,50.5,4000.0,35,15000,30.0,"Kharif, Rabi",25.6,85.2,50.7,100
+60,Wheat,Cereal,False,110,Medium,5.8,7.2,72.2,36.1,36.1,675.8,23.75,18000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1246.2,78157
