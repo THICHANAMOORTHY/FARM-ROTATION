@@ -1,11 +1,12 @@
 // ============================================================
-// kaggle_crops.js — Unified Triple-Source Kaggle Agronomy Model
+// kaggle_crops.js — Unified Quad-Source Kaggle Agronomy Model
 // Datasets merged:
 //   1. arjunyadav99/indian-agricultural-mandi-prices-20232025 (737,392 rows)
-//   2. madhuraatmarambhagat/crop-recommendation-dataset        (2,200 rows)
-//   3. akshatgupta7/crop-yield-in-indian-states-dataset       (19,689 rows)
-// Total empirical records analyzed: 759,281 | Unique crops: 60
-// Generated: 2026-09-03 11:39:24
+//   2. anshtanwar/current-daily-price-of-various-commodities-india (23,093 rows)
+//   3. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
+//   4. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
+// Total empirical records analyzed: 782,374 | Unique crops: 60
+// Generated: 2026-09-03 11:42:16
 // ============================================================
 
 const kaggleCrops = [
@@ -22,7 +23,7 @@ const kaggleCrops = [
     "p_demand": 136.5,
     "k_demand": 200.0,
     "avg_yield_per_acre": 4000.0,
-    "avg_market_price": 100,
+    "avg_market_price": 92.0,
     "avg_cultivation_cost": 50000,
     "disease_risk_index": 30.0,
     "suitable_seasons": [
@@ -35,8 +36,9 @@ const kaggleCrops = [
     "top_states": [
       "All India"
     ],
-    "total_records": 100,
+    "total_records": 682,
     "data_sources": [
+      "indian-mandi-prices (582 trades)",
       "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
@@ -122,7 +124,7 @@ const kaggleCrops = [
     "p_demand": 81.0,
     "k_demand": 50.0,
     "avg_yield_per_acre": 7268.2,
-    "avg_market_price": 25,
+    "avg_market_price": 27.0,
     "avg_cultivation_cost": 40000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -139,8 +141,9 @@ const kaggleCrops = [
       "Gujarat",
       "Meghalaya"
     ],
-    "total_records": 343,
+    "total_records": 1254,
     "data_sources": [
+      "indian-mandi-prices (911 trades)",
       "crop-recommendation-dataset (100 sensor rows)",
       "crop-yield-in-indian-states (243 harvest rows)"
     ]
@@ -192,7 +195,7 @@ const kaggleCrops = [
     "p_demand": 67.0,
     "k_demand": 19.0,
     "avg_yield_per_acre": 230.7,
-    "avg_market_price": 90,
+    "avg_market_price": 35,
     "avg_cultivation_cost": 10500,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -228,7 +231,7 @@ const kaggleCrops = [
     "p_demand": 43.3,
     "k_demand": 43.3,
     "avg_yield_per_acre": 210.4,
-    "avg_market_price": 350,
+    "avg_market_price": 525.0,
     "avg_cultivation_cost": 16000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -244,8 +247,9 @@ const kaggleCrops = [
       "Puducherry",
       "Goa"
     ],
-    "total_records": 126,
+    "total_records": 159,
     "data_sources": [
+      "indian-mandi-prices (33 trades)",
       "crop-yield-in-indian-states (126 harvest rows)"
     ]
   },
@@ -262,7 +266,7 @@ const kaggleCrops = [
     "p_demand": 40.0,
     "k_demand": 40.0,
     "avg_yield_per_acre": 32.4,
-    "avg_market_price": 1200,
+    "avg_market_price": 1200.0,
     "avg_cultivation_cost": 16000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -278,8 +282,9 @@ const kaggleCrops = [
       "Tamil Nadu",
       "West Bengal"
     ],
-    "total_records": 73,
+    "total_records": 76,
     "data_sources": [
+      "indian-mandi-prices (3 trades)",
       "crop-yield-in-indian-states (73 harvest rows)"
     ]
   },
@@ -364,7 +369,7 @@ const kaggleCrops = [
     "p_demand": 68.0,
     "k_demand": 79.0,
     "avg_yield_per_acre": 331.8,
-    "avg_market_price": 70,
+    "avg_market_price": 53.58,
     "avg_cultivation_cost": 11000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -380,8 +385,9 @@ const kaggleCrops = [
       "Haryana",
       "Assam"
     ],
-    "total_records": 589,
+    "total_records": 941,
     "data_sources": [
+      "indian-mandi-prices (352 trades)",
       "crop-recommendation-dataset (100 sensor rows)",
       "crop-yield-in-indian-states (489 harvest rows)"
     ]
@@ -465,7 +471,7 @@ const kaggleCrops = [
     "p_demand": 45.2,
     "k_demand": 45.2,
     "avg_yield_per_acre": 194.2,
-    "avg_market_price": 90,
+    "avg_market_price": 58.25,
     "avg_cultivation_cost": 16000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -481,8 +487,9 @@ const kaggleCrops = [
       "Chhattisgarh",
       "Tamil Nadu"
     ],
-    "total_records": 198,
+    "total_records": 312,
     "data_sources": [
+      "indian-mandi-prices (114 trades)",
       "crop-yield-in-indian-states (198 harvest rows)"
     ]
   },
@@ -499,7 +506,7 @@ const kaggleCrops = [
     "p_demand": 46.0,
     "k_demand": 19.0,
     "avg_yield_per_acre": 582.7,
-    "avg_market_price": 65,
+    "avg_market_price": 66.12,
     "avg_cultivation_cost": 24000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -516,8 +523,9 @@ const kaggleCrops = [
       "Tamil Nadu",
       "Assam"
     ],
-    "total_records": 573,
+    "total_records": 693,
     "data_sources": [
+      "indian-mandi-prices (120 trades)",
       "crop-recommendation-dataset (100 sensor rows)",
       "crop-yield-in-indian-states (473 harvest rows)"
     ]
@@ -605,7 +613,7 @@ const kaggleCrops = [
     "p_demand": 43.3,
     "k_demand": 43.3,
     "avg_yield_per_acre": 1400.2,
-    "avg_market_price": 90,
+    "avg_market_price": 75.0,
     "avg_cultivation_cost": 26000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -621,8 +629,9 @@ const kaggleCrops = [
       "Uttarakhand",
       "Chhattisgarh"
     ],
-    "total_records": 248,
+    "total_records": 567,
     "data_sources": [
+      "indian-mandi-prices (319 trades)",
       "crop-yield-in-indian-states (248 harvest rows)"
     ]
   },
@@ -639,7 +648,7 @@ const kaggleCrops = [
     "p_demand": 43.3,
     "k_demand": 43.3,
     "avg_yield_per_acre": 2015.3,
-    "avg_market_price": 60,
+    "avg_market_price": 120.0,
     "avg_cultivation_cost": 35000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -656,8 +665,9 @@ const kaggleCrops = [
       "Andhra Pradesh",
       "Meghalaya"
     ],
-    "total_records": 321,
+    "total_records": 575,
     "data_sources": [
+      "indian-mandi-prices (254 trades)",
       "crop-yield-in-indian-states (321 harvest rows)"
     ]
   },
@@ -674,7 +684,7 @@ const kaggleCrops = [
     "p_demand": 133.0,
     "k_demand": 201.0,
     "avg_yield_per_acre": 4000.0,
-    "avg_market_price": 80,
+    "avg_market_price": 80.0,
     "avg_cultivation_cost": 45000,
     "disease_risk_index": 30.0,
     "suitable_seasons": [
@@ -687,8 +697,9 @@ const kaggleCrops = [
     "top_states": [
       "All India"
     ],
-    "total_records": 100,
+    "total_records": 131,
     "data_sources": [
+      "indian-mandi-prices (31 trades)",
       "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
@@ -705,7 +716,7 @@ const kaggleCrops = [
     "p_demand": 47.0,
     "k_demand": 20.0,
     "avg_yield_per_acre": 206.4,
-    "avg_market_price": 85,
+    "avg_market_price": 35,
     "avg_cultivation_cost": 11000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -741,7 +752,7 @@ const kaggleCrops = [
     "p_demand": 52.8,
     "k_demand": 45.2,
     "avg_yield_per_acre": 485.6,
-    "avg_market_price": 65,
+    "avg_market_price": 69.4,
     "avg_cultivation_cost": 18000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -758,8 +769,9 @@ const kaggleCrops = [
       "Karnataka",
       "Puducherry"
     ],
-    "total_records": 725,
+    "total_records": 862,
     "data_sources": [
+      "indian-mandi-prices (137 trades)",
       "crop-yield-in-indian-states (725 harvest rows)"
     ]
   },
@@ -1015,7 +1027,7 @@ const kaggleCrops = [
     "p_demand": 48.5,
     "k_demand": 20.0,
     "avg_yield_per_acre": 793.2,
-    "avg_market_price": 24,
+    "avg_market_price": 20.0,
     "avg_cultivation_cost": 19000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1032,8 +1044,9 @@ const kaggleCrops = [
       "Maharashtra",
       "Odisha"
     ],
-    "total_records": 1074,
+    "total_records": 1371,
     "data_sources": [
+      "indian-mandi-prices (297 trades)",
       "crop-recommendation-dataset (100 sensor rows)",
       "crop-yield-in-indian-states (974 harvest rows)"
     ]
@@ -1051,7 +1064,7 @@ const kaggleCrops = [
     "p_demand": 27.5,
     "k_demand": 30.0,
     "avg_yield_per_acre": 4000.0,
-    "avg_market_price": 60,
+    "avg_market_price": 30.0,
     "avg_cultivation_cost": 20000,
     "disease_risk_index": 30.0,
     "suitable_seasons": [
@@ -1064,8 +1077,9 @@ const kaggleCrops = [
     "top_states": [
       "All India"
     ],
-    "total_records": 100,
+    "total_records": 470,
     "data_sources": [
+      "indian-mandi-prices (370 trades)",
       "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
@@ -1151,7 +1165,7 @@ const kaggleCrops = [
     "p_demand": 18.0,
     "k_demand": 50.0,
     "avg_yield_per_acre": 4000.0,
-    "avg_market_price": 12,
+    "avg_market_price": 35,
     "avg_cultivation_cost": 14000,
     "disease_risk_index": 30.0,
     "suitable_seasons": [
@@ -1182,7 +1196,7 @@ const kaggleCrops = [
     "p_demand": 43.3,
     "k_demand": 43.3,
     "avg_yield_per_acre": 299.5,
-    "avg_market_price": 60,
+    "avg_market_price": 54.75,
     "avg_cultivation_cost": 12000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1198,8 +1212,9 @@ const kaggleCrops = [
       "Meghalaya",
       "West Bengal"
     ],
-    "total_records": 528,
+    "total_records": 906,
     "data_sources": [
+      "indian-mandi-prices (378 trades)",
       "crop-yield-in-indian-states (528 harvest rows)"
     ]
   },
@@ -1250,7 +1265,7 @@ const kaggleCrops = [
     "p_demand": 45.2,
     "k_demand": 45.2,
     "avg_yield_per_acre": 3832.4,
-    "avg_market_price": 23.8,
+    "avg_market_price": 23.5,
     "avg_cultivation_cost": 22000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1267,9 +1282,9 @@ const kaggleCrops = [
       "Uttar Pradesh",
       "Gujarat"
     ],
-    "total_records": 298879,
+    "total_records": 300041,
     "data_sources": [
-      "indian-agricultural-mandi-prices (298,432 APMC trades)",
+      "indian-mandi-prices (299,594 trades)",
       "crop-yield-in-indian-states (447 harvest rows)"
     ]
   },
@@ -1286,7 +1301,7 @@ const kaggleCrops = [
     "p_demand": 16.0,
     "k_demand": 10.0,
     "avg_yield_per_acre": 4000.0,
-    "avg_market_price": 55,
+    "avg_market_price": 70.0,
     "avg_cultivation_cost": 22000,
     "disease_risk_index": 30.0,
     "suitable_seasons": [
@@ -1299,8 +1314,9 @@ const kaggleCrops = [
     "top_states": [
       "All India"
     ],
-    "total_records": 100,
+    "total_records": 120,
     "data_sources": [
+      "indian-mandi-prices (20 trades)",
       "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
@@ -1317,7 +1333,7 @@ const kaggleCrops = [
     "p_demand": 60.0,
     "k_demand": 50.0,
     "avg_yield_per_acre": 4000.0,
-    "avg_market_price": 20,
+    "avg_market_price": 25.0,
     "avg_cultivation_cost": 18000,
     "disease_risk_index": 30.0,
     "suitable_seasons": [
@@ -1330,8 +1346,9 @@ const kaggleCrops = [
     "top_states": [
       "All India"
     ],
-    "total_records": 100,
+    "total_records": 333,
     "data_sources": [
+      "indian-mandi-prices (233 trades)",
       "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
@@ -1383,7 +1400,7 @@ const kaggleCrops = [
     "p_demand": 69.5,
     "k_demand": 20.0,
     "avg_yield_per_acre": 315.7,
-    "avg_market_price": 75,
+    "avg_market_price": 87.2,
     "avg_cultivation_cost": 12000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1400,8 +1417,9 @@ const kaggleCrops = [
       "Karnataka",
       "West Bengal"
     ],
-    "total_records": 608,
+    "total_records": 747,
     "data_sources": [
+      "indian-mandi-prices (139 trades)",
       "crop-recommendation-dataset (100 sensor rows)",
       "crop-yield-in-indian-states (508 harvest rows)"
     ]
@@ -1419,7 +1437,7 @@ const kaggleCrops = [
     "p_demand": 20.0,
     "k_demand": 40.0,
     "avg_yield_per_acre": 4000.0,
-    "avg_market_price": 120,
+    "avg_market_price": 67.1,
     "avg_cultivation_cost": 35000,
     "disease_risk_index": 30.0,
     "suitable_seasons": [
@@ -1432,8 +1450,9 @@ const kaggleCrops = [
     "top_states": [
       "All India"
     ],
-    "total_records": 100,
+    "total_records": 391,
     "data_sources": [
+      "indian-mandi-prices (291 trades)",
       "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
@@ -1467,9 +1486,9 @@ const kaggleCrops = [
       "West Bengal",
       "Himachal Pradesh"
     ],
-    "total_records": 326936,
+    "total_records": 328141,
     "data_sources": [
-      "indian-agricultural-mandi-prices (326,309 APMC trades)",
+      "indian-mandi-prices (327,514 trades)",
       "crop-yield-in-indian-states (627 harvest rows)"
     ]
   },
@@ -1521,7 +1540,7 @@ const kaggleCrops = [
     "p_demand": 68.0,
     "k_demand": 19.0,
     "avg_yield_per_acre": 283.3,
-    "avg_market_price": 65,
+    "avg_market_price": 35,
     "avg_cultivation_cost": 9500,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1556,7 +1575,7 @@ const kaggleCrops = [
     "p_demand": 47.0,
     "k_demand": 40.0,
     "avg_yield_per_acre": 890.3,
-    "avg_market_price": 33.4,
+    "avg_market_price": 33.0,
     "avg_cultivation_cost": 24000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1573,9 +1592,9 @@ const kaggleCrops = [
       "West Bengal",
       "Bihar"
     ],
-    "total_records": 9079,
+    "total_records": 9992,
     "data_sources": [
-      "indian-agricultural-mandi-prices (7,782 APMC trades)",
+      "indian-mandi-prices (8,695 trades)",
       "crop-recommendation-dataset (100 sensor rows)",
       "crop-yield-in-indian-states (1,197 harvest rows)"
     ]
@@ -1731,7 +1750,7 @@ const kaggleCrops = [
     "p_demand": 52.8,
     "k_demand": 45.2,
     "avg_yield_per_acre": 408.7,
-    "avg_market_price": 55,
+    "avg_market_price": 47.75,
     "avg_cultivation_cost": 14000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1747,8 +1766,9 @@ const kaggleCrops = [
       "Madhya Pradesh",
       "Uttar Pradesh"
     ],
-    "total_records": 345,
+    "total_records": 487,
     "data_sources": [
+      "indian-mandi-prices (142 trades)",
       "crop-yield-in-indian-states (345 harvest rows)"
     ]
   },
@@ -1835,7 +1855,7 @@ const kaggleCrops = [
     "p_demand": 43.3,
     "k_demand": 43.3,
     "avg_yield_per_acre": 3452.0,
-    "avg_market_price": 35,
+    "avg_market_price": 23.0,
     "avg_cultivation_cost": 16000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1851,8 +1871,9 @@ const kaggleCrops = [
       "Meghalaya",
       "Kerala"
     ],
-    "total_records": 268,
+    "total_records": 293,
     "data_sources": [
+      "indian-mandi-prices (25 trades)",
       "crop-yield-in-indian-states (268 harvest rows)"
     ]
   },
@@ -1869,7 +1890,7 @@ const kaggleCrops = [
     "p_demand": 45.2,
     "k_demand": 45.2,
     "avg_yield_per_acre": 4508.2,
-    "avg_market_price": 35,
+    "avg_market_price": 30.0,
     "avg_cultivation_cost": 16000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1885,8 +1906,9 @@ const kaggleCrops = [
       "Kerala",
       "Assam"
     ],
-    "total_records": 200,
+    "total_records": 264,
     "data_sources": [
+      "indian-mandi-prices (64 trades)",
       "crop-yield-in-indian-states (200 harvest rows)"
     ]
   },
@@ -1938,7 +1960,7 @@ const kaggleCrops = [
     "p_demand": 36.0,
     "k_demand": 36.0,
     "avg_yield_per_acre": 4000.0,
-    "avg_market_price": 35.0,
+    "avg_market_price": 36.5,
     "avg_cultivation_cost": 35000,
     "disease_risk_index": 30.0,
     "suitable_seasons": [
@@ -1951,9 +1973,9 @@ const kaggleCrops = [
     "top_states": [
       "All India"
     ],
-    "total_records": 26643,
+    "total_records": 27314,
     "data_sources": [
-      "indian-agricultural-mandi-prices (26,643 APMC trades)"
+      "indian-mandi-prices (27,314 trades)"
     ]
   },
   {
@@ -1969,7 +1991,7 @@ const kaggleCrops = [
     "p_demand": 43.3,
     "k_demand": 43.3,
     "avg_yield_per_acre": 817.5,
-    "avg_market_price": 80,
+    "avg_market_price": 35,
     "avg_cultivation_cost": 32000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -2004,7 +2026,7 @@ const kaggleCrops = [
     "p_demand": 17.5,
     "k_demand": 50.5,
     "avg_yield_per_acre": 4000.0,
-    "avg_market_price": 10,
+    "avg_market_price": 35,
     "avg_cultivation_cost": 15000,
     "disease_risk_index": 30.0,
     "suitable_seasons": [
@@ -2052,9 +2074,9 @@ const kaggleCrops = [
       "Karnataka",
       "West Bengal"
     ],
-    "total_records": 77516,
+    "total_records": 78157,
     "data_sources": [
-      "indian-agricultural-mandi-prices (76,973 APMC trades)",
+      "indian-mandi-prices (77,614 trades)",
       "crop-yield-in-indian-states (543 harvest rows)"
     ]
   }

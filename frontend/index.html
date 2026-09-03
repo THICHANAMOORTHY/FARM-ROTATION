@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -19,36 +20,46 @@
       <div class="brand-icon">🌱</div>
       <div class="brand-text">
         <h2>CropSmart</h2>
-        <span>P025 · Soil Restorer</span>
+        <span data-i18n="brandSubtitle">P025 · Soil Restorer</span>
       </div>
     </div>
 
+    <!-- ── Language Toggle (English / Tamil) ───────── -->
+    <div class="lang-toggle-wrap">
+      <button id="lang-btn-en" class="lang-btn active" onclick="setLanguage('en')">
+        <span>🇬🇧</span> English
+      </button>
+      <button id="lang-btn-ta" class="lang-btn" onclick="setLanguage('ta')">
+        <span>🇮🇳</span> தமிழ்
+      </button>
+    </div>
+
     <div class="nav-items">
-      <p class="sidebar-section-label">Main</p>
+      <p class="sidebar-section-label" data-i18n="navMain">Main</p>
       <div class="nav-link active" data-view="dashboard">
-        <span class="nav-icon">📊</span> Dashboard
+        <span class="nav-icon">📊</span> <span data-i18n="navDashboard">Dashboard</span>
       </div>
       <div class="nav-link" data-view="soil-analysis">
-        <span class="nav-icon">🧪</span> Soil Analysis
+        <span class="nav-icon">🧪</span> <span data-i18n="navSoilAnalysis">Soil Analysis</span>
       </div>
       <div class="nav-link" data-view="crop-history">
-        <span class="nav-icon">📋</span> Crop History
+        <span class="nav-icon">📋</span> <span data-i18n="navCropHistory">Crop History</span>
       </div>
 
-      <p class="sidebar-section-label" style="margin-top:8px">Analysis</p>
+      <p class="sidebar-section-label" style="margin-top:8px" data-i18n="navAnalysis">Analysis</p>
       <div class="nav-link" data-view="evaluation">
-        <span class="nav-icon">🔬</span> Crop Evaluation
+        <span class="nav-icon">🔬</span> <span data-i18n="navEvaluation">Crop Evaluation</span>
       </div>
       <div class="nav-link" data-view="rotation">
-        <span class="nav-icon">♻️</span> Rotation Optimizer
+        <span class="nav-icon">♻️</span> <span data-i18n="navRotation">Rotation Optimizer</span>
       </div>
       <div class="nav-link" data-view="simulation">
-        <span class="nav-icon">🔮</span> Soil Simulation
+        <span class="nav-icon">🔮</span> <span data-i18n="navSimulation">Soil Simulation</span>
       </div>
 
-      <p class="sidebar-section-label" style="margin-top:8px">Output</p>
+      <p class="sidebar-section-label" style="margin-top:8px" data-i18n="navOutput">Output</p>
       <div class="nav-link" data-view="recommendation">
-        <span class="nav-icon">⭐</span> Recommendation
+        <span class="nav-icon">⭐</span> <span data-i18n="navRecommendation">Recommendation</span>
         <span class="nav-badge">NEW</span>
       </div>
     </div>
@@ -72,9 +83,14 @@
           <h1>Farm Dashboard</h1>
           <p class="view-subtitle" id="dash-area">Loading farm data…</p>
         </div>
-        <div>
-          <p class="text-muted" style="font-size:13px">Farmer: <span id="dash-farmer-name" class="text-green font-bold">—</span></p>
-          <p class="text-muted" style="font-size:13px">Location: <span id="dash-farm-name" class="text-secondary">—</span></p>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <div>
+            <p class="text-muted" style="font-size:13px">Farmer: <span id="dash-farmer-name" class="text-green font-bold">—</span></p>
+            <p class="text-muted" style="font-size:13px">Location: <span id="dash-farm-name" class="text-secondary">—</span></p>
+          </div>
+          <button id="btn-export-pdf" class="btn btn-primary" onclick="exportFarmerReportPDF()" style="font-size:12px;padding:6px 14px">
+            <span>📄</span> Download Action Plan (PDF)
+          </button>
         </div>
       </div>
 
@@ -609,7 +625,10 @@
         </div>
 
         <div class="btn-group mt-24">
-          <button class="btn btn-primary" onclick="navigate('dashboard')">📊 Back to Dashboard</button>
+          <button class="btn btn-primary" onclick="exportFarmerReportPDF()">
+            <span>📄</span> Download Farmer Action Plan (PDF)
+          </button>
+          <button class="btn btn-secondary" onclick="navigate('dashboard')">📊 Back to Dashboard</button>
           <button class="btn btn-secondary" onclick="navigate('soil-analysis')">🔬 Re-analyse Soil</button>
         </div>
       </div>
@@ -619,6 +638,7 @@
 </div><!-- end .app -->
 
 <!-- Scripts -->
+<script src="js/i18n.js"></script>
 <script src="js/app.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/soilAnalysis.js"></script>
@@ -628,6 +648,7 @@
 <script src="js/simulation.js"></script>
 <script src="js/recommendation.js"></script>
 <script src="js/weather.js"></script>
+<script src="js/reportPdf.js"></script>
 
 </body>
 </html>
