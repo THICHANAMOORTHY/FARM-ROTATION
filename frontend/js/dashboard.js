@@ -6,25 +6,39 @@ let recoveryChart = null;
 let profitChart   = null;
 
 VIEW_LOADERS['dashboard'] = async function loadDashboard() {
-  const container = document.getElementById('view-dashboard');
-  showLoading('dash-content');
+  const loadingEl = document.getElementById('dash-loading');
+  const contentEl = document.getElementById('dash-content');
+
+  if (loadingEl) loadingEl.style.display = '';
+  if (contentEl) contentEl.style.display = 'none';
+
+  // Remove existing error banner if any
+  const oldErr = document.getElementById('dash-error-banner');
+  if (oldErr) oldErr.remove();
 
   try {
     const data = await apiGet(`/dashboard?farm_id=${state.farm_id}`);
     state.dashboard = data;
     renderDashboard(data);
   } catch (e) {
-    document.getElementById('dash-content').innerHTML =
-      `<div class="alert-banner warning">⚠ Could not connect to API. Make sure the backend is running on port 3000.</div>`;
+    console.error('Dashboard load error:', e);
+    if (loadingEl) loadingEl.style.display = 'none';
+    if (contentEl) {
+      contentEl.style.display = '';
+      const banner = document.createElement('div');
+      banner.id = 'dash-error-banner';
+      banner.className = 'alert-banner warning mb-16';
+      banner.textContent = `⚠ Could not connect to API (${e.message}). Make sure the backend is running on port 3000.`;
+      contentEl.prepend(banner);
+    }
   }
 };
 
-function showLoading(id) {
-  const el = document.getElementById(id);
-  if (el) el.innerHTML = `<div class="loading-wrap"><div class="spinner"></div><p class="loading-text">Loading data…</p></div>`;
-}
 
 function renderDashboard(d) {
+  const errBanner = document.getElementById('dash-error-banner');
+  if (errBanner) errBanner.remove();
+
   // Farm info
   document.getElementById('dash-farm-name').textContent   = d.farm.name;
   document.getElementById('dash-farmer-name').textContent = d.farm.farmer_name;

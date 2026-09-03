@@ -78,6 +78,96 @@
         </div>
       </div>
 
+      <!-- ── LOCATION SELECTOR BAR ───────────────────────── -->
+      <div class="location-selector-bar">
+        <div class="loc-select-wrap">
+          <span class="loc-select-label">📍 Farm Location:</span>
+          <select id="farm-location-select" class="loc-select" title="Switch Farm Location">
+            <option value="101" data-lat="11.0168" data-lon="76.9558" data-name="Coimbatore, Tamil Nadu">📍 Coimbatore, Tamil Nadu (4.5 ac · Drip)</option>
+          </select>
+        </div>
+
+        <div class="loc-search-box" id="loc-search-box" style="display:none">
+          <span class="loc-search-icon">🔍</span>
+          <input type="text" id="loc-search-input" class="loc-search-input" placeholder="Search any city or district (e.g. Pune, Ludhiana)..." autocomplete="off"/>
+          <div class="loc-search-results" id="loc-search-results"></div>
+        </div>
+      </div>
+
+      <!-- ── REAL-TIME LIVE WEATHER CARD ───────────────────── -->
+      <div class="weather-card">
+        <div class="weather-top-bar">
+          <div class="flex items-center gap-12">
+            <span class="weather-live-indicator">
+              <span class="live-pulse-dot"></span> LIVE Real-Time Weather
+            </span>
+            <span id="weather-loc-title" style="font-weight:700;font-size:15px;color:var(--text-primary)">Coimbatore, Tamil Nadu</span>
+            <span id="weather-loc-coords" class="chip info" style="font-size:11px">11.02°N, 76.96°E</span>
+          </div>
+          <div class="weather-actions">
+            <span id="weather-updated-time" class="text-muted" style="font-size:12px">Connecting…</span>
+            <button id="weather-refresh-btn" class="weather-refresh-btn" onclick="fetchLiveWeather()" title="Refresh live weather">
+              <span class="refresh-icon">🔄</span> Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- Weather Main Grid -->
+        <div class="weather-main-grid">
+          <div class="weather-temp-hero">
+            <div class="weather-icon-large" id="weather-icon-large">🌤️</div>
+            <div>
+              <div class="flex items-baseline">
+                <span class="weather-temp-val" id="weather-temp-val">--</span>
+                <span class="weather-temp-unit">°C</span>
+              </div>
+              <div class="weather-cond-label" id="weather-cond-label">Loading weather…</div>
+              <div class="weather-feels-like" id="weather-feels-like">Feels like --°C</div>
+            </div>
+          </div>
+
+          <!-- 4 Parameters -->
+          <div class="weather-params-grid">
+            <div class="weather-param-item">
+              <div class="weather-param-title">💧 Humidity</div>
+              <div class="weather-param-val" id="weather-param-humidity">--%</div>
+            </div>
+            <div class="weather-param-item">
+              <div class="weather-param-title">🌧️ Precip / Rain</div>
+              <div class="weather-param-val" id="weather-param-precip">0.0 mm</div>
+            </div>
+            <div class="weather-param-item">
+              <div class="weather-param-title">💨 Wind Speed</div>
+              <div class="weather-param-val" id="weather-param-wind">-- km/h</div>
+            </div>
+            <div class="weather-param-item">
+              <div class="weather-param-title">⏱️ Pressure</div>
+              <div class="weather-param-val" id="weather-param-pressure">-- hPa</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agricultural Advisories -->
+        <div class="weather-advisory-section">
+          <div class="weather-advisory-title">
+            <span>🌱 Real-Time Field Advisories</span>
+          </div>
+          <div class="weather-advisory-cards" id="weather-advisories">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- 7-Day Forecast Strip -->
+        <div class="weather-forecast-section">
+          <div class="weather-advisory-title">
+            <span>📅 7-Day Agricultural Forecast</span>
+          </div>
+          <div class="weather-forecast-strip" id="weather-forecast-strip">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
       <div id="dash-loading" class="loading-wrap">
         <div class="spinner"></div><p class="loading-text">Fetching farm data…</p>
       </div>
@@ -537,6 +627,7 @@
 <script src="js/rotation.js"></script>
 <script src="js/simulation.js"></script>
 <script src="js/recommendation.js"></script>
+<script src="js/weather.js"></script>
 
 </body>
 </html>

@@ -22,6 +22,7 @@ app.use('/api/optimize-rotation',require('./routes/optimizeRotation'));
 app.use('/api/soil-simulation',  require('./routes/soilSimulation'));
 app.use('/api/recommendation',   require('./routes/recommendation'));
 app.use('/api/dashboard',        require('./routes/dashboard'));
+app.use('/api/weather',          require('./routes/weather'));
 
 // Quick reference endpoints
 const db = require('./data/seed');
