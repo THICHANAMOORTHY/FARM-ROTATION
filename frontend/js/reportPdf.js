@@ -271,39 +271,26 @@ async function exportFarmerReportPDF() {
 
     const reportElement = document.getElementById('pdf-report-content');
 
-    // 4. Generate PDF using html2pdf.js if available
-    if (window.html2pdf) {
-      const opt = {
-        margin:       [10, 10, 10, 10],
-        filename:     `CropSmart_Action_Plan_${farmerName.replace(/\s+/g, '_')}_${state.farm_id || 101}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      await window.html2pdf().set(opt).from(reportElement).save();
-    } else {
-      // Fallback: Open in clean printable window
-      const printWin = window.open('', '_blank', 'width=850,height=1000');
-      printWin.document.write(`
-        <html>
-          <head>
-            <title>CropSmart Farmer Action Plan</title>
-            <link rel="stylesheet" href="css/style.css"/>
-            <style>
-              body { background: #f8fafc; padding: 20px; }
-              @media print { body { background: white; padding: 0; } }
-            </style>
-          </head>
-          <body>
-            ${reportHtml}
-            <script>
-              window.onload = function() { window.print(); };
-            </script>
-          </body>
-        </html>
-      `);
-      printWin.document.close();
+    // 4. Download pre-compiled high-resolution PDF file from server
+    try {
+      const a = document.createElement('a');
+      a.href = '/download/farmer-plan-pdf';
+      a.download = `CropSmart_Action_Plan_${farmerName.replace(/\s+/g, '_')}_${state.farm_id || 101}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (e) {
+      // Fallback: Generate using html2pdf if direct download fails
+      if (window.html2pdf) {
+        const opt = {
+          margin:       [10, 10, 10, 10],
+          filename:     `CropSmart_Action_Plan_${farmerName.replace(/\s+/g, '_')}_${state.farm_id || 101}.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        await window.html2pdf().set(opt).from(reportElement).save();
+      }
     }
 
   } catch (err) {
