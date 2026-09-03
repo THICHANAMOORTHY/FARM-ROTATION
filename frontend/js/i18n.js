@@ -15,6 +15,9 @@ const TRANSLATIONS = {
     navEvaluation: "Crop Evaluation",
     navRotation: "Rotation Optimizer",
     navSimulation: "Soil Simulation",
+    navPrecision: "Precision Agronomy",
+    navGpsZones: "GPS Zone Allocation",
+    navGpsZonesShort: "GPS Zones",
     navRecommendation: "Recommendation",
     activeFarm: "Active Farm",
     acresDrip: "4.5 acres · Drip Irrigation",
@@ -22,6 +25,10 @@ const TRANSLATIONS = {
     dlActionPlan: "Action Plan (PDF)",
     dlCropsCsv: "Crops Data (CSV)",
     dlFullJson: "Full Data (JSON)",
+
+    gpsZonesTitle: "GPS Farm Zone Allocation & Spatial Soil Analysis",
+    gpsZonesSubtitle: "Precision geofenced micro-zones tailored to localized NPK condition, soil texture, and targeted crop rotation",
+    btnDetectGps: "Detect Live GPS Location",
 
     // Header & Meta
     dashboardTitle: "Farm Dashboard",
@@ -168,6 +175,9 @@ const TRANSLATIONS = {
     navEvaluation: "பயிர் மதிப்பீடு",
     navRotation: "சுழற்சி உகப்பாக்கி",
     navSimulation: "மண் வளம் உருவகப்படுத்துதல்",
+    navPrecision: "துல்லிய வேளாண்மை",
+    navGpsZones: "ஜிபிஎஸ் மண்டல ஒதுக்கீடு",
+    navGpsZonesShort: "மண்டலங்கள்",
     navRecommendation: "இறுதி பரிந்துரை",
     activeFarm: "செயலில் உள்ள பண்ணை",
     acresDrip: "4.5 ஏக்கர் · சொட்டு நீர் பாசனம்",
@@ -175,6 +185,10 @@ const TRANSLATIONS = {
     dlActionPlan: "செயல்திட்ட அறிக்கை (PDF)",
     dlCropsCsv: "பயிர் தரவு (CSV)",
     dlFullJson: "முழு தரவு (JSON)",
+
+    gpsZonesTitle: "ஜிபிஎஸ் பண்ணை மண்டல ஒதுக்கீடு & மண் பகுப்பாய்வு",
+    gpsZonesSubtitle: "மண்ணின் சத்து குறைபாடு மற்றும் நிலப்பரப்பிற்கு ஏற்ப துல்லிய பயிர் ஒதுக்கீடு",
+    btnDetectGps: "நேரடி ஜிபிஎஸ் கண்டறி",
 
     // Header & Meta
     dashboardTitle: "பண்ணை முகப்பு பலகை",

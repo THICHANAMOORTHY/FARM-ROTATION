@@ -2430,21 +2430,6 @@ select option { background: var(--bg-surface); }
   border: none;
   color: #94a3b8;
   padding: 6px 0;
-  cursor: pointer;
-  transition: var(--transition);
-  outline: none;
-}
-
-.mb-nav-item .mb-icon {
-  font-size: 18px;
-  transition: transform 0.2s ease;
-}
-
-.mb-nav-item .mb-label {
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1;
-}
 
 .mb-nav-item.active {
   color: #10b981;

@@ -25,6 +25,7 @@ app.use('/api/dashboard',        require('./routes/dashboard'));
 app.use('/api/weather',          require('./routes/weather'));
 app.use('/api/report',           require('./routes/report'));
 app.use('/api/chat',             require('./routes/chat'));
+app.use('/api/gps-zones',        require('./routes/gpsZones'));
 
 // ── Downloadable Assets & Export Routes ────────────────────
 const fs = require('fs');
