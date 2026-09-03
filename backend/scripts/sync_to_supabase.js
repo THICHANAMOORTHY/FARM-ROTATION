@@ -87,6 +87,22 @@ async function syncAll() {
   if (soilErr) console.warn('   ⚠️ Soil error:', soilErr.message);
   else console.log('   ✅ Synced demo soil readings.');
 
+  // 6. Crop History
+  console.log('6. Upserting historical crop records...');
+  const { error: histErr } = await supabase
+    .from('crop_history')
+    .upsert(memDb.crop_history, { onConflict: 'history_id' });
+  if (histErr) console.warn('   ⚠️ Crop history error:', histErr.message);
+  else console.log(`   ✅ Synced ${memDb.crop_history.length} historical crop seasons.`);
+
+  // 7. Weather Data
+  console.log('7. Upserting weather records...');
+  const { error: weatherErr } = await supabase
+    .from('weather_data')
+    .upsert(memDb.weather_data, { onConflict: 'weather_id' });
+  if (weatherErr) console.warn('   ⚠️ Weather error:', weatherErr.message);
+  else console.log(`   ✅ Synced ${memDb.weather_data.length} weather records.`);
+
   console.log('\n🎉 Supabase Database sync complete!\n');
 }
 
