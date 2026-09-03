@@ -30,8 +30,11 @@ app.use('/api/chat',             require('./routes/chat'));
 const fs = require('fs');
 app.use('/downloads', express.static(path.join(__dirname, '..', 'downloads')));
 
-app.get('/download/farmer-plan-pdf', (req, res) => {
-  const filePath = path.join(__dirname, '..', 'downloads', 'CropSmart_Farmer_Soil_Health_Action_Plan.pdf');
+app.get(['/download/farmer-plan-pdf', '/download/uzhavu-kaappaan-pdf'], (req, res) => {
+  let filePath = path.join(__dirname, '..', 'downloads', 'UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan.pdf');
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(__dirname, '..', 'downloads', 'CropSmart_Farmer_Soil_Health_Action_Plan.pdf');
+  }
   
   // If file doesn't exist, regenerate it via Python script
   if (!fs.existsSync(filePath)) {
@@ -45,7 +48,7 @@ app.get('/download/farmer-plan-pdf', (req, res) => {
 
   if (fs.existsSync(filePath)) {
     const isInline = req.query.view === 'inline' || req.query.inline === 'true';
-    const disposition = isInline ? 'inline' : 'attachment; filename="CropSmart_Farmer_Soil_Health_Action_Plan.pdf"';
+    const disposition = isInline ? 'inline' : 'attachment; filename="UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan.pdf"';
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', disposition);
     return res.sendFile(filePath);

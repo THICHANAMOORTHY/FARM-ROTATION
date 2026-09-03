@@ -23,13 +23,15 @@ async function exportFarmerReportPDF() {
 
     const farmerName = dash?.farm?.farmer_name || 'Farmer';
     const farmId = window.state?.farm_id || 101;
-    const fileName = `CropSmart_Farmer_Soil_Health_Action_Plan_${farmId}.pdf`;
+    const fileName = `UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan_${farmId}.pdf`;
 
     // Strategy 1: Fetch PDF as Blob from server endpoint
     let downloaded = false;
     try {
       const downloadEndpoints = [
         '/download/farmer-plan-pdf',
+        '/download/uzhavu-kaappaan-pdf',
+        '/downloads/UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan.pdf',
         '/downloads/CropSmart_Farmer_Soil_Health_Action_Plan.pdf'
       ];
 
