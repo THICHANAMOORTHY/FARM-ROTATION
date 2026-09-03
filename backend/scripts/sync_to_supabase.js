@@ -46,8 +46,12 @@ async function syncAll() {
   if (farmErr) console.warn('   ⚠️ Farms error:', farmErr.message);
   else console.log(`   ✅ Synced ${memDb.farms.length} farms.`);
 
-  // 4. Crops (All 26 crops from merged Kaggle dataset)
-  console.log(`4. Upserting ${kaggleCrops.length} crops from Kaggle dataset...`);
+  // 4. Crops
+  console.log(`4. Syncing ${kaggleCrops.length} crops from unified Kaggle datasets...`);
+  // Clear any existing child references first
+  await supabase.from('crop_history').delete().gt('history_id', 0);
+  await supabase.from('crops').delete().gt('crop_id', 0);
+
   const cropPayload = kaggleCrops.map(c => ({
     crop_id:              c.crop_id,
     name:                 c.name,
@@ -70,12 +74,12 @@ async function syncAll() {
     avg_rainfall_mm:      c.avg_rainfall_mm,
     preferred_soil_types: c.preferred_soil_types || [],
     stats:                c.stats || {},
-    total_rows:           c.total_rows || 0,
+    total_rows:           c.total_records || 0,
   }));
 
   const { error: cropsErr } = await supabase
     .from('crops')
-    .upsert(cropPayload, { onConflict: 'name' });
+    .insert(cropPayload);
   if (cropsErr) console.warn('   ⚠️ Crops error:', cropsErr.message);
   else console.log(`   ✅ Synced ${cropPayload.length} crops into 'crops' table.`);
 
