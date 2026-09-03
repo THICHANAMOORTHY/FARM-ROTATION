@@ -44,7 +44,10 @@ FARM CONTEXT:
 - Measured Nutrients: Nitrogen=${soil.nitrogen} kg/ha (Deficient), Phosphorus=${soil.phosphorus} kg/ha, Potassium=${soil.potassium} kg/ha, pH=${soil.ph}, Organic Carbon=${soil.organic_carbon}% (Deficient).
 - History: Cultivated Tomato consecutively for 3 seasons (severe monoculture penalty applied, high solanaceae blight risk).
 - AI Top Recommendation: ${recCropObj.name} (Legume, biological nitrogen fixer, ₹${recCropObj.avg_market_price}/kg).
-- Language: Respond in ${isTa ? 'Tamil (தமிழ்)' : 'English'}. Keep responses friendly, practical, concise, and empowering for the farmer with markdown bullet points and emojis.
+- User Language: ${isTa ? 'Tamil (தமிழ்)' : 'English'}.
+
+CRITICAL INSTRUCTION:
+${isTa ? 'You MUST reply completely in pure, spoken Tamil (தமிழ் எழுத்துக்களில்). Use simple, friendly agricultural vocabulary that Tamil Nadu farmers use, structured with bullet points and emojis. Do not use English sentences.' : 'Respond in clear English with actionable agronomic insights, bullet points and emojis.'}
 
 User Question: "${message}"`;
 
