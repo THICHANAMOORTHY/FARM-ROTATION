@@ -66,23 +66,23 @@
 
     <div class="sidebar-footer">
       <div class="farm-chip">
-        <div class="fc-label">Active Farm</div>
+        <div class="fc-label" data-i18n="activeFarm">Active Farm</div>
         <div class="fc-name">Coimbatore Farm</div>
-        <div class="fc-meta">4.5 acres · Drip Irrigation</div>
+        <div class="fc-meta" data-i18n="acresDrip">4.5 acres · Drip Irrigation</div>
       </div>
 
       <!-- ── Data & Report Downloads ──────────────────── -->
       <div class="downloads-box" style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08)">
-        <p class="sidebar-section-label" style="font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">Downloads</p>
+        <p class="sidebar-section-label" style="font-size:10px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px" data-i18n="sidebarDownloads">Downloads</p>
         <div style="display:flex;flex-direction:column;gap:5px">
           <a href="/download/farmer-plan-pdf" class="btn btn-secondary" style="font-size:11px;padding:5px 10px;justify-content:flex-start;text-decoration:none" download>
-            <span>📄</span> Action Plan (PDF)
+            <span>📄</span> <span data-i18n="dlActionPlan">Action Plan (PDF)</span>
           </a>
           <a href="/download/crops-csv" class="btn btn-secondary" style="font-size:11px;padding:5px 10px;justify-content:flex-start;text-decoration:none" download>
-            <span>📊</span> Crops Data (CSV)
+            <span>📊</span> <span data-i18n="dlCropsCsv">Crops Data (CSV)</span>
           </a>
           <a href="/download/crops-json" class="btn btn-secondary" style="font-size:11px;padding:5px 10px;justify-content:flex-start;text-decoration:none" download>
-            <span>🗄️</span> Full Data (JSON)
+            <span>🗄️</span> <span data-i18n="dlFullJson">Full Data (JSON)</span>
           </a>
         </div>
       </div>
@@ -96,16 +96,16 @@
     <div id="view-dashboard" class="view active">
       <div class="view-header">
         <div>
-          <h1>Farm Dashboard</h1>
+          <h1 data-i18n="dashboardTitle">Farm Dashboard</h1>
           <p class="view-subtitle" id="dash-area">Loading farm data…</p>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
           <div>
-            <p class="text-muted" style="font-size:13px">Farmer: <span id="dash-farmer-name" class="text-green font-bold">—</span></p>
-            <p class="text-muted" style="font-size:13px">Location: <span id="dash-farm-name" class="text-secondary">—</span></p>
+            <p class="text-muted" style="font-size:13px"><span data-i18n="lblFarmer">Farmer:</span> <span id="dash-farmer-name" class="text-green font-bold">—</span></p>
+            <p class="text-muted" style="font-size:13px"><span data-i18n="lblLocation">Location:</span> <span id="dash-farm-name" class="text-secondary">—</span></p>
           </div>
           <button id="btn-export-pdf" class="btn btn-primary" onclick="exportFarmerReportPDF()" style="font-size:12px;padding:6px 14px">
-            <span>📄</span> Download Action Plan (PDF)
+            <span>📄</span> <span data-i18n="btnDownloadPdf">Download Action Plan (PDF)</span>
           </button>
         </div>
       </div>
@@ -113,7 +113,7 @@
       <!-- ── LOCATION SELECTOR BAR ───────────────────────── -->
       <div class="location-selector-bar">
         <div class="loc-select-wrap">
-          <span class="loc-select-label">📍 Farm Location:</span>
+          <span class="loc-select-label" data-i18n="lblFarmLocation">📍 Farm Location:</span>
           <select id="farm-location-select" class="loc-select" title="Switch Farm Location">
             <option value="101" data-lat="11.0168" data-lon="76.9558" data-name="Coimbatore, Tamil Nadu">📍 Coimbatore, Tamil Nadu (4.5 ac · Drip)</option>
           </select>
@@ -121,7 +121,7 @@
 
         <div class="loc-search-box" id="loc-search-box" style="display:none">
           <span class="loc-search-icon">🔍</span>
-          <input type="text" id="loc-search-input" class="loc-search-input" placeholder="Search any city or district (e.g. Pune, Ludhiana)..." autocomplete="off"/>
+          <input type="text" id="loc-search-input" class="loc-search-input" placeholder="Search any city or district (e.g. Pune, Ludhiana)..." data-i18n="searchLocationPlaceholder" autocomplete="off"/>
           <div class="loc-search-results" id="loc-search-results"></div>
         </div>
       </div>
@@ -131,7 +131,7 @@
         <div class="weather-top-bar">
           <div class="flex items-center gap-12">
             <span class="weather-live-indicator">
-              <span class="live-pulse-dot"></span> LIVE Real-Time Weather
+              <span class="live-pulse-dot"></span> <span data-i18n="lblLiveWeather">LIVE Real-Time Weather</span>
             </span>
             <span id="weather-loc-title" style="font-weight:700;font-size:15px;color:var(--text-primary)">Coimbatore, Tamil Nadu</span>
             <span id="weather-loc-coords" class="chip info" style="font-size:11px">11.02°N, 76.96°E</span>
@@ -139,7 +139,7 @@
           <div class="weather-actions">
             <span id="weather-updated-time" class="text-muted" style="font-size:12px">Connecting…</span>
             <button id="weather-refresh-btn" class="weather-refresh-btn" onclick="fetchLiveWeather()" title="Refresh live weather">
-              <span class="refresh-icon">🔄</span> Refresh
+              <span class="refresh-icon">🔄</span> <span data-i18n="btnRefreshWeather">Refresh</span>
             </button>
           </div>
         </div>
@@ -161,19 +161,19 @@
           <!-- 4 Parameters -->
           <div class="weather-params-grid">
             <div class="weather-param-item">
-              <div class="weather-param-title">💧 Humidity</div>
+              <div class="weather-param-title" data-i18n="paramHumidity">💧 Humidity</div>
               <div class="weather-param-val" id="weather-param-humidity">--%</div>
             </div>
             <div class="weather-param-item">
-              <div class="weather-param-title">🌧️ Precip / Rain</div>
+              <div class="weather-param-title" data-i18n="paramPrecip">🌧️ Precip / Rain</div>
               <div class="weather-param-val" id="weather-param-precip">0.0 mm</div>
             </div>
             <div class="weather-param-item">
-              <div class="weather-param-title">💨 Wind Speed</div>
+              <div class="weather-param-title" data-i18n="paramWind">💨 Wind Speed</div>
               <div class="weather-param-val" id="weather-param-wind">-- km/h</div>
             </div>
             <div class="weather-param-item">
-              <div class="weather-param-title">⏱️ Pressure</div>
+              <div class="weather-param-title" data-i18n="paramPressure">⏱️ Pressure</div>
               <div class="weather-param-val" id="weather-param-pressure">-- hPa</div>
             </div>
           </div>
@@ -182,7 +182,7 @@
         <!-- Agricultural Advisories -->
         <div class="weather-advisory-section">
           <div class="weather-advisory-title">
-            <span>🌱 Real-Time Field Advisories</span>
+            <span data-i18n="advisorySectionTitle">🌱 Real-Time Field Advisories</span>
           </div>
           <div class="weather-advisory-cards" id="weather-advisories">
             <!-- Populated dynamically -->
@@ -192,7 +192,7 @@
         <!-- 7-Day Forecast Strip -->
         <div class="weather-forecast-section">
           <div class="weather-advisory-title">
-            <span>📅 7-Day Agricultural Forecast</span>
+            <span data-i18n="forecastSectionTitle">📅 7-Day Agricultural Forecast</span>
           </div>
           <div class="weather-forecast-strip" id="weather-forecast-strip">
             <!-- Populated dynamically -->
@@ -210,7 +210,7 @@
 
           <!-- Soil Health Score -->
           <div class="kpi-card green">
-            <div class="card-label">Soil Health Score</div>
+            <div class="card-label" data-i18n="cardSoilHealth">Soil Health Score</div>
             <div class="score-ring-wrap">
               <div class="score-ring" id="dash-ring">
                 <svg width="90" height="90" viewBox="0 0 90 90">
@@ -221,7 +221,7 @@
                 <div class="ring-value" id="dash-health-val">0</div>
               </div>
               <div>
-                <div class="card-label">Alerts</div>
+                <div class="card-label" data-i18n="cardAlerts">Alerts</div>
                 <div id="dash-alerts" class="chips-wrap"></div>
               </div>
             </div>
@@ -229,26 +229,26 @@
 
           <!-- Recommended Crop -->
           <div class="kpi-card teal">
-            <div class="card-label">Recommended Crop</div>
+            <div class="card-label" data-i18n="cardRecommendedCrop">Recommended Crop</div>
             <div style="display:flex;align-items:center;gap:16px;margin:8px 0">
               <div style="font-size:40px" id="dash-rec-icon">🌱</div>
               <div>
                 <div class="kpi-value teal" id="dash-rec-crop" style="font-size:22px">—</div>
-                <div class="kpi-meta"><span id="dash-rec-family"></span> · Score: <b id="dash-rec-score">—</b></div>
+                <div class="kpi-meta"><span id="dash-rec-family"></span> · <span data-i18n="scoreText">Score</span>: <b id="dash-rec-score">—</b></div>
               </div>
             </div>
           </div>
 
           <!-- Expected Profit -->
           <div class="kpi-card green">
-            <div class="card-label">Expected Profit / Acre</div>
+            <div class="card-label" data-i18n="cardExpectedProfit">Expected Profit / Acre</div>
             <div class="kpi-value green" id="dash-profit">—</div>
-            <div class="kpi-meta">3-Season Total: <b id="dash-profit-3s">—</b></div>
+            <div class="kpi-meta"><span data-i18n="profit3SeasonTotal">3-Season Total:</span> <b id="dash-profit-3s">—</b></div>
           </div>
 
           <!-- Soil NPK -->
           <div class="kpi-card blue">
-            <div class="card-label">Current Soil Parameters</div>
+            <div class="card-label" data-i18n="cardSoilParams">Current Soil Parameters</div>
             <div id="dash-npk" class="chips-wrap mt-8"></div>
           </div>
         </div>
@@ -256,17 +256,17 @@
         <!-- Charts Row -->
         <div class="charts-grid">
           <div class="chart-card">
-            <h3>Soil Recovery Curve</h3>
+            <h3 data-i18n="chartRecoveryCurve">Soil Recovery Curve</h3>
             <div class="chart-container">
               <canvas id="recovery-chart"></canvas>
             </div>
           </div>
 
           <div class="chart-card">
-            <h3>Recommended Rotation Plan</h3>
+            <h3 data-i18n="chartRotationPlan">Recommended Rotation Plan</h3>
             <div id="dash-rotation-strip" class="rotation-strip mt-16"></div>
             <div style="margin-top:24px">
-              <div class="card-label">Why This Plan</div>
+              <div class="card-label" data-i18n="cardWhyThisPlan">Why This Plan</div>
               <ul class="reason-list mt-8" id="dash-why"></ul>
             </div>
           </div>
@@ -275,8 +275,8 @@
         <!-- Recent History -->
         <div class="glass-card mt-24">
           <div class="flex justify-between items-center mb-16">
-            <div class="card-title">Recent Crop History</div>
-            <button class="btn btn-secondary btn-sm" onclick="navigate('crop-history')">+ Add History</button>
+            <div class="card-title" data-i18n="cardRecentCropHistory">Recent Crop History</div>
+            <button class="btn btn-secondary btn-sm" onclick="navigate('crop-history')" data-i18n="btnAddHistory">+ Add History</button>
           </div>
           <div id="dash-history"></div>
         </div>
@@ -287,8 +287,8 @@
     <div id="view-soil-analysis" class="view">
       <div class="view-header">
         <div>
-          <h1>Soil Analysis</h1>
-          <p class="view-subtitle">Enter your soil test readings to compute health score and detect deficiencies</p>
+          <h1 data-i18n="soilAnalysisTitle">Soil Analysis</h1>
+          <p class="view-subtitle" data-i18n="soilAnalysisSubtitle">Enter your soil test readings to compute health score and detect deficiencies</p>
         </div>
       </div>
 
@@ -298,7 +298,7 @@
 
             <!-- Nitrogen -->
             <div class="form-group">
-              <label class="form-label" for="n-slider">
+              <label class="form-label" for="n-slider" data-i18n="nitrogenLabel">
                 Nitrogen (N) <span class="unit">kg/ha · ideal: 80–160</span>
               </label>
               <input type="range" id="n-slider" min="0" max="200" value="42" step="1"/>
@@ -307,7 +307,7 @@
 
             <!-- Phosphorus -->
             <div class="form-group">
-              <label class="form-label" for="p-slider">
+              <label class="form-label" for="p-slider" data-i18n="phosphorusLabel">
                 Phosphorus (P) <span class="unit">kg/ha · ideal: 30–60</span>
               </label>
               <input type="range" id="p-slider" min="0" max="100" value="28" step="1"/>
@@ -316,7 +316,7 @@
 
             <!-- Potassium -->
             <div class="form-group">
-              <label class="form-label" for="k-slider">
+              <label class="form-label" for="k-slider" data-i18n="potassiumLabel">
                 Potassium (K) <span class="unit">kg/ha · ideal: 60–120</span>
               </label>
               <input type="range" id="k-slider" min="0" max="200" value="55" step="1"/>
@@ -325,7 +325,7 @@
 
             <!-- pH -->
             <div class="form-group">
-              <label class="form-label" for="ph-slider">
+              <label class="form-label" for="ph-slider" data-i18n="phLabel">
                 Soil pH <span class="unit">ideal: 6.0–7.5</span>
               </label>
               <input type="range" id="ph-slider" min="40" max="90" value="65" step="1"/>
@@ -334,7 +334,7 @@
 
             <!-- Organic Carbon -->
             <div class="form-group">
-              <label class="form-label" for="oc-slider">
+              <label class="form-label" for="oc-slider" data-i18n="organicCarbonLabel">
                 Organic Carbon <span class="unit">% · ideal: 0.8–1.5</span>
               </label>
               <input type="range" id="oc-slider" min="1" max="300" value="52" step="1"/>
@@ -344,8 +344,8 @@
           </div>
 
           <div class="btn-group mt-24">
-            <button type="submit" class="btn btn-primary" id="soil-submit-btn">🔬 Analyse Soil</button>
-            <button type="button" class="btn btn-secondary" onclick="navigate('crop-history')">Next: Crop History →</button>
+            <button type="submit" class="btn btn-primary" id="soil-submit-btn" data-i18n="btnAnalyseSoil">🔬 Analyse Soil</button>
+            <button type="button" class="btn btn-secondary" onclick="navigate('crop-history')" data-i18n="btnNextCropHistory">Next: Crop History →</button>
           </div>
         </form>
       </div>
@@ -358,18 +358,25 @@
     <div id="view-crop-history" class="view">
       <div class="view-header">
         <div>
-          <h1>Crop History</h1>
-          <p class="view-subtitle">Record past crops to detect rotation issues and guide recommendations</p>
+          <h1 data-i18n="cropHistoryTitle">Crop History</h1>
+          <p class="view-subtitle" data-i18n="cropHistorySubtitle">Record past crops to detect rotation issues and guide recommendations</p>
         </div>
       </div>
 
       <!-- Existing history table -->
       <div class="glass-card mb-24">
-        <div class="card-title mb-16">Recorded History</div>
+        <div class="card-title mb-16" data-i18n="recordedHistoryTitle">Recorded History</div>
         <div style="overflow-x:auto">
           <table class="data-table">
             <thead>
-              <tr><th>#</th><th>Crop</th><th>Season</th><th>Year</th><th>Revenue (₹)</th><th>Profit (₹)</th></tr>
+              <tr>
+                <th data-i18n="thNum">#</th>
+                <th data-i18n="thCrop">Crop</th>
+                <th data-i18n="thSeason">Season</th>
+                <th data-i18n="thYear">Year</th>
+                <th data-i18n="thRevenue">Revenue (₹)</th>
+                <th data-i18n="thProfit">Profit (₹)</th>
+              </tr>
             </thead>
             <tbody id="history-tbody">
               <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">Loading…</td></tr>
@@ -381,8 +388,8 @@
       <!-- Add new entries -->
       <div class="glass-card">
         <div class="flex justify-between items-center mb-16">
-          <div class="card-title">Add Crop History</div>
-          <button class="btn btn-secondary btn-sm" id="add-history-row" type="button">+ Add Row</button>
+          <div class="card-title" data-i18n="addCropHistoryTitle">Add Crop History</div>
+          <button class="btn btn-secondary btn-sm" id="add-history-row" type="button" data-i18n="btnAddRow">+ Add Row</button>
         </div>
 
         <form id="history-form">
@@ -391,7 +398,7 @@
             <div class="history-row glass-card" style="padding:16px;margin-bottom:12px">
               <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;align-items:end">
                 <div class="form-group">
-                  <label class="form-label">Crop</label>
+                  <label class="form-label" data-i18n="thCrop">Crop</label>
                   <select name="crop_1" required>
                     <option>Tomato</option><option>Green Gram</option><option>Groundnut</option>
                     <option>Maize</option><option>Black Gram</option><option>Rice</option>
@@ -399,25 +406,25 @@
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Season</label>
+                  <label class="form-label" data-i18n="thSeason">Season</label>
                   <select name="season_1" required>
                     <option>Kharif</option><option>Rabi</option><option>Zaid</option>
                   </select>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Year</label>
+                  <label class="form-label" data-i18n="thYear">Year</label>
                   <input type="number" name="year_1" value="2025" min="2000" max="2026" required/>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Yield (kg)</label>
+                  <label class="form-label" data-i18n="thYield">Yield (kg)</label>
                   <input type="number" name="yield_1" placeholder="8500" min="0"/>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Cost (₹)</label>
+                  <label class="form-label" data-i18n="thCost">Cost (₹)</label>
                   <input type="number" name="cost_1" placeholder="38000" min="0"/>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Revenue (₹)</label>
+                  <label class="form-label" data-i18n="thRevenue">Revenue (₹)</label>
                   <input type="number" name="revenue_1" placeholder="51000" min="0"/>
                 </div>
               </div>
@@ -425,8 +432,8 @@
           </div>
 
           <div class="btn-group mt-16">
-            <button type="submit" class="btn btn-primary" id="history-submit-btn">💾 Save History</button>
-            <button type="button" class="btn btn-secondary" onclick="navigate('evaluation')">Next: Evaluate Crops →</button>
+            <button type="submit" class="btn btn-primary" id="history-submit-btn" data-i18n="btnSaveHistory">💾 Save History</button>
+            <button type="button" class="btn btn-secondary" onclick="navigate('evaluation')" data-i18n="btnNextEvaluation">Next: Evaluate Crops →</button>
           </div>
         </form>
       </div>
@@ -438,13 +445,13 @@
     <div id="view-evaluation" class="view">
       <div class="view-header">
         <div>
-          <h1>Crop Evaluation</h1>
-          <p class="view-subtitle">Select candidate crops to score across 6 dimensions and rank the best options</p>
+          <h1 data-i18n="evalTitle">Crop Evaluation</h1>
+          <p class="view-subtitle" data-i18n="evalSubtitle">Select candidate crops to score across 6 dimensions and rank the best options</p>
         </div>
         <div class="flex items-center gap-12">
-          <label class="form-label" style="margin:0">Season:</label>
+          <label class="form-label" style="margin:0" data-i18n="lblSeason">Season:</label>
           <select id="eval-season-sel" style="width:auto;padding:8px 14px">
-            <option>Kharif</option><option>Rabi</option><option>Zaid</option>
+            <option value="Kharif">Kharif</option><option value="Rabi">Rabi</option><option value="Zaid">Zaid</option>
           </select>
         </div>
       </div>
@@ -452,48 +459,67 @@
       <!-- Candidate cards -->
       <div class="glass-card mb-24">
         <div class="flex justify-between items-center mb-8">
-          <div class="card-title">Candidate Crops</div>
-          <span class="chip info"><span id="eval-count">0</span> selected</span>
+          <div class="card-title" data-i18n="candidateCropsTitle">Candidate Crops</div>
+          <span class="chip info"><span id="eval-count">0</span> <span data-i18n="selectedChip">selected</span></span>
         </div>
-        <p class="text-muted" style="font-size:13px;margin-bottom:16px">Click crops to select them for evaluation</p>
+        <p class="text-muted" style="font-size:13px;margin-bottom:16px" data-i18n="candidateSelectHint">Click crops to select them for evaluation</p>
         <div id="candidates-grid" class="crop-cards-grid"></div>
       </div>
 
       <!-- Excluded crops -->
       <div class="glass-card mb-24">
-        <div class="card-label">Excluded Crops (with reasons)</div>
+        <div class="card-label" data-i18n="excludedCropsTitle">Excluded Crops (with reasons)</div>
         <div id="excluded-list" class="mt-8"></div>
       </div>
 
       <div class="btn-group mb-24">
-        <button class="btn btn-primary" id="run-eval-btn">🚀 Run Evaluation</button>
+        <button class="btn btn-primary" id="run-eval-btn" data-i18n="btnRunEval">🚀 Run Evaluation</button>
       </div>
 
       <!-- Results -->
       <div id="eval-results" style="display:none">
         <div class="charts-grid mb-24">
           <div class="chart-card">
-            <h3>Crop Score Radar</h3>
+            <h3 data-i18n="cropRadarTitle">Crop Score Radar</h3>
             <div class="chart-container" style="height:280px">
               <canvas id="radar-chart"></canvas>
             </div>
           </div>
 
           <div class="chart-card">
-            <h3>Score Breakdown Legend</h3>
-            <div style="padding:8px 0">
-              ${['Soil Suitability','Season Suitability','Rotation Score','Water Score','Profit Score','Risk Score'].map((l,i) => `
-                <div class="flex justify-between items-center mb-12">
-                  <span class="text-secondary" style="font-size:13px">${i+1}. ${l}</span>
-                  <span class="chip info" style="font-size:11px">/100</span>
-                </div>`).join('')}
+            <h3 data-i18n="legendTitle">Score Breakdown Legend</h3>
+            <div style="padding:8px 0" id="eval-legend-box">
+              <div class="flex justify-between items-center mb-12">
+                <span class="text-secondary" style="font-size:13px">1. Soil Suitability</span>
+                <span class="chip info" style="font-size:11px">/100</span>
+              </div>
+              <div class="flex justify-between items-center mb-12">
+                <span class="text-secondary" style="font-size:13px">2. Season Suitability</span>
+                <span class="chip info" style="font-size:11px">/100</span>
+              </div>
+              <div class="flex justify-between items-center mb-12">
+                <span class="text-secondary" style="font-size:13px">3. Rotation Score</span>
+                <span class="chip info" style="font-size:11px">/100</span>
+              </div>
+              <div class="flex justify-between items-center mb-12">
+                <span class="text-secondary" style="font-size:13px">4. Water Score</span>
+                <span class="chip info" style="font-size:11px">/100</span>
+              </div>
+              <div class="flex justify-between items-center mb-12">
+                <span class="text-secondary" style="font-size:13px">5. Profit Score</span>
+                <span class="chip info" style="font-size:11px">/100</span>
+              </div>
+              <div class="flex justify-between items-center mb-12">
+                <span class="text-secondary" style="font-size:13px">6. Risk Score</span>
+                <span class="chip info" style="font-size:11px">/100</span>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Leaderboard -->
         <div class="glass-card">
-          <div class="card-title mb-16">Evaluation Leaderboard</div>
+          <div class="card-title mb-16" data-i18n="leaderboardTitle">Evaluation Leaderboard</div>
           <div style="overflow-x:auto">
             <table class="data-table">
               <thead>
@@ -508,7 +534,7 @@
         </div>
 
         <div class="btn-group mt-24">
-          <button class="btn btn-primary" onclick="navigate('rotation')">⚡ Optimize Rotation →</button>
+          <button class="btn btn-primary" onclick="navigate('rotation')" data-i18n="btnNextRotation">⚡ Optimize Rotation →</button>
         </div>
       </div>
     </div>
@@ -517,25 +543,25 @@
     <div id="view-rotation" class="view">
       <div class="view-header">
         <div>
-          <h1>Rotation Optimizer</h1>
-          <p class="view-subtitle">Generate and compare 3 multi-season rotation plans with profit and soil projections</p>
+          <h1 data-i18n="rotationTitle">Rotation Optimizer</h1>
+          <p class="view-subtitle" data-i18n="rotationSubtitle">Generate and compare 3 multi-season rotation plans with profit and soil projections</p>
         </div>
       </div>
 
       <div class="glass-card mb-24">
         <div class="flex justify-between items-center flex-wrap gap-16">
           <div>
-            <div class="card-title">Generate Rotation Plans</div>
-            <p class="text-muted mt-4" style="font-size:13px">
+            <div class="card-title" data-i18n="genPlansTitle">Generate Rotation Plans</div>
+            <p class="text-muted mt-4" style="font-size:13px" data-i18n="genPlansDesc">
               Analyzes evaluated crops and generates optimized 3-season rotation plans
             </p>
           </div>
-          <button class="btn btn-primary" id="optimize-btn">⚡ Optimize Rotation</button>
+          <button class="btn btn-primary" id="optimize-btn" data-i18n="btnOptimizeRotation">⚡ Optimize Rotation</button>
         </div>
       </div>
 
       <div id="rotation-loading" style="display:none" class="loading-wrap">
-        <div class="spinner"></div><p class="loading-text">Generating optimal rotation plans…</p>
+        <div class="spinner"></div><p class="loading-text" data-i18n="loadingRotationPlans">Generating optimal rotation plans…</p>
       </div>
 
       <div id="rotation-plans"></div>
@@ -543,14 +569,14 @@
       <!-- Profit chart section -->
       <div id="rotation-chart-section" style="display:none">
         <div class="chart-card mt-24">
-          <h3>3-Season Profit Comparison</h3>
+          <h3 data-i18n="profitCompTitle">3-Season Profit Comparison</h3>
           <div class="chart-container" style="height:240px">
             <canvas id="profit-chart"></canvas>
           </div>
         </div>
 
         <div class="btn-group mt-24">
-          <button class="btn btn-primary" onclick="navigate('simulation')">🔮 Run Soil Simulation →</button>
+          <button class="btn btn-primary" onclick="navigate('simulation')" data-i18n="btnNextSimulation">🔮 Run Soil Simulation →</button>
         </div>
       </div>
     </div>
@@ -559,8 +585,8 @@
     <div id="view-simulation" class="view">
       <div class="view-header">
         <div>
-          <h1>Soil Simulation</h1>
-          <p class="view-subtitle">Watch how soil nutrients evolve season-by-season under the recommended rotation plan</p>
+          <h1 data-i18n="simTitle">Soil Simulation</h1>
+          <p class="view-subtitle" data-i18n="simSubtitle">Watch how soil nutrients evolve season-by-season under the recommended rotation plan</p>
         </div>
         <span class="chip info">Plan ID: <b id="sim-plan-id">—</b></span>
       </div>
@@ -570,8 +596,8 @@
       </div>
 
       <div class="btn-group mt-24">
-        <button class="btn btn-secondary" onclick="navigate('rotation')">← Back to Plans</button>
-        <button class="btn btn-primary"   onclick="navigate('recommendation')">⭐ View Recommendation →</button>
+        <button class="btn btn-secondary" onclick="navigate('rotation')" data-i18n="btnBackPlans">← Back to Plans</button>
+        <button class="btn btn-primary"   onclick="navigate('recommendation')" data-i18n="btnNextRecommendation">⭐ View Recommendation →</button>
       </div>
     </div>
 
@@ -579,8 +605,8 @@
     <div id="view-recommendation" class="view">
       <div class="view-header">
         <div>
-          <h1>Final Recommendation</h1>
-          <p class="view-subtitle">AI-powered crop + rotation recommendation for your farm</p>
+          <h1 data-i18n="recTitle">Final Recommendation</h1>
+          <p class="view-subtitle" data-i18n="recSubtitle">AI-powered crop + rotation recommendation for your farm</p>
         </div>
       </div>
 
@@ -594,7 +620,7 @@
         <div class="rec-hero">
           <div class="rec-hero-score">
             <div class="score-num" id="rec-score-num" style="font-family:'Outfit',sans-serif;font-size:32px;font-weight:800">—</div>
-            <div class="score-lbl" style="font-size:11px;color:rgba(255,255,255,0.7)">Score</div>
+            <div class="score-lbl" style="font-size:11px;color:rgba(255,255,255,0.7)" data-i18n="scoreText">Score</div>
           </div>
           <div>
             <div style="font-size:40px;margin-bottom:8px" id="rec-hero-icon">🌱</div>
@@ -607,12 +633,12 @@
         <!-- Stats grid -->
         <div class="rec-details-grid mb-24">
           <div class="glass-card">
-            <div class="card-label">Profit per Acre</div>
+            <div class="card-label" data-i18n="profitPerAcre">Profit per Acre</div>
             <div class="kpi-value green" id="rec-profit">—</div>
-            <div class="kpi-meta">3-Season Total: <b id="rec-3s-profit">—</b></div>
+            <div class="kpi-meta"><span data-i18n="profit3SeasonTotal">3-Season Total:</span> <b id="rec-3s-profit">—</b></div>
           </div>
           <div class="glass-card">
-            <div class="card-label">Crop Details</div>
+            <div class="card-label" data-i18n="cropDetails">Crop Details</div>
             <div class="chips-wrap mt-8">
               <span class="chip info">💧 <span id="rec-water">—</span></span>
               <span class="chip success">🌿 <span id="rec-family">—</span></span>
@@ -623,11 +649,11 @@
         <!-- Reasoning + Recovery chart -->
         <div class="rec-details-grid mb-24">
           <div class="glass-card">
-            <div class="card-title mb-16">Why This Crop?</div>
+            <div class="card-title mb-16" data-i18n="whyThisCrop">Why This Crop?</div>
             <ul class="reason-list" id="rec-reasoning"></ul>
           </div>
           <div class="chart-card">
-            <h3>Projected Soil Recovery</h3>
+            <h3 data-i18n="projectedSoilRecovery">Projected Soil Recovery</h3>
             <div class="chart-container" style="height:220px">
               <canvas id="rec-recovery-chart"></canvas>
             </div>
@@ -636,16 +662,16 @@
 
         <!-- Rotation plan strip -->
         <div class="glass-card">
-          <div class="card-title mb-16">Recommended 4-Season Rotation</div>
+          <div class="card-title mb-16" data-i18n="recommendedRotation">Recommended 4-Season Rotation</div>
           <div id="rec-rotation-strip" class="rotation-strip"></div>
         </div>
 
         <div class="btn-group mt-24">
           <button class="btn btn-primary" onclick="exportFarmerReportPDF()">
-            <span>📄</span> Download Farmer Action Plan (PDF)
+            <span>📄</span> <span data-i18n="btnDownloadPlanPdf">Download Farmer Action Plan (PDF)</span>
           </button>
-          <button class="btn btn-secondary" onclick="navigate('dashboard')">📊 Back to Dashboard</button>
-          <button class="btn btn-secondary" onclick="navigate('soil-analysis')">🔬 Re-analyse Soil</button>
+          <button class="btn btn-secondary" onclick="navigate('dashboard')" data-i18n="btnBackDashboard">📊 Back to Dashboard</button>
+          <button class="btn btn-secondary" onclick="navigate('soil-analysis')" data-i18n="btnReanalyseSoil">🔬 Re-analyse Soil</button>
         </div>
       </div>
     </div>

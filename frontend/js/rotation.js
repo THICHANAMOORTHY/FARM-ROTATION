@@ -56,6 +56,7 @@ function renderPlans(plans) {
 }
 
 function renderPlanCard(plan) {
+  const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
   const isRec     = plan.is_recommended;
   const profitColor = plan.total_projected_profit > 95000 ? 'var(--green-400)'
                     : plan.total_projected_profit > 80000 ? 'var(--amber-400)'
@@ -66,26 +67,26 @@ function renderPlanCard(plan) {
 
   return `
     <div class="plan-card ${isRec ? 'recommended' : ''}">
-      ${isRec ? '<div class="plan-badge">⭐ Recommended</div>' : ''}
-      <div class="plan-label">Plan ${plan.plan_label}</div>
+      ${isRec ? `<div class="plan-badge">⭐ ${isTa ? 'பரிந்துரைக்கப்பட்டது' : 'Recommended'}</div>` : ''}
+      <div class="plan-label">${isTa ? 'திட்டம் ' : 'Plan '}${plan.plan_label}</div>
 
       <div class="rotation-strip mb-16" id="plan-strip-${plan.plan_label}">
         ${(plan.sequence||[]).map((crop, i) => `
           ${i > 0 ? '<span class="rot-arrow">→</span>' : ''}
           <div class="rot-crop">
             <div class="rot-crop-dot">${cropIcon(crop)}</div>
-            <span class="rot-crop-name">${crop}</span>
+            <span class="rot-crop-name">${window.tCrop ? tCrop(crop) : crop}</span>
           </div>`).join('')}
       </div>
 
-      <div class="card-label">Projected 3-Season Profit</div>
+      <div class="card-label">${isTa ? 'எதிர்பார்க்கப்படும் 3-பருவ லாபம்' : 'Projected 3-Season Profit'}</div>
       <div class="plan-profit" style="color:${profitColor}">
         ₹${(plan.total_projected_profit/1000).toFixed(0)}K
       </div>
 
       <div class="plan-health-bar mt-16">
         <div class="flex justify-between mb-4">
-          <span class="card-label">Final Soil Health</span>
+          <span class="card-label">${isTa ? 'இறுதி மண் வளம்' : 'Final Soil Health'}</span>
           <span style="font-weight:700;color:${healthColor}">${plan.final_soil_health}</span>
         </div>
         <div class="score-bar-track">
@@ -95,10 +96,10 @@ function renderPlanCard(plan) {
       </div>
 
       <div class="mt-16">
-        <div class="card-label">Seasonal Profits</div>
+        <div class="card-label">${isTa ? 'பருவ வாரியான லாபம்' : 'Seasonal Profits'}</div>
         ${(plan.seasonal_profit||[]).map((p, i) => `
           <div class="flex justify-between mt-4" style="font-size:13px">
-            <span class="text-muted">Season ${i+1} · ${plan.sequence?.[i]||''}</span>
+            <span class="text-muted">${isTa ? 'பருவம்' : 'Season'} ${i+1} · ${isTa && window.tCrop ? tCrop(plan.sequence?.[i]||'').split(' (')[0] : (plan.sequence?.[i]||'')}</span>
             <span style="color:var(--green-400);font-weight:600">₹${(p/1000).toFixed(0)}K</span>
           </div>`).join('')}
       </div>
@@ -106,7 +107,7 @@ function renderPlanCard(plan) {
       ${isRec ? `
         <button class="btn btn-primary btn-sm" style="width:100%;margin-top:20px"
           onclick="runSimulation(${plan.plan_id})">
-          🔮 Run Soil Simulation
+          🔮 ${isTa ? 'மண் வளம் உருவகப்படுத்து' : 'Run Soil Simulation'}
         </button>` : ''}
     </div>`;
 }

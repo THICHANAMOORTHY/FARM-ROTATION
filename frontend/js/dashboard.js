@@ -37,12 +37,13 @@ VIEW_LOADERS['dashboard'] = async function loadDashboard() {
 
 function renderDashboard(d) {
   const errBanner = document.getElementById('dash-error-banner');
-  if (errBanner) errBanner.remove();
-
-  // Farm info
-  document.getElementById('dash-farm-name').textContent   = d.farm.name;
-  document.getElementById('dash-farmer-name').textContent = d.farm.farmer_name;
-  document.getElementById('dash-area').textContent        = `${d.farm.area_acres} acres · ${d.farm.irrigation}`;
+  if (errBanner) errBanner.remove();  // Farm info
+  const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
+  document.getElementById('dash-farm-name').textContent   = isTa ? 'கோயம்புத்தூர், தமிழ்நாடு' : 'Coimbatore, Tamil Nadu';
+  document.getElementById('dash-farmer-name').textContent = isTa ? 'ரமேஷ் குமார்' : d.farm.farmer_name;
+  document.getElementById('dash-area').textContent        = isTa
+    ? `${d.farm.area_acres} ஏக்கர் · ${d.farm.irrigation.includes('Drip') ? 'சொட்டு நீர் பாசனம்' : d.farm.irrigation}`
+    : `${d.farm.area_acres} acres · ${d.farm.irrigation}`;
 
   // KPI cards
   const healthColor = d.farm_health >= 70 ? 'var(--green-400)' : d.farm_health >= 50 ? 'var(--amber-400)' : 'var(--red-400)';
@@ -57,7 +58,7 @@ function renderDashboard(d) {
   if (d.soil_alerts && d.soil_alerts.length) {
     alertsEl.innerHTML = d.soil_alerts.map(a => chipDanger(window.tAlert ? tAlert(a) : a)).join('');
   } else {
-    alertsEl.innerHTML = chipSuccess(window.t ? t('optimal', 'All Nutrients Adequate') : 'All Nutrients Adequate');
+    alertsEl.innerHTML = chipSuccess(window.t ? t('optimalNutrients', 'All Nutrients Adequate') : 'All Nutrients Adequate');
   }
 
   // Recommended crop
@@ -65,7 +66,8 @@ function renderDashboard(d) {
   document.getElementById('dash-rec-crop').textContent   = window.tCrop ? tCrop(cropName) : cropName;
   document.getElementById('dash-rec-score').textContent  = d.recommended_crop?.score || '—';
   document.getElementById('dash-rec-icon').textContent   = cropIcon(cropName);
-  document.getElementById('dash-rec-family').textContent = d.recommended_crop?.family || '—';
+  const fam = d.recommended_crop?.family || 'Legume';
+  document.getElementById('dash-rec-family').textContent = isTa ? (window.t ? t(fam.toLowerCase(), fam) : fam) : fam;
 
   // Profit
   document.getElementById('dash-profit').textContent      = `₹${((d.expected_profit_per_acre||33500)/1000).toFixed(0)}K`;
@@ -102,13 +104,18 @@ function renderDashboard(d) {
     histEl.innerHTML = `
       <table class="data-table">
         <thead>
-          <tr><th>Crop</th><th>Season</th><th>Year</th><th>Profit (₹)</th></tr>
+          <tr>
+            <th>${window.t ? t('thCrop') : 'Crop'}</th>
+            <th>${window.t ? t('thSeason') : 'Season'}</th>
+            <th>${window.t ? t('thYear') : 'Year'}</th>
+            <th>${window.t ? t('thProfit') : 'Profit (₹)'}</th>
+          </tr>
         </thead>
         <tbody>
           ${d.recent_history.map(h => `
             <tr>
               <td>${cropIcon(h.crop)} ${window.tCrop ? tCrop(h.crop) : h.crop}</td>
-              <td>${h.season}</td>
+              <td>${window.tSeason ? tSeason(h.season) : h.season}</td>
               <td>${h.year}</td>
               <td style="color:${h.profit > 0 ? 'var(--green-400)' : 'var(--red-400)'}">
                 ${h.profit > 0 ? '+' : ''}₹${(h.profit||0).toLocaleString('en-IN')}
@@ -117,7 +124,7 @@ function renderDashboard(d) {
         </tbody>
       </table>`;
   } else {
-    histEl.innerHTML = `<p class="text-muted" style="text-align:center;padding:20px">No history yet. Add crop history to get started.</p>`;
+    histEl.innerHTML = `<p class="text-muted" style="text-align:center;padding:20px">${window.t ? t('noHistoryYet') : 'No history yet. Add crop history to get started.'}</p>`;
   }
 
   // Recovery chart
@@ -144,15 +151,16 @@ function renderRecoveryChart(curve, plan) {
   if (!ctx) return;
   if (recoveryChart) recoveryChart.destroy();
 
-  const labels = ['Current', ...( plan || []).slice(0, curve.length - 1).map((c, i) => `S${i+1}: ${c}`)];
-  while (labels.length < curve.length) labels.push(`Season ${labels.length}`);
+  const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
+  const labels = [isTa ? 'தற்போதைய நிலை' : 'Current', ...( plan || []).slice(0, curve.length - 1).map((c, i) => isTa ? `பருவம் ${i+1}: ${window.tCrop ? tCrop(c) : c}` : `S${i+1}: ${c}`)];
+  while (labels.length < curve.length) labels.push(isTa ? `பருவம் ${labels.length}` : `Season ${labels.length}`);
 
   recoveryChart = new Chart(ctx, {
     type: 'line',
     data: {
       labels: labels.slice(0, curve.length),
       datasets: [{
-        label: 'Soil Health Score',
+        label: isTa ? 'மண் வள குறியீடு' : 'Soil Health Score',
         data: curve,
         borderColor: '#22c55e',
         backgroundColor: 'rgba(34,197,94,0.08)',
@@ -176,7 +184,7 @@ function renderRecoveryChart(curve, plan) {
           titleColor: '#f0fdf4',
           bodyColor: '#94a3b8',
           callbacks: {
-            label: ctx => ` Health Score: ${ctx.parsed.y}`,
+            label: ctx => ` ${isTa ? 'மண் வள குறியீடு' : 'Health Score'}: ${ctx.parsed.y}`,
           }
         }
       },
@@ -194,3 +202,6 @@ function renderRecoveryChart(curve, plan) {
     }
   });
 }
+
+window.renderDashboard = renderDashboard;
+window.renderRecoveryChart = renderRecoveryChart;

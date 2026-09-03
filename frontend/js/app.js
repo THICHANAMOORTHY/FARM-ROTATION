@@ -147,6 +147,8 @@ window.nutrientChip = nutrientChip;
 const VIEW_LOADERS = {};
 
 function navigate(viewId) {
+  state.activeView = viewId;
+
   // Update active view
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const target = document.getElementById(`view-${viewId}`);

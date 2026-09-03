@@ -12,15 +12,16 @@ VIEW_LOADERS['crop-history'] = async function loadCropHistory() {
 function renderHistoryTable(history) {
   const tbody = document.getElementById('history-tbody');
   if (!tbody) return;
+  const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
   if (!history || !history.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">No history recorded yet.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">${isTa ? 'பயிர் வரலாறு இன்னும் பதிவு செய்யப்படவில்லை.' : 'No history recorded yet.'}</td></tr>`;
     return;
   }
   tbody.innerHTML = history.map(h => `
     <tr>
       <td>${h.sequence_order}</td>
-      <td>${cropIcon(h.crop_name)} ${h.crop_name}</td>
-      <td>${h.season_name}</td>
+      <td>${cropIcon(h.crop_name)} ${window.tCrop ? tCrop(h.crop_name) : h.crop_name}</td>
+      <td>${window.tSeason ? tSeason(h.season_name) : h.season_name}</td>
       <td>${h.year}</td>
       <td>₹${(h.revenue_actual||0).toLocaleString('en-IN')}</td>
       <td style="color:${h.profit_actual > 0 ? 'var(--green-400)' : 'var(--red-400)'}">
@@ -46,6 +47,7 @@ function addHistoryRow() {
   const crops     = ['Tomato','Green Gram','Groundnut','Maize','Black Gram','Rice','Soybean','Sunflower'];
   const seasons   = ['Kharif','Rabi','Zaid'];
   const year      = new Date().getFullYear();
+  const isTa      = (window.i18n && window.i18n.getLanguage() === 'ta');
 
   const row = document.createElement('div');
   row.className = 'history-row glass-card';
@@ -54,34 +56,34 @@ function addHistoryRow() {
   row.innerHTML = `
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;align-items:end">
       <div class="form-group">
-        <label class="form-label">Crop</label>
+        <label class="form-label">${window.t ? t('thCrop') : 'Crop'}</label>
         <select name="crop_${historyRows}" required>
-          ${crops.map(c => `<option value="${c}">${cropIcon(c)} ${c}</option>`).join('')}
+          ${crops.map(c => `<option value="${c}">${cropIcon(c)} ${window.tCrop ? tCrop(c) : c}</option>`).join('')}
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Season</label>
+        <label class="form-label">${window.t ? t('thSeason') : 'Season'}</label>
         <select name="season_${historyRows}" required>
-          ${seasons.map(s => `<option>${s}</option>`).join('')}
+          ${seasons.map(s => `<option value="${s}">${window.tSeason ? tSeason(s) : s}</option>`).join('')}
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label">Year</label>
-        <input type="number" name="year_${historyRows}" value="${year}" min="2000" max="${year}" required>
+        <label class="form-label">${window.t ? t('thYear') : 'Year'}</label>
+        <input type="number" name="year_${historyRows}" value="${year}" min="2000" max="2026" required/>
       </div>
       <div class="form-group">
-        <label class="form-label">Yield (kg)</label>
-        <input type="number" name="yield_${historyRows}" placeholder="8500" min="0">
+        <label class="form-label">${window.t ? t('thYield') : 'Yield (kg)'}</label>
+        <input type="number" name="yield_${historyRows}" placeholder="8500" min="0"/>
       </div>
       <div class="form-group">
-        <label class="form-label">Cost (₹)</label>
-        <input type="number" name="cost_${historyRows}" placeholder="38000" min="0">
+        <label class="form-label">${window.t ? t('thCost') : 'Cost (₹)'}</label>
+        <input type="number" name="cost_${historyRows}" placeholder="38000" min="0"/>
       </div>
       <div class="form-group">
-        <label class="form-label">Revenue (₹)</label>
-        <input type="number" name="revenue_${historyRows}" placeholder="51000" min="0">
+        <label class="form-label">${window.t ? t('thRevenue') : 'Revenue (₹)'}</label>
+        <input type="number" name="revenue_${historyRows}" placeholder="51000" min="0"/>
       </div>
-      <button type="button" class="btn btn-secondary btn-sm" onclick="this.parentElement.parentElement.remove()">✕ Remove</button>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="this.parentElement.parentElement.remove()">${isTa ? '✕ நீக்கு' : '✕ Remove'}</button>
     </div>`;
   container.appendChild(row);
 }

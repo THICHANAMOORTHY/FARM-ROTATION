@@ -45,12 +45,13 @@ async function fetchSimulation(planId) {
 
 function renderSimSetup(result) {
   const container = document.getElementById('sim-content');
+  const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
 
   container.innerHTML = `
     <div class="flex items-center gap-12 mb-24" style="flex-wrap:wrap">
-      <button class="btn btn-primary" id="sim-play-btn" onclick="playSimulation()">▶ Play Animation</button>
-      <button class="btn btn-secondary" onclick="resetSimulation()">↺ Reset</button>
-      <span class="text-muted" id="sim-step-info">Season: 0 / ${simTimeline.length - 1}</span>
+      <button class="btn btn-primary" id="sim-play-btn" onclick="playSimulation()">▶ ${isTa ? 'இயக்குக (Animation)' : 'Play Animation'}</button>
+      <button class="btn btn-secondary" onclick="resetSimulation()">↺ ${isTa ? 'மீட்டமை' : 'Reset'}</button>
+      <span class="text-muted" id="sim-step-info">${isTa ? 'பருவம்' : 'Season'}: 0 / ${simTimeline.length - 1}</span>
     </div>
     <div class="sim-timeline" id="sim-cards"></div>`;
 
@@ -60,12 +61,14 @@ function renderSimSetup(result) {
 
 function buildSimCards(timeline) {
   const container = document.getElementById('sim-cards');
+  const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
+
   container.innerHTML = timeline.map((t, i) => `
     <div class="sim-card" id="sim-card-${i}">
-      <div class="sim-season-label">${i === 0 ? 'Current State' : `Season ${i}`}</div>
-      <div class="sim-crop-name">${cropIcon(t.crop)} ${t.crop}</div>
+      <div class="sim-season-label">${i === 0 ? (isTa ? 'தற்போதைய நிலை' : 'Current State') : (isTa ? `பருவம் ${i}` : `Season ${i}`)}</div>
+      <div class="sim-crop-name">${cropIcon(t.crop)} ${window.tCrop ? tCrop(t.crop) : t.crop}</div>
       <div class="sim-health">${t.soil_health}</div>
-      <div class="card-label">Soil Health Score</div>
+      <div class="card-label">${isTa ? 'மண் வள குறியீடு' : 'Soil Health Score'}</div>
       <div class="sim-nutrients">
         ${nutrientChip('N', t.n)}
         ${nutrientChip('P', t.p)}

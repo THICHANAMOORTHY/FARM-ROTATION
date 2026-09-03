@@ -180,12 +180,20 @@ async function fetchLiveWeather(isSilent = false) {
 
 // ── Render Weather Widget DOM ────────────────────────────────
 function renderWeatherCard(data) {
+  window.lastWeatherData = data;
+  const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
   const cur = data.current;
   const loc = data.location;
 
   // Title & Location
   const locEl = document.getElementById('weather-loc-title');
-  if (locEl) locEl.textContent = loc.name;
+  if (locEl) {
+    if (isTa && loc.name.includes('Coimbatore')) {
+      locEl.textContent = 'கோயம்புத்தூர், தமிழ்நாடு';
+    } else {
+      locEl.textContent = loc.name;
+    }
+  }
 
   const coordEl = document.getElementById('weather-loc-coords');
   if (coordEl) coordEl.textContent = `${loc.latitude.toFixed(2)}°N, ${loc.longitude.toFixed(2)}°E`;
@@ -193,8 +201,8 @@ function renderWeatherCard(data) {
   // Last Updated
   const updatedEl = document.getElementById('weather-updated-time');
   if (updatedEl) {
-    const timeStr = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    updatedEl.textContent = `Updated ${timeStr}`;
+    const timeStr = new Date().toLocaleTimeString(isTa ? 'ta-IN' : 'en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    updatedEl.textContent = `${window.t ? t('updatedAt', 'Updated') : 'Updated'} ${timeStr}`;
   }
 
   // Hero Temp & Icon
@@ -205,10 +213,11 @@ function renderWeatherCard(data) {
   if (iconEl) iconEl.textContent = cur.icon;
 
   const condEl = document.getElementById('weather-cond-label');
-  if (condEl) condEl.textContent = cur.label || cur.condition;
+  const rawCond = cur.label || cur.condition;
+  if (condEl) condEl.textContent = window.tWeatherCond ? tWeatherCond(rawCond) : rawCond;
 
   const feelsEl = document.getElementById('weather-feels-like');
-  if (feelsEl) feelsEl.textContent = `Feels like ${cur.feels_like.toFixed(1)}°C`;
+  if (feelsEl) feelsEl.textContent = `${window.t ? t('feelsLike', 'Feels like') : 'Feels like'} ${cur.feels_like.toFixed(1)}°C`;
 
   // Microclimate Parameters
   const humEl = document.getElementById('weather-param-humidity');
@@ -226,23 +235,31 @@ function renderWeatherCard(data) {
   // Agricultural Advisories
   const advContainer = document.getElementById('weather-advisories');
   if (advContainer && data.advisories && data.advisories.length) {
-    advContainer.innerHTML = data.advisories.map(a => `
+    advContainer.innerHTML = data.advisories.map(a => {
+      const title = window.tAdvisoryTitle ? tAdvisoryTitle(a.title) : a.title;
+      const cat = window.tAdvisoryCategory ? tAdvisoryCategory(a.category) : a.category;
+      const msg = window.tAdvisoryMessage ? tAdvisoryMessage(a.message) : a.message;
+      return `
       <div class="advisory-card ${a.status}">
         <div class="advisory-icon">${a.icon}</div>
         <div>
-          <div class="advisory-head">${a.title} <span class="chip ${a.status}" style="font-size:10px;padding:2px 6px">${a.category}</span></div>
-          <div class="advisory-text">${a.message}</div>
+          <div class="advisory-head">${title} <span class="chip ${a.status}" style="font-size:10px;padding:2px 6px">${cat}</span></div>
+          <div class="advisory-text">${msg}</div>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }
 
   // 7-Day Forecast Strip
   const forecastContainer = document.getElementById('weather-forecast-strip');
   if (forecastContainer && data.forecast && data.forecast.length) {
-    forecastContainer.innerHTML = data.forecast.map((f, i) => `
+    forecastContainer.innerHTML = data.forecast.map((f, i) => {
+      const dayName = (i === 0 || f.day === 'Today')
+        ? (window.t ? t('today', 'Today') : 'Today')
+        : (window.tDay ? tDay(f.day) : f.day);
+      return `
       <div class="forecast-day-card">
-        <div class="forecast-day-name">${i === 0 ? 'Today' : f.day}</div>
+        <div class="forecast-day-name">${dayName}</div>
         <div class="forecast-day-icon">${f.icon}</div>
         <div class="forecast-day-temps">
           ${f.max_temp}°<span class="forecast-min-temp">${f.min_temp}°</span>
@@ -250,10 +267,11 @@ function renderWeatherCard(data) {
         <div class="forecast-rain-prob">
           💧 ${f.rain_probability}%
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   }
 }
+window.renderWeatherCard = renderWeatherCard;
 
 // Global hook
 window.initWeather = initWeather;

@@ -79,6 +79,8 @@ function renderSoilResult(result) {
   const container = document.getElementById('soil-result');
   container.style.display = '';
 
+  const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
+
   const scoreColor = result.soil_health_score >= 70 ? 'var(--green-400)'
                    : result.soil_health_score >= 50 ? 'var(--amber-400)'
                    : 'var(--red-400)';
@@ -91,9 +93,9 @@ function renderSoilResult(result) {
     <div class="glass-card mt-24" id="soil-result-card">
       <div class="flex items-center justify-between mb-16" style="flex-wrap:wrap;gap:16px">
         <div>
-          <div class="card-label">Soil Health Analysis Result</div>
+          <div class="card-label">${isTa ? 'மண் வள பகுப்பாய்வு முடிவு' : 'Soil Health Analysis Result'}</div>
           <div style="font-family:'Outfit',sans-serif;font-size:32px;font-weight:800;color:${scoreColor}">
-            Score: ${result.soil_health_score} / 100
+            ${isTa ? 'மதிப்பீடு' : 'Score'}: ${result.soil_health_score} / 100
           </div>
         </div>
         <div class="score-ring" id="soil-ring" style="width:90px;height:90px">
@@ -108,24 +110,24 @@ function renderSoilResult(result) {
 
       ${result.deficiencies.length ? `
         <div class="mb-16">
-          <div class="card-label">Deficiencies Detected</div>
-          <div class="chips-wrap">${result.deficiencies.map(d => chipDanger(d)).join('')}</div>
+          <div class="card-label">${isTa ? 'கண்டறியப்பட்ட சத்து குறைபாடுகள்' : 'Deficiencies Detected'}</div>
+          <div class="chips-wrap">${result.deficiencies.map(d => chipDanger(window.tAlert ? tAlert(d) : d)).join('')}</div>
         </div>` : ''}
 
       ${result.adequate.length ? `
         <div>
-          <div class="card-label">Adequate Nutrients</div>
-          <div class="chips-wrap">${result.adequate.map(a => chipSuccess(a)).join('')}</div>
+          <div class="card-label">${isTa ? 'போதுமான சத்துக்கள்' : 'Adequate Nutrients'}</div>
+          <div class="chips-wrap">${result.adequate.map(a => chipSuccess(window.tAlert ? tAlert(a) : a)).join('')}</div>
         </div>` : ''}
 
       ${result.deficiencies.length ? `
         <div class="alert-banner warning mt-16" style="margin-top:16px">
           <span>⚠</span>
-          <div><b>Action Required:</b> ${result.deficiencies.length} deficiencie(s) detected. Consider soil amendments before next crop cycle.</div>
+          <div>${isTa ? `<b>செயல் தேவை:</b> ${result.deficiencies.length} ஊட்டச்சத்து குறைபாடுகள் கண்டறியப்பட்டுள்ளன. அடுத்த பயிர் சாகுபடிக்கு முன் இயற்கை அல்லது பரிந்துரைக்கப்பட்ட உரமிடுதல் அவசியம்.` : `<b>Action Required:</b> ${result.deficiencies.length} deficiencie(s) detected. Consider soil amendments before next crop cycle.`}</div>
         </div>` : `
         <div class="alert-banner success mt-16" style="margin-top:16px">
           <span>✓</span>
-          <div><b>Excellent Soil Health!</b> Your farm is well-balanced and ready for optimal planting.</div>
+          <div>${isTa ? '<b>சிறந்த மண் வளம்!</b> உங்கள் நிலம் நல்ல சமநிலையில் உள்ளது, பயிர் சாகுபடிக்கு உகந்தது.' : '<b>Excellent Soil Health!</b> Your farm is well-balanced and ready for optimal planting.'}</div>
         </div>`}
     </div>`;
 

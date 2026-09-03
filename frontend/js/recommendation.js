@@ -24,24 +24,28 @@ function renderRecommendation(d) {
   const scoreColor = d.score >= 80 ? '#22c55e' : d.score >= 60 ? '#f59e0b' : '#ef4444';
 
   // Hero section
+  const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
   const cropTitle = window.tCrop ? tCrop(d.recommended_crop) : d.recommended_crop;
+  const familyName = isTa ? (window.t ? t(d.crop_family?.toLowerCase(), d.crop_family) : d.crop_family) : (d.crop_family || 'Legume');
+  const waterReq = isTa ? `${d.water_requirement === 'Low' ? 'குறைந்த' : d.water_requirement === 'Medium' ? 'மிதமான' : 'அதிக'} நீர் தேவை` : `${d.water_requirement} Water`;
+  const nFixText = d.is_nitrogen_fixer ? (window.t ? t('nitrogenFixer', 'N-Fixer') : 'N-Fixer') + ' ✓' : (isTa ? 'தழைச்சத்து நிலைநிறுத்தாதது' : 'Non-Fixer');
+
   document.getElementById('rec-hero-icon').textContent  = cropIcon(d.recommended_crop);
   document.getElementById('rec-hero-name').textContent  = cropTitle;
-  document.getElementById('rec-hero-meta').textContent  =
-    `${d.crop_family || 'Legume'} · ${d.water_requirement} Water · ${d.is_nitrogen_fixer ? (window.t ? t('nitrogenFixer', 'N-Fixer') : 'N-Fixer') + ' ✓' : 'Non-Fixer'}`;
+  document.getElementById('rec-hero-meta').textContent  = `${familyName} · ${waterReq} · ${nFixText}`;
   document.getElementById('rec-score-num').textContent  = d.score;
   document.getElementById('rec-score-num').style.color  = scoreColor;
 
   // Stats
   document.getElementById('rec-profit').textContent  = `₹${(d.expected_profit_per_acre/1000).toFixed(1)}K`;
   document.getElementById('rec-3s-profit').textContent = `₹${(d.projected_3_season_profit/1000).toFixed(0)}K`;
-  document.getElementById('rec-water').textContent   = d.water_requirement || 'Low';
-  document.getElementById('rec-family').textContent  = d.crop_family || 'Legume';
+  document.getElementById('rec-water').textContent   = isTa ? `${d.water_requirement === 'Low' ? 'குறைந்த' : d.water_requirement === 'Medium' ? 'மிதமான' : 'அதிக'} நீர்` : (d.water_requirement || 'Low');
+  document.getElementById('rec-family').textContent  = familyName;
 
   const nfixEl = document.getElementById('rec-nfix');
   if (nfixEl) nfixEl.innerHTML = d.is_nitrogen_fixer
     ? chipTeal('✓ ' + (window.t ? t('nitrogenFixer', 'Nitrogen Fixer') : 'Nitrogen Fixer'))
-    : chipWarning('No N-Fix');
+    : chipWarning(isTa ? 'தழைச்சத்து நிலைநிறுத்தாது' : 'No N-Fix');
 
   // Reasoning
   const reasonEl = document.getElementById('rec-reasoning');
@@ -66,8 +70,9 @@ function renderRecChart(curve, plan) {
   if (!ctx) return;
   if (recChart) recChart.destroy();
 
-  const labels = ['Now', ...(plan||[]).slice(0, curve.length - 1).map((c, i) => `S${i+1}: ${c}`)];
-  while (labels.length < curve.length) labels.push(`S${labels.length}`);
+  const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
+  const labels = [isTa ? 'தற்போதைய நிலை' : 'Now', ...(plan||[]).slice(0, curve.length - 1).map((c, i) => `${isTa ? 'பருவம்' : 'S'}${i+1}: ${isTa && window.tCrop ? tCrop(c).split(' (')[0] : c}`)];
+  while (labels.length < curve.length) labels.push(isTa ? `பருவம் ${labels.length}` : `S${labels.length}`);
 
   recChart = new Chart(ctx, {
     type: 'line',
