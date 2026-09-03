@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { supabase, isConfigured } = require('./db/supabase');
 
 const app = express();
 
@@ -24,13 +26,63 @@ app.use('/api/dashboard',        require('./routes/dashboard'));
 // Quick reference endpoints
 const db = require('./data/seed');
 
-app.get('/api/crops', (req, res) => res.json(db.crops));
-app.get('/api/farms', (req, res) => res.json(db.farms));
-app.get('/api/seasons', (req, res) => res.json(db.seasons));
-app.get('/api/farmers', (req, res) => res.json(db.farmers));
+app.get('/api/crops', async (req, res) => {
+  if (isConfigured()) {
+    try {
+      const { data, error } = await supabase.from('crops').select('*').order('crop_id');
+      if (!error && data && data.length) return res.json(data);
+    } catch (err) {
+      console.warn('Supabase query failed, falling back to in-memory:', err.message);
+    }
+  }
+  res.json(db.crops);
+});
 
-// Health check
-app.get('/api/health', (req, res) => res.json({ status: 'ok', service: 'CropSmart P025 API', time: new Date() }));
+app.get('/api/farms', async (req, res) => {
+  if (isConfigured()) {
+    try {
+      const { data, error } = await supabase.from('farms').select('*');
+      if (!error && data && data.length) return res.json(data);
+    } catch (err) {}
+  }
+  res.json(db.farms);
+});
+
+app.get('/api/seasons', async (req, res) => {
+  if (isConfigured()) {
+    try {
+      const { data, error } = await supabase.from('seasons').select('*');
+      if (!error && data && data.length) return res.json(data);
+    } catch (err) {}
+  }
+  res.json(db.seasons);
+});
+
+app.get('/api/farmers', async (req, res) => {
+  if (isConfigured()) {
+    try {
+      const { data, error } = await supabase.from('farmers').select('*');
+      if (!error && data && data.length) return res.json(data);
+    } catch (err) {}
+  }
+  res.json(db.farmers);
+});
+
+// Health check & Database status
+app.get('/api/health', (req, res) => res.json({
+  status: 'ok',
+  service: 'CropSmart P025 API',
+  database: isConfigured() ? 'Supabase Cloud PostgreSQL' : 'In-Memory (Set SUPABASE_URL in .env to connect)',
+  time: new Date()
+}));
+
+app.get('/api/db-status', (req, res) => res.json({
+  supabase_configured: isConfigured(),
+  provider: isConfigured() ? 'Supabase' : 'In-Memory Mock',
+  instructions: isConfigured()
+    ? 'Supabase is connected!'
+    : 'To connect Supabase, add SUPABASE_URL and SUPABASE_KEY to backend/.env, then run: npm run db:sync'
+}));
 
 // Fallback → serve index.html
 app.get('*', (req, res) => {

@@ -51,12 +51,28 @@ cd backend
 npm install
 ```
 
-### 2. (Optional) Refresh Dataset Pipeline
+### 2. (Optional) Connect to Supabase Cloud Database
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Go to **SQL Editor** and run the contents of [`supabase/schema.sql`](supabase/schema.sql).
+3. Copy your project URL & Anon key into `backend/.env`:
+   ```env
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_KEY=your-anon-or-service-role-key
+   ```
+4. Sync the 26 Kaggle crops and demo entities to Supabase:
+   ```bash
+   cd backend
+   npm run db:sync
+   ```
+*(If Supabase credentials are not provided, the server automatically runs with the high-fidelity in-memory seed database).*
+
+### 3. (Optional) Refresh Dataset Pipeline
 ```bash
 python process_crop_dataset.py
 ```
 
-### 3. Start the Server
+### 4. Start the Server
 ```bash
 cd backend
 node server.js
