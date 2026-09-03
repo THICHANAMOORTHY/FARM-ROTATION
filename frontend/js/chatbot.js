@@ -29,7 +29,7 @@
         <div class="kisan-header-title">
           <span class="kisan-icon-circle">🌱</span>
           <div>
-            <h4 id="kisan-modal-title">CropSmart உழவன் AI</h4>
+            <h4 id="kisan-modal-title">UZHAVU KAAPPAAN AI (உழவு காப்பான்)</h4>
             <span class="kisan-online-status">
               <span class="online-dot"></span>
               <span id="kisan-online-text">தமிழ் குரல் சேவை இயங்குகிறது (Voice Active)</span>
@@ -246,8 +246,8 @@
   function showWelcomeGreeting() {
     const isTa = (currentLang === 'ta');
     const greetingText = isTa
-      ? `வணக்கம்! நான் உங்கள் **CropSmart உழவன் AI ஆலோசகர்** 🌱\n\nஉங்கள் நிலத்தின் மண் வளம் (மதிப்பெண்: 63, தழைச்சத்து: 42 kg/ha), 3-பருவ தக்காளி சாகுபடி வரலாறு மற்றும் 782,000+ மண்டி சந்தை விலைகளின் அடிப்படையில் நான் தமிழில் வழிகாட்டுகிறேன். கேள்விகளை கேட்க மைக்ரோஃபோன் 🎙️ அல்லது கீழே உள்ள விருப்பங்களை பயன்படுத்தவும்!`
-      : `Hello! I am your **CropSmart Kisan AI Agronomist** 🌱\n\nI have full context of your 4.5-acre farm, your current soil test (Score: 63, N: 42 kg/ha), continuous tomato cultivation history, and 782k+ live APMC Mandi rates. Speak or type below!`;
+      ? `வணக்கம்! நான் உங்கள் **UZHAVU KAAPPAAN (உழவு காப்பான் AI)** 🌱\n\nஉங்கள் நிலத்தின் மண் வளம் (மதிப்பெண்: 63, தழைச்சத்து: 42 kg/ha), 3-பருவ தக்காளி சாகுபடி வரலாறு மற்றும் 782,000+ மண்டி சந்தை விலைகளின் அடிப்படையில் நான் தமிழில் வழிகாட்டுகிறேன். கேள்விகளை கேட்க மைக்ரோஃபோன் 🎙️ அல்லது கீழே உள்ள விருப்பங்களை பயன்படுத்தவும்!`
+      : `Hello! I am your **UZHAVU KAAPPAAN AI Agronomist** 🌱\n\nI have full context of your 4.5-acre farm, your current soil test (Score: 63, N: 42 kg/ha), continuous tomato cultivation history, and 782k+ live APMC Mandi rates. Speak or type below!`;
 
     const initialSuggestions = isTa
       ? ["அடுத்த பயிர் என்ன நடலாம்?", "என் மண் வளம் ஏன் குறைந்துள்ளது?", "மண்டி சந்தை விலைகள் என்ன?", "3-பருவ சுழற்சி திட்டம்"]
@@ -405,8 +405,8 @@
     const status = document.getElementById('kisan-online-text');
     const input = document.getElementById('kisan-user-input');
 
-    if (fabLabel) fabLabel.textContent = isTa ? 'உழவன் AI' : 'Kisan AI';
-    if (title) title.textContent = isTa ? 'CropSmart உழவன் AI' : 'CropSmart Kisan AI';
+    if (fabLabel) fabLabel.textContent = isTa ? 'உழவு காப்பான்' : 'UZHAVU KAAPPAAN';
+    if (title) title.textContent = isTa ? 'UZHAVU KAAPPAAN (உழவு காப்பான்)' : 'UZHAVU KAAPPAAN AI';
     if (status) status.textContent = isTa ? 'தமிழ் குரல் சேவை இயங்குகிறது (Voice Active)' : 'Online · Farm Agronomist';
     if (input) input.placeholder = isTa ? 'பயிர், மண் வளம், உரங்கள் பற்றி கேட்கவும்…' : 'Ask about crops, soil test, mandi prices…';
   }

@@ -122,7 +122,7 @@ app.get('/api/farmers', async (req, res) => {
 // Health check & Database status
 app.get('/api/health', (req, res) => res.json({
   status: 'ok',
-  service: 'CropSmart P025 API',
+  service: 'UZHAVU KAAPPAAN (உழவு காப்பான்) P025 API',
   database: isConfigured() ? 'Supabase Cloud PostgreSQL' : 'In-Memory (Set SUPABASE_URL in .env to connect)',
   time: new Date()
 }));
@@ -144,7 +144,7 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log('');
-  console.log('  🌱  CropSmart P025 API');
+  console.log('  🌱  UZHAVU KAAPPAAN (உழவு காப்பான்) P025 API');
   console.log(`  🚀  Running on http://localhost:${PORT}`);
   console.log(`  📊  Dashboard → http://localhost:${PORT}`);
   console.log('');

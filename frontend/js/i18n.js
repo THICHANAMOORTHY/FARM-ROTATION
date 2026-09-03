@@ -5,7 +5,7 @@
 const TRANSLATIONS = {
   en: {
     // Brand & Nav
-    brandSubtitle: "P025 · Soil Restorer",
+    brandSubtitle: "UZHAVU KAAPPAAN · Soil Restorer",
     navMain: "Main",
     navAnalysis: "Analysis",
     navOutput: "Output",
@@ -158,7 +158,7 @@ const TRANSLATIONS = {
 
   ta: {
     // Brand & Nav
-    brandSubtitle: "P025 · மண் வளம் மீட்பு & பயிர் சுழற்சி",
+    brandSubtitle: "உழவு காப்பான் (UZHAVU KAAPPAAN) · மண் வளம் மீட்பு",
     navMain: "முதன்மை",
     navAnalysis: "பகுப்பாய்வு",
     navOutput: "பரிந்துரை",

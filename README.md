@@ -1,4 +1,4 @@
-# 🌱 CropSmart — Smart Crop Rotation & Soil Restorer (P025)
+# 🌱 UZHAVU KAAPPAAN (உழவு காப்பான்) — Smart Crop Rotation & Soil Restorer (P025)
 
 [![GitHub Repository](https://img.shields.io/badge/GitHub-THICHANAMOORTHY%2FFARM--ROTATION-181717?style=flat-square&logo=github)](https://github.com/THICHANAMOORTHY/FARM-ROTATION)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
@@ -7,11 +7,12 @@
 [![Kaggle Records](https://img.shields.io/badge/Datasets-782%2C374%20Empirical%20Records-blue.svg?style=flat-square&logo=kaggle)](https://www.kaggle.com/)
 [![Supported Crops](https://img.shields.io/badge/Supported%20Crops-60%20Master%20Varieties-success.svg?style=flat-square)](https://github.com/THICHANAMOORTHY/FARM-ROTATION)
 
+> **Web Application**: **UZHAVU KAAPPAAN (உழவு காப்பான்)**  
 > **Repository**: [https://github.com/THICHANAMOORTHY/FARM-ROTATION](https://github.com/THICHANAMOORTHY/FARM-ROTATION)  
 > **Problem Statement**: P025 — Smart Crop Rotation & Soil Restorer  
 > **Hackathon**: HACK-2K26
 
-An end-to-end intelligent agronomy platform that diagnoses soil health, evaluates candidate crops across 7 quantitative dimensions using real multi-source Kaggle and Indian agricultural datasets (**782,374 empirical records across 60 crops**), optimizes multi-season crop rotation trajectories, simulates biological soil recovery, provides real-time hyperlocal weather intelligence, and powers an AI-driven Kisan agronomist advisory chatbot.
+**UZHAVU KAAPPAAN (உழவு காப்பான்)** is an end-to-end intelligent agronomy platform that diagnoses soil health, evaluates candidate crops across 7 quantitative dimensions using real multi-source Kaggle and Indian agricultural datasets (**782,374 empirical records across 60 crops**), optimizes multi-season crop rotation trajectories, simulates biological soil recovery, provides real-time hyperlocal weather intelligence, and powers an AI-driven Kisan agronomist advisory chatbot with full Tamil voice capabilities.
 
 ---
 
