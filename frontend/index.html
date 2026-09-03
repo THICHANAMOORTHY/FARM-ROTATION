@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CropSmart — Smart Crop Rotation & Soil Restorer | P025</title>
+  <meta name="description" content="AI-powered crop rotation optimizer. Analyse soil health, evaluate crops, and get data-driven rotation recommendations for maximum yield and soil recovery."/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ══════════════════ SIDEBAR ══════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">🌱</div>
+      <div class="brand-text">
+        <h2>CropSmart</h2>
+        <span>P025 · Soil Restorer</span>
+      </div>
+    </div>
+
+    <div class="nav-items">
+      <p class="sidebar-section-label">Main</p>
+      <div class="nav-link active" data-view="dashboard">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-link" data-view="soil-analysis">
+        <span class="nav-icon">🧪</span> Soil Analysis
+      </div>
+      <div class="nav-link" data-view="crop-history">
+        <span class="nav-icon">📋</span> Crop History
+      </div>
+
+      <p class="sidebar-section-label" style="margin-top:8px">Analysis</p>
+      <div class="nav-link" data-view="evaluation">
+        <span class="nav-icon">🔬</span> Crop Evaluation
+      </div>
+      <div class="nav-link" data-view="rotation">
+        <span class="nav-icon">♻️</span> Rotation Optimizer
+      </div>
+      <div class="nav-link" data-view="simulation">
+        <span class="nav-icon">🔮</span> Soil Simulation
+      </div>
+
+      <p class="sidebar-section-label" style="margin-top:8px">Output</p>
+      <div class="nav-link" data-view="recommendation">
+        <span class="nav-icon">⭐</span> Recommendation
+        <span class="nav-badge">NEW</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="farm-chip">
+        <div class="fc-label">Active Farm</div>
+        <div class="fc-name">Coimbatore Farm</div>
+        <div class="fc-meta">4.5 acres · Drip Irrigation</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══════════════════ MAIN CONTENT ══════════════════ -->
+  <main class="main">
+
+    <!-- ── VIEW: DASHBOARD ─────────────────────────────── -->
+    <div id="view-dashboard" class="view active">
+      <div class="view-header">
+        <div>
+          <h1>Farm Dashboard</h1>
+          <p class="view-subtitle" id="dash-area">Loading farm data…</p>
+        </div>
+        <div>
+          <p class="text-muted" style="font-size:13px">Farmer: <span id="dash-farmer-name" class="text-green font-bold">—</span></p>
+          <p class="text-muted" style="font-size:13px">Location: <span id="dash-farm-name" class="text-secondary">—</span></p>
+        </div>
+      </div>
+
+      <div id="dash-loading" class="loading-wrap">
+        <div class="spinner"></div><p class="loading-text">Fetching farm data…</p>
+      </div>
+
+      <div id="dash-content">
+        <!-- KPI Row -->
+        <div class="kpi-grid mb-24">
+
+          <!-- Soil Health Score -->
+          <div class="kpi-card green">
+            <div class="card-label">Soil Health Score</div>
+            <div class="score-ring-wrap">
+              <div class="score-ring" id="dash-ring">
+                <svg width="90" height="90" viewBox="0 0 90 90">
+                  <circle class="ring-bg"   cx="45" cy="45" r="40"/>
+                  <circle class="ring-fill" cx="45" cy="45" r="40"
+                    style="stroke-dasharray:251;stroke-dashoffset:251"/>
+                </svg>
+                <div class="ring-value" id="dash-health-val">0</div>
+              </div>
+              <div>
+                <div class="card-label">Alerts</div>
+                <div id="dash-alerts" class="chips-wrap"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recommended Crop -->
+          <div class="kpi-card teal">
+            <div class="card-label">Recommended Crop</div>
+            <div style="display:flex;align-items:center;gap:16px;margin:8px 0">
+              <div style="font-size:40px" id="dash-rec-icon">🌱</div>
+              <div>
+                <div class="kpi-value teal" id="dash-rec-crop" style="font-size:22px">—</div>
+                <div class="kpi-meta"><span id="dash-rec-family"></span> · Score: <b id="dash-rec-score">—</b></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Expected Profit -->
+          <div class="kpi-card green">
+            <div class="card-label">Expected Profit / Acre</div>
+            <div class="kpi-value green" id="dash-profit">—</div>
+            <div class="kpi-meta">3-Season Total: <b id="dash-profit-3s">—</b></div>
+          </div>
+
+          <!-- Soil NPK -->
+          <div class="kpi-card blue">
+            <div class="card-label">Current Soil Parameters</div>
+            <div id="dash-npk" class="chips-wrap mt-8"></div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Soil Recovery Curve</h3>
+            <div class="chart-container">
+              <canvas id="recovery-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <h3>Recommended Rotation Plan</h3>
+            <div id="dash-rotation-strip" class="rotation-strip mt-16"></div>
+            <div style="margin-top:24px">
+              <div class="card-label">Why This Plan</div>
+              <ul class="reason-list mt-8" id="dash-why"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent History -->
+        <div class="glass-card mt-24">
+          <div class="flex justify-between items-center mb-16">
+            <div class="card-title">Recent Crop History</div>
+            <button class="btn btn-secondary btn-sm" onclick="navigate('crop-history')">+ Add History</button>
+          </div>
+          <div id="dash-history"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: SOIL ANALYSIS ─────────────────────────── -->
+    <div id="view-soil-analysis" class="view">
+      <div class="view-header">
+        <div>
+          <h1>Soil Analysis</h1>
+          <p class="view-subtitle">Enter your soil test readings to compute health score and detect deficiencies</p>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <form id="soil-form">
+          <div class="form-grid">
+
+            <!-- Nitrogen -->
+            <div class="form-group">
+              <label class="form-label" for="n-slider">
+                Nitrogen (N) <span class="unit">kg/ha · ideal: 80–160</span>
+              </label>
+              <input type="range" id="n-slider" min="0" max="200" value="42" step="1"/>
+              <div class="range-value" id="n-val">42</div>
+            </div>
+
+            <!-- Phosphorus -->
+            <div class="form-group">
+              <label class="form-label" for="p-slider">
+                Phosphorus (P) <span class="unit">kg/ha · ideal: 30–60</span>
+              </label>
+              <input type="range" id="p-slider" min="0" max="100" value="28" step="1"/>
+              <div class="range-value" id="p-val">28</div>
+            </div>
+
+            <!-- Potassium -->
+            <div class="form-group">
+              <label class="form-label" for="k-slider">
+                Potassium (K) <span class="unit">kg/ha · ideal: 60–120</span>
+              </label>
+              <input type="range" id="k-slider" min="0" max="200" value="55" step="1"/>
+              <div class="range-value" id="k-val">55</div>
+            </div>
+
+            <!-- pH -->
+            <div class="form-group">
+              <label class="form-label" for="ph-slider">
+                Soil pH <span class="unit">ideal: 6.0–7.5</span>
+              </label>
+              <input type="range" id="ph-slider" min="40" max="90" value="65" step="1"/>
+              <div class="range-value" id="ph-val">6.5</div>
+            </div>
+
+            <!-- Organic Carbon -->
+            <div class="form-group">
+              <label class="form-label" for="oc-slider">
+                Organic Carbon <span class="unit">% · ideal: 0.8–1.5</span>
+              </label>
+              <input type="range" id="oc-slider" min="1" max="300" value="52" step="1"/>
+              <div class="range-value" id="oc-val">0.52</div>
+            </div>
+
+          </div>
+
+          <div class="btn-group mt-24">
+            <button type="submit" class="btn btn-primary" id="soil-submit-btn">🔬 Analyse Soil</button>
+            <button type="button" class="btn btn-secondary" onclick="navigate('crop-history')">Next: Crop History →</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Result renders here -->
+      <div id="soil-result" style="display:none"></div>
+    </div>
+
+    <!-- ── VIEW: CROP HISTORY ──────────────────────────── -->
+    <div id="view-crop-history" class="view">
+      <div class="view-header">
+        <div>
+          <h1>Crop History</h1>
+          <p class="view-subtitle">Record past crops to detect rotation issues and guide recommendations</p>
+        </div>
+      </div>
+
+      <!-- Existing history table -->
+      <div class="glass-card mb-24">
+        <div class="card-title mb-16">Recorded History</div>
+        <div style="overflow-x:auto">
+          <table class="data-table">
+            <thead>
+              <tr><th>#</th><th>Crop</th><th>Season</th><th>Year</th><th>Revenue (₹)</th><th>Profit (₹)</th></tr>
+            </thead>
+            <tbody id="history-tbody">
+              <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add new entries -->
+      <div class="glass-card">
+        <div class="flex justify-between items-center mb-16">
+          <div class="card-title">Add Crop History</div>
+          <button class="btn btn-secondary btn-sm" id="add-history-row" type="button">+ Add Row</button>
+        </div>
+
+        <form id="history-form">
+          <div id="history-rows">
+            <!-- Row 1 (default) -->
+            <div class="history-row glass-card" style="padding:16px;margin-bottom:12px">
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;align-items:end">
+                <div class="form-group">
+                  <label class="form-label">Crop</label>
+                  <select name="crop_1" required>
+                    <option>Tomato</option><option>Green Gram</option><option>Groundnut</option>
+                    <option>Maize</option><option>Black Gram</option><option>Rice</option>
+                    <option>Soybean</option><option>Sunflower</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Season</label>
+                  <select name="season_1" required>
+                    <option>Kharif</option><option>Rabi</option><option>Zaid</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Year</label>
+                  <input type="number" name="year_1" value="2025" min="2000" max="2026" required/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Yield (kg)</label>
+                  <input type="number" name="yield_1" placeholder="8500" min="0"/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Cost (₹)</label>
+                  <input type="number" name="cost_1" placeholder="38000" min="0"/>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Revenue (₹)</label>
+                  <input type="number" name="revenue_1" placeholder="51000" min="0"/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="btn-group mt-16">
+            <button type="submit" class="btn btn-primary" id="history-submit-btn">💾 Save History</button>
+            <button type="button" class="btn btn-secondary" onclick="navigate('evaluation')">Next: Evaluate Crops →</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="history-result"></div>
+    </div>
+
+    <!-- ── VIEW: CROP EVALUATION ───────────────────────── -->
+    <div id="view-evaluation" class="view">
+      <div class="view-header">
+        <div>
+          <h1>Crop Evaluation</h1>
+          <p class="view-subtitle">Select candidate crops to score across 6 dimensions and rank the best options</p>
+        </div>
+        <div class="flex items-center gap-12">
+          <label class="form-label" style="margin:0">Season:</label>
+          <select id="eval-season-sel" style="width:auto;padding:8px 14px">
+            <option>Kharif</option><option>Rabi</option><option>Zaid</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Candidate cards -->
+      <div class="glass-card mb-24">
+        <div class="flex justify-between items-center mb-8">
+          <div class="card-title">Candidate Crops</div>
+          <span class="chip info"><span id="eval-count">0</span> selected</span>
+        </div>
+        <p class="text-muted" style="font-size:13px;margin-bottom:16px">Click crops to select them for evaluation</p>
+        <div id="candidates-grid" class="crop-cards-grid"></div>
+      </div>
+
+      <!-- Excluded crops -->
+      <div class="glass-card mb-24">
+        <div class="card-label">Excluded Crops (with reasons)</div>
+        <div id="excluded-list" class="mt-8"></div>
+      </div>
+
+      <div class="btn-group mb-24">
+        <button class="btn btn-primary" id="run-eval-btn">🚀 Run Evaluation</button>
+      </div>
+
+      <!-- Results -->
+      <div id="eval-results" style="display:none">
+        <div class="charts-grid mb-24">
+          <div class="chart-card">
+            <h3>Crop Score Radar</h3>
+            <div class="chart-container" style="height:280px">
+              <canvas id="radar-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <h3>Score Breakdown Legend</h3>
+            <div style="padding:8px 0">
+              ${['Soil Suitability','Season Suitability','Rotation Score','Water Score','Profit Score','Risk Score'].map((l,i) => `
+                <div class="flex justify-between items-center mb-12">
+                  <span class="text-secondary" style="font-size:13px">${i+1}. ${l}</span>
+                  <span class="chip info" style="font-size:11px">/100</span>
+                </div>`).join('')}
+            </div>
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="glass-card">
+          <div class="card-title mb-16">Evaluation Leaderboard</div>
+          <div style="overflow-x:auto">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Rank</th><th>Crop</th><th>Soil Suit.</th><th>Rotation</th>
+                  <th>Water</th><th>Profit</th><th>Final Score</th><th>Predicted Profit</th>
+                </tr>
+              </thead>
+              <tbody id="eval-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="btn-group mt-24">
+          <button class="btn btn-primary" onclick="navigate('rotation')">⚡ Optimize Rotation →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: ROTATION OPTIMIZER ───────────────────── -->
+    <div id="view-rotation" class="view">
+      <div class="view-header">
+        <div>
+          <h1>Rotation Optimizer</h1>
+          <p class="view-subtitle">Generate and compare 3 multi-season rotation plans with profit and soil projections</p>
+        </div>
+      </div>
+
+      <div class="glass-card mb-24">
+        <div class="flex justify-between items-center flex-wrap gap-16">
+          <div>
+            <div class="card-title">Generate Rotation Plans</div>
+            <p class="text-muted mt-4" style="font-size:13px">
+              Analyzes evaluated crops and generates optimized 3-season rotation plans
+            </p>
+          </div>
+          <button class="btn btn-primary" id="optimize-btn">⚡ Optimize Rotation</button>
+        </div>
+      </div>
+
+      <div id="rotation-loading" style="display:none" class="loading-wrap">
+        <div class="spinner"></div><p class="loading-text">Generating optimal rotation plans…</p>
+      </div>
+
+      <div id="rotation-plans"></div>
+
+      <!-- Profit chart section -->
+      <div id="rotation-chart-section" style="display:none">
+        <div class="chart-card mt-24">
+          <h3>3-Season Profit Comparison</h3>
+          <div class="chart-container" style="height:240px">
+            <canvas id="profit-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="btn-group mt-24">
+          <button class="btn btn-primary" onclick="navigate('simulation')">🔮 Run Soil Simulation →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: SOIL SIMULATION ───────────────────────── -->
+    <div id="view-simulation" class="view">
+      <div class="view-header">
+        <div>
+          <h1>Soil Simulation</h1>
+          <p class="view-subtitle">Watch how soil nutrients evolve season-by-season under the recommended rotation plan</p>
+        </div>
+        <span class="chip info">Plan ID: <b id="sim-plan-id">—</b></span>
+      </div>
+
+      <div id="sim-content">
+        <div class="loading-wrap"><div class="spinner"></div><p class="loading-text">Initializing simulation…</p></div>
+      </div>
+
+      <div class="btn-group mt-24">
+        <button class="btn btn-secondary" onclick="navigate('rotation')">← Back to Plans</button>
+        <button class="btn btn-primary"   onclick="navigate('recommendation')">⭐ View Recommendation →</button>
+      </div>
+    </div>
+
+    <!-- ── VIEW: RECOMMENDATION ───────────────────────── -->
+    <div id="view-recommendation" class="view">
+      <div class="view-header">
+        <div>
+          <h1>Final Recommendation</h1>
+          <p class="view-subtitle">AI-powered crop + rotation recommendation for your farm</p>
+        </div>
+      </div>
+
+      <div id="rec-loading" class="loading-wrap" style="display:none">
+        <div class="spinner"></div><p class="loading-text">Generating recommendation…</p>
+      </div>
+
+      <div id="rec-content" style="display:none">
+
+        <!-- Hero -->
+        <div class="rec-hero">
+          <div class="rec-hero-score">
+            <div class="score-num" id="rec-score-num" style="font-family:'Outfit',sans-serif;font-size:32px;font-weight:800">—</div>
+            <div class="score-lbl" style="font-size:11px;color:rgba(255,255,255,0.7)">Score</div>
+          </div>
+          <div>
+            <div style="font-size:40px;margin-bottom:8px" id="rec-hero-icon">🌱</div>
+            <div class="rec-hero-crop" id="rec-hero-name">—</div>
+            <div class="rec-hero-meta" id="rec-hero-meta">—</div>
+            <div class="chips-wrap mt-8" id="rec-nfix"></div>
+          </div>
+        </div>
+
+        <!-- Stats grid -->
+        <div class="rec-details-grid mb-24">
+          <div class="glass-card">
+            <div class="card-label">Profit per Acre</div>
+            <div class="kpi-value green" id="rec-profit">—</div>
+            <div class="kpi-meta">3-Season Total: <b id="rec-3s-profit">—</b></div>
+          </div>
+          <div class="glass-card">
+            <div class="card-label">Crop Details</div>
+            <div class="chips-wrap mt-8">
+              <span class="chip info">💧 <span id="rec-water">—</span></span>
+              <span class="chip success">🌿 <span id="rec-family">—</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reasoning + Recovery chart -->
+        <div class="rec-details-grid mb-24">
+          <div class="glass-card">
+            <div class="card-title mb-16">Why This Crop?</div>
+            <ul class="reason-list" id="rec-reasoning"></ul>
+          </div>
+          <div class="chart-card">
+            <h3>Projected Soil Recovery</h3>
+            <div class="chart-container" style="height:220px">
+              <canvas id="rec-recovery-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rotation plan strip -->
+        <div class="glass-card">
+          <div class="card-title mb-16">Recommended 4-Season Rotation</div>
+          <div id="rec-rotation-strip" class="rotation-strip"></div>
+        </div>
+
+        <div class="btn-group mt-24">
+          <button class="btn btn-primary" onclick="navigate('dashboard')">📊 Back to Dashboard</button>
+          <button class="btn btn-secondary" onclick="navigate('soil-analysis')">🔬 Re-analyse Soil</button>
+        </div>
+      </div>
+    </div>
+
+  </main><!-- end .main -->
+</div><!-- end .app -->
+
+<!-- Scripts -->
+<script src="js/app.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/soilAnalysis.js"></script>
+<script src="js/cropHistory.js"></script>
+<script src="js/evaluation.js"></script>
+<script src="js/rotation.js"></script>
+<script src="js/simulation.js"></script>
+<script src="js/recommendation.js"></script>
+
+</body>
+</html>

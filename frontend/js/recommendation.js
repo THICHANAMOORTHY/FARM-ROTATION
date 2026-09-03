@@ -1,0 +1,118 @@
+// ============================================================
+//  recommendation.js — Final Recommendation view
+// ============================================================
+
+VIEW_LOADERS['recommendation'] = async function loadRecommendation() {
+  document.getElementById('rec-loading').style.display = '';
+  document.getElementById('rec-content').style.display = 'none';
+
+  try {
+    const data = await apiGet(`/recommendation?farm_id=${state.farm_id}`);
+    state.recData = data;
+    renderRecommendation(data);
+  } catch(e) {
+    document.getElementById('rec-loading').innerHTML =
+      `<div class="alert-banner warning">⚠ ${e.message}</div>`;
+  }
+};
+
+function renderRecommendation(d) {
+  document.getElementById('rec-loading').style.display = 'none';
+  const container = document.getElementById('rec-content');
+  container.style.display = '';
+
+  const scoreColor = d.score >= 80 ? '#22c55e' : d.score >= 60 ? '#f59e0b' : '#ef4444';
+
+  // Hero section
+  document.getElementById('rec-hero-icon').textContent  = cropIcon(d.recommended_crop);
+  document.getElementById('rec-hero-name').textContent  = d.recommended_crop;
+  document.getElementById('rec-hero-meta').textContent  =
+    `${d.crop_family || 'Legume'} · ${d.water_requirement} Water · ${d.is_nitrogen_fixer ? 'N-Fixer ✓' : 'Non-Fixer'}`;
+  document.getElementById('rec-score-num').textContent  = d.score;
+  document.getElementById('rec-score-num').style.color  = scoreColor;
+
+  // Stats
+  document.getElementById('rec-profit').textContent  = `₹${(d.expected_profit_per_acre/1000).toFixed(1)}K`;
+  document.getElementById('rec-3s-profit').textContent = `₹${(d.projected_3_season_profit/1000).toFixed(0)}K`;
+  document.getElementById('rec-water').textContent   = d.water_requirement || 'Low';
+  document.getElementById('rec-family').textContent  = d.crop_family || 'Legume';
+
+  const nfixEl = document.getElementById('rec-nfix');
+  if (nfixEl) nfixEl.innerHTML = d.is_nitrogen_fixer
+    ? chipTeal('✓ Nitrogen Fixer')
+    : chipWarning('No N-Fix');
+
+  // Reasoning
+  const reasonEl = document.getElementById('rec-reasoning');
+  reasonEl.innerHTML = d.reasoning.map(r => `
+    <li class="reason-item">
+      <div class="reason-icon" style="background:var(--green-glow);color:var(--green-400)">✓</div>
+      <span>${r}</span>
+    </li>`).join('');
+
+  // Rotation strip
+  renderRotationStrip('rec-rotation-strip', d.rotation_plan);
+
+  // Soil recovery chart
+  renderRecChart(d.soil_recovery, d.rotation_plan);
+}
+
+let recChart = null;
+function renderRecChart(curve, plan) {
+  const ctx = document.getElementById('rec-recovery-chart');
+  if (!ctx) return;
+  if (recChart) recChart.destroy();
+
+  const labels = ['Now', ...(plan||[]).slice(0, curve.length - 1).map((c, i) => `S${i+1}: ${c}`)];
+  while (labels.length < curve.length) labels.push(`S${labels.length}`);
+
+  recChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels.slice(0, curve.length),
+      datasets: [
+        {
+          label: 'Soil Health',
+          data: curve,
+          borderColor: '#22c55e',
+          backgroundColor: 'rgba(34,197,94,0.1)',
+          fill: true,
+          tension: 0.45,
+          pointBackgroundColor: '#22c55e',
+          pointRadius: 6,
+          borderWidth: 2.5,
+        },
+        {
+          label: 'Target (80)',
+          data: Array(curve.length).fill(80),
+          borderColor: 'rgba(255,255,255,0.15)',
+          borderDash: [6, 4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#94a3b8', font: { size: 12 }, boxWidth: 12 }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(11,26,34,0.95)',
+          borderColor: 'rgba(34,197,94,0.3)',
+          borderWidth: 1,
+          titleColor: '#f0fdf4',
+          bodyColor: '#94a3b8',
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8' } },
+        y: { min: 0, max: 100, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#94a3b8' } }
+      }
+    }
+  });
+}
