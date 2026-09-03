@@ -988,6 +988,45 @@ select option { background: var(--bg-surface); }
   .rec-hero-crop { font-size: 32px; }
 }
 
+/* ── Language Switcher ────────────────────────────────────── */
+.lang-toggle-wrap {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 3px;
+  gap: 4px;
+  margin: 12px 14px 16px 14px;
+}
+
+.lang-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.lang-btn:hover {
+  color: #f0fdf4;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.lang-btn.active {
+  background: var(--green-600);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(22, 163, 74, 0.35);
+}
+
 /* ══════════════════════════════════════════════════════════════
    FARMER ACTION PLAN — PRINTABLE REPORT CARD (A4 PDF)
    ══════════════════════════════════════════════════════════════ */

@@ -20,36 +20,46 @@
       <div class="brand-icon">🌱</div>
       <div class="brand-text">
         <h2>CropSmart</h2>
-        <span>P025 · Soil Restorer</span>
+        <span data-i18n="brandSubtitle">P025 · Soil Restorer</span>
       </div>
     </div>
 
+    <!-- ── Language Toggle (English / Tamil) ───────── -->
+    <div class="lang-toggle-wrap">
+      <button id="lang-btn-en" class="lang-btn active" onclick="setLanguage('en')">
+        <span>🇬🇧</span> English
+      </button>
+      <button id="lang-btn-ta" class="lang-btn" onclick="setLanguage('ta')">
+        <span>🇮🇳</span> தமிழ்
+      </button>
+    </div>
+
     <div class="nav-items">
-      <p class="sidebar-section-label">Main</p>
+      <p class="sidebar-section-label" data-i18n="navMain">Main</p>
       <div class="nav-link active" data-view="dashboard">
-        <span class="nav-icon">📊</span> Dashboard
+        <span class="nav-icon">📊</span> <span data-i18n="navDashboard">Dashboard</span>
       </div>
       <div class="nav-link" data-view="soil-analysis">
-        <span class="nav-icon">🧪</span> Soil Analysis
+        <span class="nav-icon">🧪</span> <span data-i18n="navSoilAnalysis">Soil Analysis</span>
       </div>
       <div class="nav-link" data-view="crop-history">
-        <span class="nav-icon">📋</span> Crop History
+        <span class="nav-icon">📋</span> <span data-i18n="navCropHistory">Crop History</span>
       </div>
 
-      <p class="sidebar-section-label" style="margin-top:8px">Analysis</p>
+      <p class="sidebar-section-label" style="margin-top:8px" data-i18n="navAnalysis">Analysis</p>
       <div class="nav-link" data-view="evaluation">
-        <span class="nav-icon">🔬</span> Crop Evaluation
+        <span class="nav-icon">🔬</span> <span data-i18n="navEvaluation">Crop Evaluation</span>
       </div>
       <div class="nav-link" data-view="rotation">
-        <span class="nav-icon">♻️</span> Rotation Optimizer
+        <span class="nav-icon">♻️</span> <span data-i18n="navRotation">Rotation Optimizer</span>
       </div>
       <div class="nav-link" data-view="simulation">
-        <span class="nav-icon">🔮</span> Soil Simulation
+        <span class="nav-icon">🔮</span> <span data-i18n="navSimulation">Soil Simulation</span>
       </div>
 
-      <p class="sidebar-section-label" style="margin-top:8px">Output</p>
+      <p class="sidebar-section-label" style="margin-top:8px" data-i18n="navOutput">Output</p>
       <div class="nav-link" data-view="recommendation">
-        <span class="nav-icon">⭐</span> Recommendation
+        <span class="nav-icon">⭐</span> <span data-i18n="navRecommendation">Recommendation</span>
         <span class="nav-badge">NEW</span>
       </div>
     </div>
@@ -538,6 +548,7 @@
 </div><!-- end .app -->
 
 <!-- Scripts -->
+<script src="js/i18n.js"></script>
 <script src="js/app.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/soilAnalysis.js"></script>

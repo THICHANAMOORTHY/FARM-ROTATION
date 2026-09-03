@@ -43,7 +43,12 @@ async function exportFarmerReportPDF() {
       'Matches current irrigation and rainfall'
     ];
 
-    const todayStr = new Date().toLocaleDateString('en-IN', {
+    const isTamil = (window.i18n && window.i18n.getLanguage() === 'ta');
+    const subtitleText = isTamil
+      ? 'மண் வளம் மீட்பு & பயிர் சுழற்சி செயல்திட்டம் (Farmer Action Plan)'
+      : 'Smart Crop Rotation & Soil Restorer Action Plan';
+
+    const todayStr = new Date().toLocaleDateString(isTamil ? 'ta-IN' : 'en-IN', {
       year: 'numeric', month: 'long', day: 'numeric'
     });
 
@@ -57,15 +62,15 @@ async function exportFarmerReportPDF() {
             <div class="rep-brand-icon">🌱</div>
             <div>
               <div class="rep-title">CropSmart</div>
-              <div class="rep-subtitle">Smart Crop Rotation & Soil Restorer Action Plan</div>
+              <div class="rep-subtitle">${subtitleText}</div>
             </div>
           </div>
           <div class="rep-meta-box">
-            <div><strong>Farmer:</strong> ${farmerName}</div>
-            <div><strong>Farm Location:</strong> ${farmName} (${farmArea} Acres)</div>
-            <div><strong>Irrigation:</strong> ${irrType}</div>
-            <div><strong>Report Date:</strong> ${todayStr}</div>
-            <div><strong>Farm ID:</strong> #P025-FARM-${state.farm_id || 101}</div>
+            <div><strong>${isTamil ? 'விவசாயி (Farmer)' : 'Farmer'}:</strong> ${farmerName}</div>
+            <div><strong>${isTamil ? 'பண்ணை (Location)' : 'Farm Location'}:</strong> ${farmName} (${farmArea} Acres)</div>
+            <div><strong>${isTamil ? 'பாசனம் (Irrigation)' : 'Irrigation'}:</strong> ${irrType}</div>
+            <div><strong>${isTamil ? 'தேதி (Date)' : 'Report Date'}:</strong> ${todayStr}</div>
+            <div><strong>${isTamil ? 'பண்ணை எண்' : 'Farm ID'}:</strong> #P025-FARM-${state.farm_id || 101}</div>
           </div>
         </div>
 
@@ -88,46 +93,46 @@ async function exportFarmerReportPDF() {
             </div>
 
             <div style="font-size:11px;font-weight:600;color:#dc2626;margin-top:8px">
-              ⚠️ Detected Deficiencies:
+              ⚠️ ${isTamil ? 'கண்டறியப்பட்ட ஊட்டச்சத்து குறைபாடுகள்:' : 'Detected Deficiencies:'}
             </div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
-              ${alerts.map(a => `<span style="background:#fee2e2;color:#991b1b;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600">${a}</span>`).join('')}
+              ${alerts.map(a => `<span style="background:#fee2e2;color:#991b1b;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600">${window.tAlert ? tAlert(a) : a}</span>`).join('')}
             </div>
           </div>
 
           <div class="rep-card">
-            <div class="rep-card-title">🔬 Measured Soil Parameters</div>
+            <div class="rep-card-title">🔬 ${isTamil ? 'மண் பரிசோதனை அளவீடுகள்' : 'Measured Soil Parameters'}</div>
             <table class="rep-table">
               <thead>
                 <tr>
-                  <th>Nutrient / Indicator</th>
-                  <th>Current Level</th>
-                  <th>Optimal Target</th>
+                  <th>${isTamil ? 'ஊட்டச்சத்து' : 'Nutrient / Indicator'}</th>
+                  <th>${isTamil ? 'தற்போதைய அளவு' : 'Current Level'}</th>
+                  <th>${isTamil ? 'தேவையான அளவு' : 'Optimal Target'}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Nitrogen (N)</td>
+                  <td>${isTamil ? 'தழைச்சத்து (Nitrogen - N)' : 'Nitrogen (N)'}</td>
                   <td style="font-weight:bold;color:${soilData.nitrogen < 80 ? '#dc2626' : '#16a34a'}">${soilData.nitrogen} kg/ha</td>
                   <td>80 – 160 kg/ha</td>
                 </tr>
                 <tr>
-                  <td>Phosphorus (P)</td>
+                  <td>${isTamil ? 'மணிச்சத்து (Phosphorus - P)' : 'Phosphorus (P)'}</td>
                   <td style="font-weight:bold;color:${soilData.phosphorus < 30 ? '#dc2626' : '#16a34a'}">${soilData.phosphorus} kg/ha</td>
                   <td>30 – 60 kg/ha</td>
                 </tr>
                 <tr>
-                  <td>Potassium (K)</td>
+                  <td>${isTamil ? 'சாம்பல் சத்து (Potassium - K)' : 'Potassium (K)'}</td>
                   <td style="font-weight:bold;color:#16a34a">${soilData.potassium} kg/ha</td>
                   <td>60 – 120 kg/ha</td>
                 </tr>
                 <tr>
-                  <td>Soil pH</td>
+                  <td>${isTamil ? 'மண் pH (கார அமிலத்தன்மை)' : 'Soil pH'}</td>
                   <td style="font-weight:bold;color:#16a34a">${soilData.ph}</td>
                   <td>6.0 – 7.5</td>
                 </tr>
                 <tr>
-                  <td>Organic Carbon (OC)</td>
+                  <td>${isTamil ? 'கரிம வளம் (Organic Carbon)' : 'Organic Carbon (OC)'}</td>
                   <td style="font-weight:bold;color:${soilData.organic_carbon < 0.8 ? '#dc2626' : '#16a34a'}">${soilData.organic_carbon}%</td>
                   <td>0.8 – 1.5%</td>
                 </tr>
@@ -139,43 +144,43 @@ async function exportFarmerReportPDF() {
 
         <!-- Section 2: Recommended Crop & Rotation Plan -->
         <div class="rep-card" style="margin-bottom: 20px">
-          <div class="rep-card-title">⭐ 2. Recommended Primary Crop & Action Sequence</div>
+          <div class="rep-card-title">⭐ ${isTamil ? '2. பரிந்துரைக்கப்படும் முதன்மை பயிர் & பயிர் சுழற்சி' : '2. Recommended Primary Crop & Action Sequence'}</div>
           
           <div style="display:flex;justify-content:space-between;align-items:center;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:12px 16px;margin-bottom:14px">
             <div>
-              <div style="font-size:11px;color:#065f46;font-weight:600;text-transform:uppercase">Top Recommended Crop for Immediate Sowing</div>
-              <div style="font-size:22px;font-weight:800;color:#065f46">${recCrop}</div>
+              <div style="font-size:11px;color:#065f46;font-weight:600;text-transform:uppercase">${isTamil ? 'உடனடி சாகுபடிக்கு பரிந்துரைக்கப்படும் பயிர்' : 'Top Recommended Crop for Immediate Sowing'}</div>
+              <div style="font-size:22px;font-weight:800;color:#065f46">${window.tCrop ? tCrop(recCrop) : recCrop}</div>
               <div style="font-size:12px;color:#047857;margin-top:2px">
-                Family: <strong>Legume</strong> · <strong>Biological Nitrogen Fixer</strong> · Low Water Requirement
+                ${isTamil ? 'பயறு வகை · இயற்கை தழைச்சத்து நிலைநிறுத்தி · குறைந்த நீர் தேவை' : 'Family: Legume · Biological Nitrogen Fixer · Low Water Requirement'}
               </div>
             </div>
             <div style="text-align:right">
-              <div style="font-size:11px;color:#065f46">Suitability Score</div>
+              <div style="font-size:11px;color:#065f46">${isTamil ? 'பொருத்த மதிப்பீடு' : 'Suitability Score'}</div>
               <div style="font-size:24px;font-weight:800;color:#16a34a">${recScore} / 100</div>
-              <div style="font-size:12px;font-weight:700;color:#15803d">Est. Profit: ₹${(profitPerAcre).toLocaleString('en-IN')}/acre</div>
+              <div style="font-size:12px;font-weight:700;color:#15803d">${isTamil ? 'எதிர்பார்க்கப்படும் லாபம்:' : 'Est. Profit:'} ₹${(profitPerAcre).toLocaleString('en-IN')}/acre</div>
             </div>
           </div>
 
           <div style="font-size:12px;font-weight:700;color:#1e293b;margin-bottom:6px">
-            Recommended 3-Season Restorative Crop Rotation:
+            ${isTamil ? 'பரிந்துரைக்கப்பட்ட 3-பருவ பயிர் சுழற்சி முறை:' : 'Recommended 3-Season Restorative Crop Rotation:'}
           </div>
           <div class="rep-rotation-strip">
             ${rotPlan.map((crop, idx) => `
               ${idx > 0 ? '<div class="rep-arrow">➔</div>' : ''}
               <div class="rep-rot-step">
-                <div class="rep-rot-num">Season ${idx + 1}</div>
-                <div class="rep-rot-crop">${crop}</div>
+                <div class="rep-rot-num">${isTamil ? `பருவம் ${idx + 1}` : `Season ${idx + 1}`}</div>
+                <div class="rep-rot-crop">${window.tCrop ? tCrop(crop) : crop}</div>
                 <div class="rep-rot-role">
-                  ${idx === 0 ? 'Cash Crop / Baseline' : idx === 1 ? 'N-Fixing Restorer' : 'Nutrient Stabilizer'}
+                  ${idx === 0 ? (isTamil ? 'முந்தைய பயிர்' : 'Cash Crop / Baseline') : idx === 1 ? (isTamil ? 'தழைச்சத்து மீட்டெடுப்பாளர்' : 'N-Fixing Restorer') : (isTamil ? 'மண் நிலைநிறுத்துபவர்' : 'Nutrient Stabilizer')}
                 </div>
               </div>
             `).join('')}
           </div>
 
           <div style="font-size:12px;color:#334155;margin-top:10px">
-            <strong>Key Agronomic Rationale:</strong>
+            <strong>${isTamil ? 'முக்கிய வேளாண்மை காரணங்கள்:' : 'Key Agronomic Rationale:'}</strong>
             <ul style="margin: 6px 0 0 18px; line-height: 1.5; font-size: 11px">
-              ${whyPlan.map(w => `<li>${w}</li>`).join('')}
+              ${whyPlan.map(w => `<li>${window.tReason ? tReason(w) : w}</li>`).join('')}
             </ul>
           </div>
         </div>

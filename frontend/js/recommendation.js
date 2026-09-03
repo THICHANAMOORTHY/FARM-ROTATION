@@ -24,10 +24,11 @@ function renderRecommendation(d) {
   const scoreColor = d.score >= 80 ? '#22c55e' : d.score >= 60 ? '#f59e0b' : '#ef4444';
 
   // Hero section
+  const cropTitle = window.tCrop ? tCrop(d.recommended_crop) : d.recommended_crop;
   document.getElementById('rec-hero-icon').textContent  = cropIcon(d.recommended_crop);
-  document.getElementById('rec-hero-name').textContent  = d.recommended_crop;
+  document.getElementById('rec-hero-name').textContent  = cropTitle;
   document.getElementById('rec-hero-meta').textContent  =
-    `${d.crop_family || 'Legume'} · ${d.water_requirement} Water · ${d.is_nitrogen_fixer ? 'N-Fixer ✓' : 'Non-Fixer'}`;
+    `${d.crop_family || 'Legume'} · ${d.water_requirement} Water · ${d.is_nitrogen_fixer ? (window.t ? t('nitrogenFixer', 'N-Fixer') : 'N-Fixer') + ' ✓' : 'Non-Fixer'}`;
   document.getElementById('rec-score-num').textContent  = d.score;
   document.getElementById('rec-score-num').style.color  = scoreColor;
 
@@ -39,16 +40,18 @@ function renderRecommendation(d) {
 
   const nfixEl = document.getElementById('rec-nfix');
   if (nfixEl) nfixEl.innerHTML = d.is_nitrogen_fixer
-    ? chipTeal('✓ Nitrogen Fixer')
+    ? chipTeal('✓ ' + (window.t ? t('nitrogenFixer', 'Nitrogen Fixer') : 'Nitrogen Fixer'))
     : chipWarning('No N-Fix');
 
   // Reasoning
   const reasonEl = document.getElementById('rec-reasoning');
-  reasonEl.innerHTML = d.reasoning.map(r => `
-    <li class="reason-item">
-      <div class="reason-icon" style="background:var(--green-glow);color:var(--green-400)">✓</div>
-      <span>${r}</span>
-    </li>`).join('');
+  if (reasonEl && d.reasoning) {
+    reasonEl.innerHTML = d.reasoning.map(r => `
+      <li class="reason-item">
+        <div class="reason-icon" style="background:var(--green-glow);color:var(--green-400)">✓</div>
+        <span>${window.tReason ? tReason(r) : r}</span>
+      </li>`).join('');
+  }
 
   // Rotation strip
   renderRotationStrip('rec-rotation-strip', d.rotation_plan);
