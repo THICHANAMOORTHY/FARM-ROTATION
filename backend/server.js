@@ -24,6 +24,7 @@ app.use('/api/recommendation',   require('./routes/recommendation'));
 app.use('/api/dashboard',        require('./routes/dashboard'));
 app.use('/api/weather',          require('./routes/weather'));
 app.use('/api/report',           require('./routes/report'));
+app.use('/api/chat',             require('./routes/chat'));
 
 // ── Downloadable Assets & Export Routes ────────────────────
 app.use('/downloads', express.static(path.join(__dirname, '..', 'downloads')));

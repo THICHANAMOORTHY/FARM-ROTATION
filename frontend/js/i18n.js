@@ -292,6 +292,11 @@ function updateLanguageUI() {
       }
     }
   });
+
+  // Also update chatbot UI language
+  if (typeof window.updateChatbotLanguage === 'function') {
+    window.updateChatbotLanguage();
+  }
 }
 
 // Expose globally

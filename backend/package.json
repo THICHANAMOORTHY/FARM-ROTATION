@@ -9,6 +9,7 @@
     "db:sync": "node scripts/sync_to_supabase.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.114.0",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
