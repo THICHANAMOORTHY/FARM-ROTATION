@@ -1,5 +1,5 @@
 // ============================================================
-// chatbot.js — CropSmart Kisan AI with Tamil Voice & Speech
+// chatbot.js — UZHAVU KAAPPAAN AI with Full Voice Chat & Speech
 // ============================================================
 
 (function() {
@@ -8,17 +8,18 @@
   let currentLang = (window.i18n && window.i18n.getLanguage() === 'ta') ? 'ta' : 'ta'; // Default to Tamil
   let voiceEnabled = true; // Auto-speak enabled
   let isListening = false;
+  let continuousVoice = false;
   let recognition = null;
   let synth = window.speechSynthesis;
   let activeUtterance = null;
 
-  // 1. Create HTML Structure with Voice & Mic Controls
+  // 1. Create HTML Structure with Full Voice Chat Controls
   const chatHtml = `
     <!-- Floating Chat Launcher Button -->
     <div id="kisan-chat-toggle" class="kisan-chat-fab" onclick="toggleKisanChat()">
       <div class="kisan-fab-pulse"></div>
       <span class="kisan-fab-icon">🌱</span>
-      <span class="kisan-fab-label" id="kisan-fab-label">உழவன் AI</span>
+      <span class="kisan-fab-label" id="kisan-fab-label">உழவு காப்பான்</span>
     </div>
 
     <!-- Chat Modal Window -->
@@ -48,6 +49,34 @@
           </button>
           <!-- Close -->
           <button class="kisan-close-btn" onclick="toggleKisanChat()" title="Close">✕</button>
+        </div>
+      </div>
+
+      <!-- Live Voice Chat Banner -->
+      <div class="kisan-voice-banner">
+        <button type="button" id="kisan-voice-banner-btn" class="kisan-voice-banner-btn" onclick="toggleSpeechRecognition()">
+          <span>🎙️</span> <span id="kisan-voice-banner-text">குரல் மூலம் பேச (Tap to Speak)</span>
+        </button>
+        <div id="kisan-audio-wave" class="kisan-audio-wave">
+          <div class="kisan-audio-bar"></div>
+          <div class="kisan-audio-bar"></div>
+          <div class="kisan-audio-bar"></div>
+          <div class="kisan-audio-bar"></div>
+          <div class="kisan-audio-bar"></div>
+        </div>
+      </div>
+
+      <!-- Listening Overlay Modal -->
+      <div id="kisan-listening-overlay" class="kisan-listening-overlay" onclick="toggleSpeechRecognition()">
+        <div class="kisan-listening-mic-circle">🎙️</div>
+        <div class="kisan-listening-title" id="kisan-listening-title">உங்கள் கேள்வியை தமிழில் பேசுங்கள்…</div>
+        <div class="kisan-listening-hint" id="kisan-listening-hint">பேசி முடித்ததும் தானாக AI பதிலளிக்கும் (குரலை நிறுத்த தட்டவும்)</div>
+        <div class="kisan-audio-wave active" style="margin-top:10px">
+          <div class="kisan-audio-bar"></div>
+          <div class="kisan-audio-bar"></div>
+          <div class="kisan-audio-bar"></div>
+          <div class="kisan-audio-bar"></div>
+          <div class="kisan-audio-bar"></div>
         </div>
       </div>
 
@@ -104,10 +133,7 @@
 
       recognition.onstart = function() {
         isListening = true;
-        const micBtn = document.getElementById('kisan-mic-btn');
-        if (micBtn) micBtn.classList.add('listening');
-        const input = document.getElementById('kisan-user-input');
-        if (input) input.placeholder = (currentLang === 'ta') ? '🎙️ உங்கள் கேள்வியை தமிழில் பேசுங்கள்…' : '🎙️ Listening to your voice…';
+        updateListeningVisuals(true);
       };
 
       recognition.onresult = function(event) {
@@ -130,10 +156,37 @@
     }
   }
 
+  function updateListeningVisuals(listening) {
+    const micBtn = document.getElementById('kisan-mic-btn');
+    const bannerBtn = document.getElementById('kisan-voice-banner-btn');
+    const wave = document.getElementById('kisan-audio-wave');
+    const overlay = document.getElementById('kisan-listening-overlay');
+    const bannerText = document.getElementById('kisan-voice-banner-text');
+
+    if (listening) {
+      if (micBtn) micBtn.classList.add('listening');
+      if (bannerBtn) bannerBtn.classList.add('listening');
+      if (wave) wave.classList.add('active');
+      if (overlay) overlay.classList.add('active');
+      if (bannerText) bannerText.textContent = (currentLang === 'ta') ? '🎙️ குரலை கேட்கிறது…' : '🎙️ Listening to voice…';
+    } else {
+      if (micBtn) micBtn.classList.remove('listening');
+      if (bannerBtn) bannerBtn.classList.remove('listening');
+      if (wave) wave.classList.remove('active');
+      if (overlay) overlay.classList.remove('active');
+      if (bannerText) bannerText.textContent = (currentLang === 'ta') ? 'குரல் மூலம் பேச (Tap to Speak)' : 'Tap to Speak (Voice Chat)';
+    }
+  }
+
   function toggleSpeechRecognition() {
+    // Unlock speech synthesis on user interaction for mobile browsers
+    if (synth && synth.resume) {
+      synth.resume();
+    }
+
     if (!recognition) initSpeechRecognition();
     if (!recognition) {
-      alert(currentLang === 'ta' ? 'உங்கள் உலாவியில் மைக்ரோஃபோன் வசதி ஆதரிக்கப்படவில்லை.' : 'Speech recognition not supported in this browser.');
+      alert(currentLang === 'ta' ? 'உங்கள் உலாவியில் மைக்ரோஃபோன் வசதி ஆதரிக்கப்படவில்லை. Chrome அல்லது Edge உலாவியை பயன்படுத்தவும்.' : 'Speech recognition not supported in this browser. Please use Google Chrome or Edge.');
       return;
     }
 
@@ -153,38 +206,33 @@
 
   function stopSpeechRecognition() {
     isListening = false;
-    const micBtn = document.getElementById('kisan-mic-btn');
-    if (micBtn) micBtn.classList.remove('listening');
-    const input = document.getElementById('kisan-user-input');
-    if (input) {
-      input.placeholder = (currentLang === 'ta')
-        ? 'பயிர், மண் வளம், உரங்கள் பற்றி கேட்கவும்…'
-        : 'Ask about crops, soil test, mandi prices…';
-    }
+    updateListeningVisuals(false);
   }
 
   // Text to Speech (Tamil Voice Synthesis)
   function speakTamilText(rawText, btnElement) {
     if (!synth) return;
-    synth.cancel(); // Stop any previous speech
+    try {
+      synth.cancel(); // Stop any previous speech
+    } catch(e){}
 
-    // Clean markdown and symbols for clean spoken Tamil
+    // Clean markdown and technical symbols for clean spoken Tamil
     const cleanText = rawText
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*(.*?)\*/g, '$1')
-      .replace(/[#🌱🧪⚠️✅💡📈•]/g, '')
-      .replace(/₹/g, 'ரூபாய் ')
+      .replace(/[#🌱🧪⚠️✅💡📈•✓]/g, '')
+      .replace(/₹\s*([0-9,]+)/g, '$1 ரூபாய் ')
       .replace(/kg\/ha/g, 'கிலோகிராம் ஒரு ஹெக்டேருக்கு')
-      .replace(/Score:/g, 'மதிப்பெண்')
+      .replace(/Score:\s*([0-9]+)/g, 'மதிப்பெண் $1')
       .replace(/\n+/g, '. ');
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = (currentLang === 'ta') ? 'ta-IN' : 'en-IN';
-    utterance.rate = 0.95; // Slightly slower for clarity
+    utterance.rate = 0.95; // Natural spoken tempo
     utterance.pitch = 1.0;
 
     // Pick best available Tamil or Indian voice
-    const voices = synth.getVoices();
+    const voices = synth.getVoices ? synth.getVoices() : [];
     const taVoice = voices.find(v => v.lang.startsWith('ta') || v.name.toLowerCase().includes('tamil') || v.lang === 'ta-IN');
     if (taVoice) {
       utterance.voice = taVoice;
@@ -197,7 +245,11 @@
     }
 
     activeUtterance = utterance;
-    synth.speak(utterance);
+    try {
+      synth.speak(utterance);
+    } catch (sErr) {
+      console.warn('Speech synthesis call failed:', sErr);
+    }
   }
 
   function toggleVoiceAudio() {
@@ -207,7 +259,7 @@
     if (btn) btn.classList.toggle('active', voiceEnabled);
     if (icon) icon.textContent = voiceEnabled ? '🔊' : '🔇';
     if (!voiceEnabled && synth) {
-      synth.cancel();
+      try { synth.cancel(); } catch(e){}
     }
   }
 
@@ -238,7 +290,9 @@
       modal.style.display = 'none';
       modal.classList.remove('open');
       fab.classList.remove('active');
-      if (synth) synth.cancel();
+      if (synth) {
+        try { synth.cancel(); } catch(e){}
+      }
       stopSpeechRecognition();
     }
   }
@@ -246,7 +300,7 @@
   function showWelcomeGreeting() {
     const isTa = (currentLang === 'ta');
     const greetingText = isTa
-      ? `வணக்கம்! நான் உங்கள் **UZHAVU KAAPPAAN (உழவு காப்பான் AI)** 🌱\n\nஉங்கள் நிலத்தின் மண் வளம் (மதிப்பெண்: 63, தழைச்சத்து: 42 kg/ha), 3-பருவ தக்காளி சாகுபடி வரலாறு மற்றும் 782,000+ மண்டி சந்தை விலைகளின் அடிப்படையில் நான் தமிழில் வழிகாட்டுகிறேன். கேள்விகளை கேட்க மைக்ரோஃபோன் 🎙️ அல்லது கீழே உள்ள விருப்பங்களை பயன்படுத்தவும்!`
+      ? `வணக்கம்! நான் உங்கள் **UZHAVU KAAPPAAN (உழவு காப்பான் AI)** 🌱\n\nஉங்கள் நிலத்தின் மண் வளம் (மதிப்பெண்: 63, தழைச்சத்து: 42 kg/ha), 3-பருவ தக்காளி சாகுபடி வரலாறு மற்றும் 782,000+ மண்டி சந்தை விலைகளின் அடிப்படையில் நான் தமிழில் வழிகாட்டுகிறேன். கேள்விகளை கேட்க மேலே உள்ள **குரல் மூலம் பேச** பொத்தானை அல்லது கீழே உள்ள விருப்பங்களை பயன்படுத்தவும்!`
       : `Hello! I am your **UZHAVU KAAPPAAN AI Agronomist** 🌱\n\nI have full context of your 4.5-acre farm, your current soil test (Score: 63, N: 42 kg/ha), continuous tomato cultivation history, and 782k+ live APMC Mandi rates. Speak or type below!`;
 
     const initialSuggestions = isTa
@@ -306,7 +360,7 @@
         </div>
         ${sender === 'bot' ? `
           <div class="kisan-msg-footer">
-            <button class="kisan-speak-btn" onclick="speakMessageById('${msgId}', this)" title="குரல் மூலம் கேட்க (Listen)">
+            <button class="kisan-speak-btn" onclick="speakMessageById('${msgId}', this)" title="குரல் மூலம் கேட்க (Listen in Tamil)">
               🔊 <span>${currentLang === 'ta' ? 'தமிழில் கேட்க' : 'Listen'}</span>
             </button>
           </div>
@@ -377,7 +431,7 @@
       appendMessage('bot', reply);
       renderSuggestions(data.suggestions || []);
 
-      // Speak automatically if enabled
+      // Speak automatically if voice audio is enabled
       if (voiceEnabled) {
         speakTamilText(reply);
       }
@@ -385,7 +439,7 @@
       removeTypingIndicator();
       console.error('Chat error:', err);
       appendMessage('bot', currentLang === 'ta'
-        ? '⚠️ உழவன் AI சேவையுடன் இணைக்க முடியவில்லை. தயவுசெய்து சேவையகத்தை சரிபார்க்கவும்.'
+        ? '⚠️ உழவு காப்பான் AI சேவையுடன் இணைக்க முடியவில்லை. தயவுசெய்து சேவையகத்தை சரிபார்க்கவும்.'
         : '⚠️ Could not connect to Kisan AI service. Please ensure the backend is running.');
     }
   }
@@ -404,11 +458,13 @@
     const title = document.getElementById('kisan-modal-title');
     const status = document.getElementById('kisan-online-text');
     const input = document.getElementById('kisan-user-input');
+    const bannerText = document.getElementById('kisan-voice-banner-text');
 
     if (fabLabel) fabLabel.textContent = isTa ? 'உழவு காப்பான்' : 'UZHAVU KAAPPAAN';
     if (title) title.textContent = isTa ? 'UZHAVU KAAPPAAN (உழவு காப்பான்)' : 'UZHAVU KAAPPAAN AI';
     if (status) status.textContent = isTa ? 'தமிழ் குரல் சேவை இயங்குகிறது (Voice Active)' : 'Online · Farm Agronomist';
     if (input) input.placeholder = isTa ? 'பயிர், மண் வளம், உரங்கள் பற்றி கேட்கவும்…' : 'Ask about crops, soil test, mandi prices…';
+    if (bannerText) bannerText.textContent = isTa ? 'குரல் மூலம் பேச (Tap to Speak)' : 'Tap to Speak (Voice Chat)';
   }
 
   // Pre-load synthesis voices
