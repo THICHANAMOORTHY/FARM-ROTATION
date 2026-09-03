@@ -1,14 +1,15 @@
 """
 process_crop_dataset.py
 =============================================================
-Comprehensive Dual-Source Agronomy Processor
-Merges:
-  1. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
-     -> Precise sensor N, P, K, pH, Temperature, Humidity, Rainfall
-  2. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
-     -> State-level harvest yields, areas, production, pesticide & seasons
+Unified Triple-Source Agronomy & Mandi Price Engine:
+  1. arjunyadav99/indian-agricultural-mandi-prices-20232025 (737,392 rows)
+     -> Real APMC Mandi trading prices (2023-2025) in Rs/kg & Rs/quintal
+  2. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
+     -> Precise sensor soil N, P, K, pH, Temperature, Humidity, Rainfall
+  3. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
+     -> State-level harvest yields, areas, pesticide & season distributions
 
-Total records: 21,889
+Total empirical records: ~759,281
 Outputs: backend/data/kaggle_crops.js
 """
 
@@ -16,25 +17,68 @@ import kagglehub, os, json, csv, statistics
 from collections import defaultdict
 from datetime import datetime
 
-print("=" * 70)
-print("  CropSmart P025: Dual-Source Dataset Merger & Agronomy Engine")
-print("=" * 70)
+print("=" * 72)
+print("  CropSmart P025: Unified Agronomy & Mandi Price Engine")
+print("=" * 72)
 
-# 1. Download / Verify Both Datasets
-print("\n[1/5] Downloading / Locating Datasets via KaggleHub...")
+# 1. Download / Verify All 3 Datasets
+print("\n[1/6] Downloading / Locating Datasets via KaggleHub...")
+
+dir_mandi = kagglehub.dataset_download("arjunyadav99/indian-agricultural-mandi-prices-20232025")
+csv_mandi = os.path.join(dir_mandi, "Agriculture_price_dataset.csv")
+print(f"      1. Mandi Prices CSV  (2023-2025): {csv_mandi}")
+
 dir_rec = kagglehub.dataset_download("madhuraatmarambhagat/crop-recommendation-dataset")
 csv_rec = os.path.join(dir_rec, "Crop_recommendation.csv")
-print(f"      1. Soil Recommendation CSV: {csv_rec}")
+print(f"      2. Soil Sensor NPK/pH CSV       : {csv_rec}")
 
 dir_yld = kagglehub.dataset_download("akshatgupta7/crop-yield-in-indian-states-dataset")
 csv_yld = os.path.join(dir_yld, "crop_yield.csv")
-print(f"      2. Indian States Yield CSV: {csv_yld}")
+print(f"      3. Indian States Yield CSV       : {csv_yld}")
 
-# 2. Parse Sensor Soil Recommendation Data (2,200 rows)
-print("\n[2/5] Parsing Sensor Soil Recommendation Dataset (2,200 rows)...")
+# 2. Parse Real Mandi Trading Prices (737,392 rows)
+print("\n[2/6] Parsing Indian Mandi Trading Prices (737,392 records)...")
+mandi_stats = defaultdict(lambda: {"modal_prices": [], "min_prices": [], "max_prices": []})
+mandi_rows = 0
+
+COMMODITY_MAP = {
+    "Wheat": "Wheat",
+    "Tomato": "Tomato",
+    "Potato": "Potato",
+    "Onion": "Onion",
+    "Rice": "Rice",
+}
+
+with open(csv_mandi, newline="", encoding="utf-8", errors="replace") as fp:
+    reader = csv.DictReader(fp)
+    for r in reader:
+        mandi_rows += 1
+        comm = r.get("Commodity", "").strip()
+        standard_name = COMMODITY_MAP.get(comm)
+        if not standard_name: continue
+        try:
+            modal_p = float(r.get("Modal_Price", 0) or 0)
+            min_p   = float(r.get("Min_Price", 0) or 0)
+            max_p   = float(r.get("Max_Price", 0) or 0)
+            if 50 < modal_p < 500000:
+                mandi_stats[standard_name]["modal_prices"].append(modal_p)
+                if min_p > 0: mandi_stats[standard_name]["min_prices"].append(min_p)
+                if max_p > 0: mandi_stats[standard_name]["max_prices"].append(max_p)
+        except ValueError:
+            continue
+
+print(f"      Parsed {mandi_rows:,} Mandi trading records across key commodities:")
+real_mandi_prices_kg = {}
+for comm, data in mandi_stats.items():
+    med_quintal = statistics.median(data["modal_prices"])
+    rs_kg = round(med_quintal / 100.0, 2)
+    real_mandi_prices_kg[comm] = rs_kg
+    print(f"        • {comm:<10}: Rs. {rs_kg:.2f}/kg (Rs. {med_quintal:.0f}/quintal from {len(data['modal_prices']):,} records)")
+
+# 3. Parse Soil Sensor NPK/pH Data (2,200 rows)
+print("\n[3/6] Parsing Sensor Soil Recommendation Dataset (2,200 rows)...")
 soil_sensor_data = defaultdict(lambda: {
-    "N": [], "P": [], "K": [],
-    "ph": [], "temperature": [], "humidity": [], "rainfall": []
+    "N": [], "P": [], "K": [], "ph": [], "temperature": [], "humidity": [], "rainfall": []
 })
 
 with open(csv_rec, newline="", encoding="utf-8") as f:
@@ -53,13 +97,11 @@ with open(csv_rec, newline="", encoding="utf-8") as f:
         except ValueError:
             pass
 
-print(f"      Loaded sensor soil metrics for {len(soil_sensor_data)} crops.")
-
-# 3. Parse Indian States Yield Dataset (19,689 rows)
-print("\n[3/5] Parsing Indian States Crop Yield Dataset (19,689 rows)...")
+# 4. Parse Indian States Harvest Yields (19,689 rows)
+print("\n[4/6] Parsing Indian States Harvest Yields (19,689 rows)...")
 yield_groups = defaultdict(lambda: {
     "yields": [], "rainfall": [], "fert_per_ha": [], "pest_per_ha": [],
-    "seasons": set(), "states": defaultdict(int), "total_area": 0.0, "records": 0
+    "seasons": set(), "states": defaultdict(int), "records": 0
 })
 
 SKIP_GENERIC = {
@@ -68,11 +110,10 @@ SKIP_GENERIC = {
 }
 
 with open(csv_yld, newline="", encoding="utf-8", errors="replace") as f:
-    reader = csv.DictReader(f)
+    reader = csv.DictReader(fp := f)
     for row in reader:
         crop_name = row.get("Crop", "").strip()
-        if not crop_name or crop_name.lower() in SKIP_GENERIC:
-            continue
+        if not crop_name or crop_name.lower() in SKIP_GENERIC: continue
         try:
             area = float(row.get("Area", 0) or 0)
             fert = float(row.get("Fertilizer", 0) or 0)
@@ -101,28 +142,16 @@ with open(csv_yld, newline="", encoding="utf-8", errors="replace") as f:
         except Exception:
             continue
 
-print(f"      Parsed yield & production records across {len(yield_groups)} crops.")
+# 5. Harmonize & Build 60 Unified Crops
+print("\n[5/6] Unifying 3 datasets into comprehensive agronomy profiles...")
 
-# 4. Unify & Harmonize Names
-# Map between sensor dataset names and Indian yield dataset names
 ALIASES = {
-    "Blackgram": "Black Gram",
-    "Mungbean": "Green Gram",
-    "Moong(Green Gram)": "Green Gram",
-    "Urad": "Black Gram",
-    "Arhar/Tur": "Pigeon Pea",
-    "Pigeonpeas": "Pigeon Pea",
-    "Gram": "Chickpea",
-    "Cotton(lint)": "Cotton",
-    "Rapeseed &Mustard": "Mustard",
-    "Kidneybeans": "Kidney Bean",
-    "Mothbeans": "Moth Bean",
-    "Moth": "Moth Bean",
-    "Masoor": "Red Lentil",
-    "Lentil": "Red Lentil",
-    "Soyabean": "Soybean",
-    "Sweet potato": "Sweet Potato",
-    "Peas & beans (Pulses)": "Peas & Beans",
+    "Blackgram": "Black Gram", "Mungbean": "Green Gram", "Moong(Green Gram)": "Green Gram",
+    "Urad": "Black Gram", "Arhar/Tur": "Pigeon Pea", "Pigeonpeas": "Pigeon Pea",
+    "Gram": "Chickpea", "Cotton(lint)": "Cotton", "Rapeseed &Mustard": "Mustard",
+    "Kidneybeans": "Kidney Bean", "Mothbeans": "Moth Bean", "Moth": "Moth Bean",
+    "Masoor": "Red Lentil", "Lentil": "Red Lentil", "Soyabean": "Soybean",
+    "Sweet potato": "Sweet Potato", "Peas & beans (Pulses)": "Peas & Beans",
     "Cowpea(Lobia)": "Cowpea",
 }
 
@@ -154,17 +183,17 @@ FAMILY_MAP = {
     "Tomato": "Solanaceae"
 }
 
-MARKET_PRICES = {
+FALLBACK_MARKET_PRICES = {
     "Green Gram": 85, "Black Gram": 90, "Pigeon Pea": 75, "Chickpea": 70,
-    "Groundnut": 65, "Rice": 35, "Wheat": 28, "Maize": 24, "Potato": 18,
-    "Sugarcane": 3.5, "Cotton": 65, "Soybean": 55, "Mustard": 60, "Onion": 25,
-    "Banana": 25, "Coconut": 20, "Sunflower": 50, "Sesamum": 110, "Dry Chillies": 140,
-    "Ginger": 60, "Turmeric": 80, "Garlic": 90, "Tomato": 20, "Bajra": 22,
-    "Jowar": 26, "Ragi": 32, "Barley": 20, "Tobacco": 95, "Jute": 45,
-    "Apple": 100, "Grapes": 80, "Mango": 60, "Orange": 55, "Papaya": 20,
-    "Pomegranate": 120, "Watermelon": 10, "Muskmelon": 12, "Coffee": 200,
-    "Cashewnut": 180, "Arecanut": 220, "Kidney Bean": 80, "Red Lentil": 65,
-    "Moth Bean": 60, "Black pepper": 350, "Cardamom": 1200, "Coriander": 90
+    "Groundnut": 65, "Maize": 24, "Sugarcane": 3.5, "Cotton": 65,
+    "Soybean": 55, "Mustard": 60, "Banana": 25, "Coconut": 20, "Sunflower": 50,
+    "Sesamum": 110, "Dry Chillies": 140, "Ginger": 60, "Turmeric": 80,
+    "Garlic": 90, "Bajra": 22, "Jowar": 26, "Ragi": 32, "Barley": 20,
+    "Tobacco": 95, "Jute": 45, "Apple": 100, "Grapes": 80, "Mango": 60,
+    "Orange": 55, "Papaya": 20, "Pomegranate": 120, "Watermelon": 10,
+    "Muskmelon": 12, "Coffee": 200, "Cashewnut": 180, "Arecanut": 220,
+    "Kidney Bean": 80, "Red Lentil": 65, "Moth Bean": 60, "Black pepper": 350,
+    "Cardamom": 1200, "Coriander": 90
 }
 
 COST_PER_ACRE = {
@@ -190,8 +219,6 @@ def stat_summary(lst):
         "n":      len(lst),
     }
 
-# 5. Build Unified Crop Collection
-print("\n[4/5] Merging sensor soil profiles with state harvest yields...")
 all_crop_names = set()
 for k in soil_sensor_data.keys(): all_crop_names.add(ALIASES.get(k, k))
 for k in yield_groups.keys(): all_crop_names.add(ALIASES.get(k, k))
@@ -199,10 +226,8 @@ all_crop_names.add("Tomato")
 
 crops_out = []
 for name in sorted(all_crop_names):
-    # Find matching sensor key
     sensor_key = next((k for k in soil_sensor_data if ALIASES.get(k, k) == name), None)
-    # Find matching yield key
-    yield_key = next((k for k in yield_groups if ALIASES.get(k, k) == name), None)
+    yield_key  = next((k for k in yield_groups if ALIASES.get(k, k) == name), None)
 
     s_data = soil_sensor_data[sensor_key] if sensor_key else None
     y_data = yield_groups[yield_key] if yield_key else None
@@ -210,7 +235,7 @@ for name in sorted(all_crop_names):
     family = FAMILY_MAP.get(name, "Other")
     is_n_fixer = name in LEGUMES or family == "Legume"
 
-    # Soil N, P, K, pH from sensor dataset (if present), else from yield fertilizer mapping
+    # Soil NPK from sensor dataset or fertilizer mapping
     if s_data and s_data["N"]:
         n_stat = stat_summary(s_data["N"])
         p_stat = stat_summary(s_data["P"])
@@ -227,7 +252,6 @@ for name in sorted(all_crop_names):
         avg_hum = h_stat["mean"]
         sensor_records = len(s_data["N"])
     else:
-        # Derived from fertilizer data
         f_stat = stat_summary(y_data["fert_per_ha"]) if y_data else {"median": 120.0}
         med_fert = f_stat["median"] if f_stat["median"] > 0 else 120.0
         if is_n_fixer:
@@ -245,8 +269,7 @@ for name in sorted(all_crop_names):
             p_demand = round(med_fert * 0.30, 1)
             k_demand = round(med_fert * 0.30, 1)
             ideal_ph_min, ideal_ph_max = 6.0, 7.2
-        avg_temp = 26.5
-        avg_hum = 70.0
+        avg_temp, avg_hum = 26.5, 70.0
         sensor_records = 0
 
     # Yield and production from Indian state harvest dataset
@@ -262,7 +285,6 @@ for name in sorted(all_crop_names):
         top_states = [st for st, _ in sorted(y_data["states"].items(), key=lambda x: -x[1])[:4]]
         yield_records = len(y_data["yields"])
     else:
-        # Fallback for sensor-only crops (e.g. Apple, Muskmelon, Coffee)
         yield_kg_acre = 1200.0 if family == "Cereal" else 550.0 if is_n_fixer else 4000.0
         avg_rain = round(statistics.median(s_data["rainfall"]), 1) if s_data else 1000.0
         risk_index = 30.0
@@ -270,12 +292,27 @@ for name in sorted(all_crop_names):
         top_states = ["All India"]
         yield_records = 0
 
-    # Water requirement based on rainfall
+    # Market Price: PRIORITY 1 -> Real Mandi APMC dataset (737,392 records)
+    mandi_records_count = 0
+    if name in real_mandi_prices_kg:
+        mkt_price = real_mandi_prices_kg[name]
+        mandi_records_count = len(mandi_stats[name]["modal_prices"])
+    else:
+        mkt_price = FALLBACK_MARKET_PRICES.get(name, 35)
+
     if avg_rain >= 1600: water_req = "High"
     elif avg_rain >= 900: water_req = "Medium"
     else: water_req = "Low"
 
-    total_records = sensor_records + yield_records
+    total_records = sensor_records + yield_records + mandi_records_count
+
+    data_sources = []
+    if mandi_records_count > 0:
+        data_sources.append(f"indian-agricultural-mandi-prices ({mandi_records_count:,} APMC trades)")
+    if sensor_records > 0:
+        data_sources.append(f"crop-recommendation-dataset ({sensor_records:,} sensor rows)")
+    if yield_records > 0:
+        data_sources.append(f"crop-yield-in-indian-states ({yield_records:,} harvest rows)")
 
     crops_out.append({
         "crop_id":              len(crops_out) + 1,
@@ -290,7 +327,7 @@ for name in sorted(all_crop_names):
         "p_demand":             p_demand,
         "k_demand":             k_demand,
         "avg_yield_per_acre":   yield_kg_acre,
-        "avg_market_price":     MARKET_PRICES.get(name, 35),
+        "avg_market_price":     mkt_price,
         "avg_cultivation_cost": COST_PER_ACRE.get(name, 16000),
         "disease_risk_index":   risk_index,
         "suitable_seasons":     seasons_list,
@@ -299,25 +336,22 @@ for name in sorted(all_crop_names):
         "avg_rainfall_mm":      round(avg_rain, 1),
         "top_states":           top_states,
         "total_records":        total_records,
-        "data_sources": [
-            *(["crop-recommendation-dataset (sensor NPK/pH)"] if sensor_records > 0 else []),
-            *(["crop-yield-in-indian-states (harvest yield & seasons)"] if yield_records > 0 else [])
-        ]
+        "data_sources":         data_sources,
     })
 
-# Sort and assign sequential IDs
 crops_out.sort(key=lambda c: c["name"])
 for i, c in enumerate(crops_out, start=1):
     c["crop_id"] = i
 
-print(f"\n[5/5] Writing {len(crops_out)} unified crops to backend/data/kaggle_crops.js...")
+print(f"\n[6/6] Writing {len(crops_out)} unified crops to backend/data/kaggle_crops.js...")
 output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backend", "data", "kaggle_crops.js")
 js_content = f"""// ============================================================
-// kaggle_crops.js — Unified Dual-Source Kaggle Agronomy Model
+// kaggle_crops.js — Unified Triple-Source Kaggle Agronomy Model
 // Datasets merged:
-//   1. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
-//   2. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
-// Total records analyzed: 21,889 | Total unique crops: {len(crops_out)}
+//   1. arjunyadav99/indian-agricultural-mandi-prices-20232025 (737,392 rows)
+//   2. madhuraatmarambhagat/crop-recommendation-dataset        (2,200 rows)
+//   3. akshatgupta7/crop-yield-in-indian-states-dataset       (19,689 rows)
+// Total empirical records analyzed: 759,281 | Unique crops: {len(crops_out)}
 // Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 // ============================================================
 
@@ -330,6 +364,6 @@ with open(output_file, "w", encoding="utf-8") as fp:
     fp.write(js_content)
 
 print(f"      Saved to: {output_file}")
-print("\n" + "=" * 70)
-print(f"  SUCCESS: {len(crops_out)} Crops Unified from 21,889 Field & Sensor Records!")
-print("=" * 70)
+print("\n" + "=" * 72)
+print(f"  SUCCESS: {len(crops_out)} Crops Enriched from 759,281 Empirical Records!")
+print("=" * 72)

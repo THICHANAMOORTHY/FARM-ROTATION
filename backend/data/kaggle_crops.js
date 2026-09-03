@@ -1,10 +1,11 @@
 // ============================================================
-// kaggle_crops.js — Unified Dual-Source Kaggle Agronomy Model
+// kaggle_crops.js — Unified Triple-Source Kaggle Agronomy Model
 // Datasets merged:
-//   1. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
-//   2. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
-// Total records analyzed: 21,889 | Total unique crops: 60
-// Generated: 2026-09-03 11:33:04
+//   1. arjunyadav99/indian-agricultural-mandi-prices-20232025 (737,392 rows)
+//   2. madhuraatmarambhagat/crop-recommendation-dataset        (2,200 rows)
+//   3. akshatgupta7/crop-yield-in-indian-states-dataset       (19,689 rows)
+// Total empirical records analyzed: 759,281 | Unique crops: 60
+// Generated: 2026-09-03 11:39:24
 // ============================================================
 
 const kaggleCrops = [
@@ -36,7 +37,7 @@ const kaggleCrops = [
     ],
     "total_records": 100,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)"
+      "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
   {
@@ -70,7 +71,7 @@ const kaggleCrops = [
     ],
     "total_records": 160,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (160 harvest rows)"
     ]
   },
   {
@@ -105,7 +106,7 @@ const kaggleCrops = [
     ],
     "total_records": 524,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (524 harvest rows)"
     ]
   },
   {
@@ -140,8 +141,8 @@ const kaggleCrops = [
     ],
     "total_records": 343,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (243 harvest rows)"
     ]
   },
   {
@@ -175,7 +176,7 @@ const kaggleCrops = [
     ],
     "total_records": 297,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (297 harvest rows)"
     ]
   },
   {
@@ -210,8 +211,8 @@ const kaggleCrops = [
     ],
     "total_records": 830,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (730 harvest rows)"
     ]
   },
   {
@@ -245,7 +246,7 @@ const kaggleCrops = [
     ],
     "total_records": 126,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (126 harvest rows)"
     ]
   },
   {
@@ -279,7 +280,7 @@ const kaggleCrops = [
     ],
     "total_records": 73,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (73 harvest rows)"
     ]
   },
   {
@@ -313,7 +314,7 @@ const kaggleCrops = [
     ],
     "total_records": 132,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (132 harvest rows)"
     ]
   },
   {
@@ -347,7 +348,7 @@ const kaggleCrops = [
     ],
     "total_records": 300,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (300 harvest rows)"
     ]
   },
   {
@@ -381,8 +382,8 @@ const kaggleCrops = [
     ],
     "total_records": 589,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (489 harvest rows)"
     ]
   },
   {
@@ -416,8 +417,8 @@ const kaggleCrops = [
     ],
     "total_records": 265,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (165 harvest rows)"
     ]
   },
   {
@@ -448,7 +449,7 @@ const kaggleCrops = [
     ],
     "total_records": 100,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)"
+      "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
   {
@@ -482,7 +483,7 @@ const kaggleCrops = [
     ],
     "total_records": 198,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (198 harvest rows)"
     ]
   },
   {
@@ -517,8 +518,8 @@ const kaggleCrops = [
     ],
     "total_records": 573,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (473 harvest rows)"
     ]
   },
   {
@@ -553,7 +554,7 @@ const kaggleCrops = [
     ],
     "total_records": 131,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (131 harvest rows)"
     ]
   },
   {
@@ -588,7 +589,7 @@ const kaggleCrops = [
     ],
     "total_records": 419,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (419 harvest rows)"
     ]
   },
   {
@@ -622,7 +623,7 @@ const kaggleCrops = [
     ],
     "total_records": 248,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (248 harvest rows)"
     ]
   },
   {
@@ -657,7 +658,7 @@ const kaggleCrops = [
     ],
     "total_records": 321,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (321 harvest rows)"
     ]
   },
   {
@@ -688,7 +689,7 @@ const kaggleCrops = [
     ],
     "total_records": 100,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)"
+      "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
   {
@@ -723,8 +724,8 @@ const kaggleCrops = [
     ],
     "total_records": 834,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (734 harvest rows)"
     ]
   },
   {
@@ -759,7 +760,7 @@ const kaggleCrops = [
     ],
     "total_records": 725,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (725 harvest rows)"
     ]
   },
   {
@@ -793,7 +794,7 @@ const kaggleCrops = [
     ],
     "total_records": 61,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (61 harvest rows)"
     ]
   },
   {
@@ -828,7 +829,7 @@ const kaggleCrops = [
     ],
     "total_records": 365,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (365 harvest rows)"
     ]
   },
   {
@@ -863,7 +864,7 @@ const kaggleCrops = [
     ],
     "total_records": 513,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (513 harvest rows)"
     ]
   },
   {
@@ -898,8 +899,8 @@ const kaggleCrops = [
     ],
     "total_records": 266,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (166 harvest rows)"
     ]
   },
   {
@@ -933,7 +934,7 @@ const kaggleCrops = [
     ],
     "total_records": 75,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (75 harvest rows)"
     ]
   },
   {
@@ -964,7 +965,7 @@ const kaggleCrops = [
     ],
     "total_records": 100,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)"
+      "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
   {
@@ -998,7 +999,7 @@ const kaggleCrops = [
     ],
     "total_records": 306,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (306 harvest rows)"
     ]
   },
   {
@@ -1033,8 +1034,8 @@ const kaggleCrops = [
     ],
     "total_records": 1074,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (974 harvest rows)"
     ]
   },
   {
@@ -1065,7 +1066,7 @@ const kaggleCrops = [
     ],
     "total_records": 100,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)"
+      "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
   {
@@ -1099,7 +1100,7 @@ const kaggleCrops = [
     ],
     "total_records": 207,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (207 harvest rows)"
     ]
   },
   {
@@ -1133,8 +1134,8 @@ const kaggleCrops = [
     ],
     "total_records": 208,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (108 harvest rows)"
     ]
   },
   {
@@ -1165,7 +1166,7 @@ const kaggleCrops = [
     ],
     "total_records": 100,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)"
+      "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
   {
@@ -1199,7 +1200,7 @@ const kaggleCrops = [
     ],
     "total_records": 528,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (528 harvest rows)"
     ]
   },
   {
@@ -1233,7 +1234,7 @@ const kaggleCrops = [
     ],
     "total_records": 190,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (190 harvest rows)"
     ]
   },
   {
@@ -1249,7 +1250,7 @@ const kaggleCrops = [
     "p_demand": 45.2,
     "k_demand": 45.2,
     "avg_yield_per_acre": 3832.4,
-    "avg_market_price": 25,
+    "avg_market_price": 23.8,
     "avg_cultivation_cost": 22000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1266,9 +1267,10 @@ const kaggleCrops = [
       "Uttar Pradesh",
       "Gujarat"
     ],
-    "total_records": 447,
+    "total_records": 298879,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "indian-agricultural-mandi-prices (298,432 APMC trades)",
+      "crop-yield-in-indian-states (447 harvest rows)"
     ]
   },
   {
@@ -1299,7 +1301,7 @@ const kaggleCrops = [
     ],
     "total_records": 100,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)"
+      "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
   {
@@ -1330,7 +1332,7 @@ const kaggleCrops = [
     ],
     "total_records": 100,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)"
+      "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
   {
@@ -1365,7 +1367,7 @@ const kaggleCrops = [
     ],
     "total_records": 369,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (369 harvest rows)"
     ]
   },
   {
@@ -1400,8 +1402,8 @@ const kaggleCrops = [
     ],
     "total_records": 608,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (508 harvest rows)"
     ]
   },
   {
@@ -1432,7 +1434,7 @@ const kaggleCrops = [
     ],
     "total_records": 100,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)"
+      "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
   {
@@ -1448,7 +1450,7 @@ const kaggleCrops = [
     "p_demand": 45.2,
     "k_demand": 45.2,
     "avg_yield_per_acre": 4119.7,
-    "avg_market_price": 18,
+    "avg_market_price": 15.6,
     "avg_cultivation_cost": 25000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1465,9 +1467,10 @@ const kaggleCrops = [
       "West Bengal",
       "Himachal Pradesh"
     ],
-    "total_records": 627,
+    "total_records": 326936,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "indian-agricultural-mandi-prices (326,309 APMC trades)",
+      "crop-yield-in-indian-states (627 harvest rows)"
     ]
   },
   {
@@ -1502,7 +1505,7 @@ const kaggleCrops = [
     ],
     "total_records": 498,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (498 harvest rows)"
     ]
   },
   {
@@ -1536,8 +1539,8 @@ const kaggleCrops = [
     ],
     "total_records": 424,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (324 harvest rows)"
     ]
   },
   {
@@ -1553,7 +1556,7 @@ const kaggleCrops = [
     "p_demand": 47.0,
     "k_demand": 40.0,
     "avg_yield_per_acre": 890.3,
-    "avg_market_price": 35,
+    "avg_market_price": 33.4,
     "avg_cultivation_cost": 24000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1570,10 +1573,11 @@ const kaggleCrops = [
       "West Bengal",
       "Bihar"
     ],
-    "total_records": 1297,
+    "total_records": 9079,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)",
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "indian-agricultural-mandi-prices (7,782 APMC trades)",
+      "crop-recommendation-dataset (100 sensor rows)",
+      "crop-yield-in-indian-states (1,197 harvest rows)"
     ]
   },
   {
@@ -1607,7 +1611,7 @@ const kaggleCrops = [
     ],
     "total_records": 168,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (168 harvest rows)"
     ]
   },
   {
@@ -1641,7 +1645,7 @@ const kaggleCrops = [
     ],
     "total_records": 153,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (153 harvest rows)"
     ]
   },
   {
@@ -1676,7 +1680,7 @@ const kaggleCrops = [
     ],
     "total_records": 684,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (684 harvest rows)"
     ]
   },
   {
@@ -1711,7 +1715,7 @@ const kaggleCrops = [
     ],
     "total_records": 484,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (484 harvest rows)"
     ]
   },
   {
@@ -1745,7 +1749,7 @@ const kaggleCrops = [
     ],
     "total_records": 345,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (345 harvest rows)"
     ]
   },
   {
@@ -1780,7 +1784,7 @@ const kaggleCrops = [
     ],
     "total_records": 605,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (605 harvest rows)"
     ]
   },
   {
@@ -1815,7 +1819,7 @@ const kaggleCrops = [
     ],
     "total_records": 440,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (440 harvest rows)"
     ]
   },
   {
@@ -1849,7 +1853,7 @@ const kaggleCrops = [
     ],
     "total_records": 268,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (268 harvest rows)"
     ]
   },
   {
@@ -1883,7 +1887,7 @@ const kaggleCrops = [
     ],
     "total_records": 200,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (200 harvest rows)"
     ]
   },
   {
@@ -1918,7 +1922,7 @@ const kaggleCrops = [
     ],
     "total_records": 362,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (362 harvest rows)"
     ]
   },
   {
@@ -1934,7 +1938,7 @@ const kaggleCrops = [
     "p_demand": 36.0,
     "k_demand": 36.0,
     "avg_yield_per_acre": 4000.0,
-    "avg_market_price": 20,
+    "avg_market_price": 35.0,
     "avg_cultivation_cost": 35000,
     "disease_risk_index": 30.0,
     "suitable_seasons": [
@@ -1947,8 +1951,10 @@ const kaggleCrops = [
     "top_states": [
       "All India"
     ],
-    "total_records": 0,
-    "data_sources": []
+    "total_records": 26643,
+    "data_sources": [
+      "indian-agricultural-mandi-prices (26,643 APMC trades)"
+    ]
   },
   {
     "crop_id": 58,
@@ -1982,7 +1988,7 @@ const kaggleCrops = [
     ],
     "total_records": 334,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "crop-yield-in-indian-states (334 harvest rows)"
     ]
   },
   {
@@ -2013,7 +2019,7 @@ const kaggleCrops = [
     ],
     "total_records": 100,
     "data_sources": [
-      "crop-recommendation-dataset (sensor NPK/pH)"
+      "crop-recommendation-dataset (100 sensor rows)"
     ]
   },
   {
@@ -2029,7 +2035,7 @@ const kaggleCrops = [
     "p_demand": 36.1,
     "k_demand": 36.1,
     "avg_yield_per_acre": 675.8,
-    "avg_market_price": 28,
+    "avg_market_price": 23.75,
     "avg_cultivation_cost": 18000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -2046,9 +2052,10 @@ const kaggleCrops = [
       "Karnataka",
       "West Bengal"
     ],
-    "total_records": 543,
+    "total_records": 77516,
     "data_sources": [
-      "crop-yield-in-indian-states (harvest yield & seasons)"
+      "indian-agricultural-mandi-prices (76,973 APMC trades)",
+      "crop-yield-in-indian-states (543 harvest rows)"
     ]
   }
 ];
