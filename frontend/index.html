@@ -14,14 +14,37 @@
 
 <div class="app">
 
+  <!-- ══════════════════ MOBILE TOP BAR ══════════════════ -->
+  <header class="mobile-topbar">
+    <button id="mobile-menu-btn" class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Toggle Navigation">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+    <div class="mobile-brand" onclick="navigate('dashboard')">
+      <span class="brand-icon">🌱</span>
+      <span class="mobile-brand-title">CropSmart</span>
+    </div>
+    <div class="mobile-top-actions">
+      <button class="mobile-lang-pill" onclick="toggleLanguageMobile()" title="Switch Language">
+        <span id="mobile-lang-label">தமிழ்</span>
+      </button>
+      <button class="mobile-pdf-icon-btn" onclick="exportFarmerReportPDF()" title="Download PDF Action Plan">
+        📄
+      </button>
+    </div>
+  </header>
+  <div id="sidebar-backdrop" class="sidebar-backdrop" onclick="closeMobileSidebar()"></div>
+
   <!-- ══════════════════ SIDEBAR ══════════════════ -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="app-sidebar">
     <div class="sidebar-brand">
       <div class="brand-icon">🌱</div>
       <div class="brand-text">
         <h2>CropSmart</h2>
         <span data-i18n="brandSubtitle">P025 · Soil Restorer</span>
       </div>
+      <button class="sidebar-close-btn" onclick="closeMobileSidebar()" aria-label="Close Sidebar">✕</button>
     </div>
 
     <!-- ── Language Toggle (English / Tamil) ───────── -->
@@ -677,6 +700,31 @@
     </div>
 
   </main><!-- end .main -->
+
+  <!-- ══════════════════ MOBILE BOTTOM NAVIGATION ══════════════════ -->
+  <nav class="mobile-bottom-nav">
+    <button class="mb-nav-item active" data-view="dashboard" onclick="navigate('dashboard')">
+      <span class="mb-icon">📊</span>
+      <span class="mb-label" data-i18n="navDashboard">Dashboard</span>
+    </button>
+    <button class="mb-nav-item" data-view="soil-analysis" onclick="navigate('soil-analysis')">
+      <span class="mb-icon">🧪</span>
+      <span class="mb-label" data-i18n="navSoilAnalysis">Soil</span>
+    </button>
+    <button class="mb-nav-item" data-view="evaluation" onclick="navigate('evaluation')">
+      <span class="mb-icon">🔬</span>
+      <span class="mb-label" data-i18n="navEvaluation">Evaluate</span>
+    </button>
+    <button class="mb-nav-item" data-view="rotation" onclick="navigate('rotation')">
+      <span class="mb-icon">♻️</span>
+      <span class="mb-label" data-i18n="navRotation">Rotation</span>
+    </button>
+    <button class="mb-nav-item" data-view="recommendation" onclick="navigate('recommendation')">
+      <span class="mb-icon">⭐</span>
+      <span class="mb-label" data-i18n="navRecommendation">Plan</span>
+    </button>
+  </nav>
+
 </div><!-- end .app -->
 
 <!-- Scripts -->

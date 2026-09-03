@@ -154,10 +154,23 @@ function navigate(viewId) {
   const target = document.getElementById(`view-${viewId}`);
   if (target) target.classList.add('active');
 
-  // Update nav links
+  // Update desktop nav links
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-  const navEl = document.querySelector(`[data-view="${viewId}"]`);
+  const navEl = document.querySelector(`.nav-link[data-view="${viewId}"]`);
   if (navEl) navEl.classList.add('active');
+
+  // Update mobile bottom nav items
+  document.querySelectorAll('.mb-nav-item').forEach(b => b.classList.remove('active'));
+  const mbEl = document.querySelector(`.mb-nav-item[data-view="${viewId}"]`);
+  if (mbEl) mbEl.classList.add('active');
+
+  // Auto-close mobile drawer if open
+  closeMobileSidebar();
+
+  // Scroll main view to top smoothly
+  const mainEl = document.querySelector('.main');
+  if (mainEl) mainEl.scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
   // Run view loader
   if (VIEW_LOADERS[viewId]) VIEW_LOADERS[viewId]();
@@ -166,6 +179,42 @@ function navigate(viewId) {
 }
 window.navigate = navigate;
 window.VIEW_LOADERS = VIEW_LOADERS;
+
+// ── Mobile Sidebar Controls ──────────────────────────────────
+function toggleMobileSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const btn = document.getElementById('mobile-menu-btn');
+  if (!sidebar) return;
+
+  const isOpen = sidebar.classList.toggle('open');
+  if (backdrop) backdrop.classList.toggle('active', isOpen);
+  if (btn) btn.classList.toggle('open', isOpen);
+  document.body.style.overflow = isOpen ? 'hidden' : '';
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const btn = document.getElementById('mobile-menu-btn');
+  if (sidebar) sidebar.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('active');
+  if (btn) btn.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function toggleLanguageMobile() {
+  if (window.i18n) {
+    const nextLang = (window.i18n.getLanguage() === 'ta') ? 'en' : 'ta';
+    window.setLanguage(nextLang);
+    const label = document.getElementById('mobile-lang-label');
+    if (label) label.textContent = (nextLang === 'ta') ? 'English' : 'தமிழ்';
+  }
+}
+
+window.toggleMobileSidebar = toggleMobileSidebar;
+window.closeMobileSidebar = closeMobileSidebar;
+window.toggleLanguageMobile = toggleLanguageMobile;
 
 // ── Init ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
