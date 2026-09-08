@@ -1,0 +1,13 @@
+{
+  "name": "uzhavu-kaappaan",
+  "version": "1.0.0",
+  "description": "Smart Crop Rotation & Soil Restorer (P025)",
+  "scripts": {
+    "build": "npm --prefix backend install",
+    "postinstall": "npm --prefix backend install",
+    "start": "node backend/server.js"
+  },
+  "dependencies": {
+    "serverless-http": "^3.2.0"
+  }
+}

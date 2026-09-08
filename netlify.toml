@@ -1,0 +1,41 @@
+[build]
+  command = "npm --prefix backend install"
+  publish = "frontend"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["backend/**"]
+
+# API redirects to Netlify Serverless Function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/api/:splat"
+  status = 200
+
+# Direct downloads for Action Plan PDF and datasets
+[[redirects]]
+  from = "/download/farmer-plan-pdf"
+  to = "/downloads/UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan.pdf"
+  status = 302
+
+[[redirects]]
+  from = "/download/uzhavu-kaappaan-pdf"
+  to = "/downloads/UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan.pdf"
+  status = 302
+
+[[redirects]]
+  from = "/download/crops-csv"
+  to = "/downloads/CropSmart_Master_60_Crops_Agronomy_Mandi.csv"
+  status = 302
+
+[[redirects]]
+  from = "/download/crops-json"
+  to = "/downloads/CropSmart_Master_60_Crops_Agronomy_Mandi.json"
+  status = 302
+
+# Fallback redirect for Single Page Application
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

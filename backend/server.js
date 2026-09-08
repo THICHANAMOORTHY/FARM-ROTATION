@@ -10,6 +10,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serverless / Proxy URL normalization
+app.use((req, res, next) => {
+  if (
+    !req.url.startsWith('/api') &&
+    !req.url.startsWith('/download') &&
+    !req.url.startsWith('/downloads') &&
+    req.url !== '/' &&
+    !req.url.startsWith('/?')
+  ) {
+    req.url = '/api' + req.url;
+  }
+  next();
+});
+
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
@@ -145,11 +159,15 @@ app.get('*', (req, res) => {
 });
 
 // ── Start ──────────────────────────────────────────────────
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log('');
-  console.log('  🌱  UZHAVU KAAPPAAN (உழவு காப்பான்) P025 API');
-  console.log(`  🚀  Running on http://localhost:${PORT}`);
-  console.log(`  📊  Dashboard → http://localhost:${PORT}`);
-  console.log('');
-});
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log('');
+    console.log('  🌱  UZHAVU KAAPPAAN (உழவு காப்பான்) P025 API');
+    console.log(`  🚀  Running on http://localhost:${PORT}`);
+    console.log(`  📊  Dashboard → http://localhost:${PORT}`);
+    console.log('');
+  });
+}
+
+module.exports = app;
