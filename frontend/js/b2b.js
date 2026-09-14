@@ -24,6 +24,16 @@ let lastMatchSignature = null;   // cheap fingerprint of the last displayed resu
 let b2bMatchPollTimer = null;
 const B2B_MATCH_POLL_MS = 15000;
 
+// Stale-response guard: live-as-you-type debouncing plus a 15s background
+// poll means multiple /match-contract requests can be in flight at once
+// (e.g. a slow Gemini-backed request from an earlier keystroke still
+// pending when a faster keyword-fallback request from a later keystroke
+// resolves first). Without this, whichever response arrives LAST wins and
+// can silently overwrite a newer, more correct result on screen with a
+// stale one. Every call site increments this before firing a request and
+// checks it's still the latest after awaiting, before touching the DOM.
+let matchRequestSeq = 0;
+
 function matchResultSignature(data) {
   if (!data) return null;
   return JSON.stringify({
@@ -47,8 +57,10 @@ function startB2BMatchPolling() {
       stopB2BMatchPolling();
       return;
     }
+    const mySeq = ++matchRequestSeq;
     try {
       const data = await apiPost('/b2b/match-contract', lastMatchRequestBody);
+      if (mySeq !== matchRequestSeq) return; // a newer request superseded this one
       const sig = matchResultSignature(data);
       if (sig !== lastMatchSignature) {
         lastMatchSignature = sig;
@@ -459,6 +471,14 @@ function renderContractsTab(panel) {
   setTimeout(runB2BMatchmaker, 50);
 }
 
+// Safely embeds a string as a JS string-literal argument inside an inline
+// HTML event-handler attribute (e.g. onclick="fn(${jsAttrStr(x)})"). Handles
+// quotes/backslashes correctly regardless of source — needed because buyer
+// org names are user-supplied at signup and can contain both ' and ".
+function jsAttrStr(s) {
+  return JSON.stringify(String(s)).replace(/"/g, '&quot;');
+}
+
 // ── Matchmaker Execution ────────────────────────────────────
 function getB2BBuyerFieldValue() {
   const hidden = document.getElementById('b2b-input-buyer-hidden');
@@ -514,7 +534,7 @@ function renderMatchResultsCard(data, crop, qty, buyer, opts = {}) {
       </div>
     </div>
 
-    <button class="btn btn-primary" style="width:100%" onclick="executeMatchedContract('${buyer.replace(/'/g, "\\'")}', ${fpo.fpo_id}, '${crop.replace(/'/g, "\\'")}', ${qty}, ${pricing.mandi_modal_rs_kg}, ${pricing.regenerative_premium_bonus_pct})">
+    <button class="btn btn-primary" style="width:100%" onclick="executeMatchedContract(${jsAttrStr(buyer)}, ${fpo.fpo_id}, ${jsAttrStr(crop)}, ${qty}, ${pricing.mandi_modal_rs_kg}, ${pricing.regenerative_premium_bonus_pct})">
       ✍️ Issue Forward Contract
     </button>
   `;
@@ -531,13 +551,16 @@ async function runB2BMatchmaker() {
   const buyer = getB2BBuyerFieldValue();
 
   const requestBody = { crop_name: crop, target_quantity_mt: Number(qty) };
+  const mySeq = ++matchRequestSeq;
   try {
     const data = await apiPost('/b2b/match-contract', requestBody);
+    if (mySeq !== matchRequestSeq) return; // a newer request superseded this one
     lastMatchRequestBody = requestBody;
     lastMatchSignature = matchResultSignature(data);
     renderMatchResultsCard(data, crop, qty, buyer);
     startB2BMatchPolling();
   } catch (err) {
+    if (mySeq !== matchRequestSeq) return;
     resultsDiv.innerHTML = `<p style="color:#ef4444;padding:20px;text-align:center">Matching unavailable: ${err.message}</p>`;
   }
 }
@@ -567,8 +590,10 @@ async function runB2BAIMatchmaker(opts = {}) {
   }
 
   const requestBody = { query_text: queryText };
+  const mySeq = ++matchRequestSeq;
   try {
     const data = await apiPost('/b2b/match-contract', requestBody);
+    if (mySeq !== matchRequestSeq) return; // a newer request (or keystroke) superseded this one
 
     // Keep the structured controls in sync so "Issue Forward Contract" matches what AI found.
     const cropEl = document.getElementById('b2b-input-crop');
@@ -585,9 +610,10 @@ async function runB2BAIMatchmaker(opts = {}) {
     renderMatchResultsCard(data, data.query.crop_name, data.query.target_quantity_mt, buyer);
     startB2BMatchPolling();
   } catch (err) {
+    if (mySeq !== matchRequestSeq) return;
     if (!opts.silent) resultsDiv.innerHTML = `<p style="color:#ef4444;padding:20px;text-align:center">AI matching unavailable: ${err.message}</p>`;
   } finally {
-    if (indicatorEl) indicatorEl.textContent = '';
+    if (mySeq === matchRequestSeq && indicatorEl) indicatorEl.textContent = '';
   }
 }
 window.runB2BAIMatchmaker = runB2BAIMatchmaker;

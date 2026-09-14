@@ -6,6 +6,7 @@
 const router = require('express').Router();
 const db = require('../data/seed');
 const { kaggleCrops } = require('../data/kaggle_crops');
+const { withTimeout } = require('../utils/withTimeout');
 
 // Bounds how long we'll wait on Gemini in total before falling back to the
 // offline rule engine. Without this, a rate-limited/overloaded API key can
@@ -13,13 +14,6 @@ const { kaggleCrops } = require('../data/kaggle_crops');
 // message can take 10-15+ seconds to answer — indistinguishable from "the
 // chatbot is broken" from a user's perspective.
 const GEMINI_TIMEOUT_MS = 6000;
-
-function withTimeout(promise, ms) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('Gemini request timed out')), ms)),
-  ]);
-}
 
 router.post('/', async (req, res) => {
   try {

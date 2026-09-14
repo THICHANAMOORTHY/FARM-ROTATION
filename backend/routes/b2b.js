@@ -7,8 +7,16 @@ const express = require('express');
 const router = express.Router();
 const db = require('../data/seed');
 const { optionalAuth } = require('../middleware/requireAuth');
+const { withTimeout } = require('../utils/withTimeout');
 
 router.use(optionalAuth);
+
+// Bounds how long we'll wait on Gemini before falling back to the
+// deterministic keyword-scan parser / omitting the AI reasoning. Without
+// this, a rate-limited API key makes match-contract hang for many seconds —
+// which is especially bad here since it's called on every debounced
+// keystroke and every 15s poll tick while the matchmaker panel is open.
+const GEMINI_TIMEOUT_MS = 6000;
 
 // Helper: Get latest soil record for each farm
 function getLatestSoilMap() {
@@ -220,20 +228,29 @@ Request: "${queryText}"
 Return exactly this shape:
 {"crop_name": "<one of the valid crop names>", "target_quantity_mt": <number>, "preferred_state": "<Indian state or null>"}`;
 
-      for (const modelName of candidateModels) {
-        try {
-          const model = genAI.getGenerativeModel({ model: modelName });
-          const result = await model.generateContent(prompt);
-          const text = result.response.text();
-          const jsonMatch = text.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            if (parsed.crop_name && parsed.target_quantity_mt) {
-              return { ...parsed, provider: 'Google Gemini AI' };
+      let parsedResult = null;
+      await withTimeout((async () => {
+        for (const modelName of candidateModels) {
+          try {
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent(prompt);
+            const text = result.response.text();
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const parsed = JSON.parse(jsonMatch[0]);
+              if (parsed.crop_name && parsed.target_quantity_mt) {
+                parsedResult = { ...parsed, provider: 'Google Gemini AI' };
+                return;
+              }
             }
-          }
-        } catch (mErr) { /* try next model */ }
-      }
+          } catch (mErr) { /* try next model */ }
+        }
+      })(), GEMINI_TIMEOUT_MS, 'Gemini query parse timed out').catch(() => {
+        // Timed out (or every model failed) — parsedResult stays null and
+        // we fall through to the keyword-scan fallback below.
+      });
+
+      if (parsedResult) return parsedResult;
     } catch (err) {
       console.warn('[b2b] Gemini query parse failed, falling back to keyword scan:', err.message);
     }
@@ -266,7 +283,7 @@ async function generateMatchReasoning(payload) {
 DATA:
 ${JSON.stringify(payload, null, 2)}`;
 
-    const result = await model.generateContent(prompt);
+    const result = await withTimeout(model.generateContent(prompt), GEMINI_TIMEOUT_MS, 'Gemini reasoning generation timed out');
     return result.response.text().trim();
   } catch (err) {
     console.warn('[b2b] Gemini reasoning generation failed:', err.message);
