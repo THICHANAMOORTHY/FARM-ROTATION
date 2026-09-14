@@ -7,6 +7,20 @@ const router = require('express').Router();
 const db = require('../data/seed');
 const { kaggleCrops } = require('../data/kaggle_crops');
 
+// Bounds how long we'll wait on Gemini in total before falling back to the
+// offline rule engine. Without this, a rate-limited/overloaded API key can
+// make every candidate model hang or slow-retry in turn, and a single chat
+// message can take 10-15+ seconds to answer — indistinguishable from "the
+// chatbot is broken" from a user's perspective.
+const GEMINI_TIMEOUT_MS = 6000;
+
+function withTimeout(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Gemini request timed out')), ms)),
+  ]);
+}
+
 router.post('/', async (req, res) => {
   try {
     const { message = '', farm_id = 101, lang = 'en' } = req.body;
@@ -34,7 +48,7 @@ router.post('/', async (req, res) => {
         const { GoogleGenerativeAI } = require('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         
-        const candidateModels = ['gemini-3.7-flash', 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite'];
+        const candidateModels = ['gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-3.7-flash', 'gemini-3.8-flash'];
         let text = null;
 
         const prompt = `You are "CropSmart Kisan AI", an expert agricultural advisor and agronomist.
@@ -51,16 +65,21 @@ ${isTa ? 'You MUST reply completely in pure, spoken Tamil (தமிழ் எ�
 
 User Question: "${message}"`;
 
-        for (const modelName of candidateModels) {
-          try {
-            const model = genAI.getGenerativeModel({ model: modelName });
-            const result = await model.generateContent(prompt);
-            text = result.response.text();
-            if (text) break;
-          } catch (mErr) {
-            // Try next model
+        await withTimeout((async () => {
+          for (const modelName of candidateModels) {
+            try {
+              const model = genAI.getGenerativeModel({ model: modelName });
+              const result = await model.generateContent(prompt);
+              text = result.response.text();
+              if (text) break;
+            } catch (mErr) {
+              // Try next model
+            }
           }
-        }
+        })(), GEMINI_TIMEOUT_MS).catch(() => {
+          // Timed out (or every model failed) — text stays null and we
+          // fall through to the offline rule-based engine below.
+        });
 
         if (text) {
           return res.json({

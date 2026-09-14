@@ -666,7 +666,7 @@ function updateLanguageUI() {
 
   // Also update chatbot UI language if available
   if (typeof window.updateChatbotLanguage === 'function') {
-    window.updateChatbotLanguage();
+    window.updateChatbotLanguage(getLanguage());
   }
 
   // Dynamic farm chip in sidebar

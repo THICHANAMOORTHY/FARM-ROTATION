@@ -5,7 +5,7 @@
 (function() {
   let isOpen = false;
   let chatHistory = [];
-  let currentLang = (window.i18n && window.i18n.getLanguage() === 'ta') ? 'ta' : 'ta'; // Default to Tamil
+  let currentLang = (window.i18n && window.i18n.getLanguage() === 'en') ? 'en' : 'ta'; // Default to Tamil
   let voiceEnabled = true; // Auto-speak enabled
   let isListening = false;
   let continuousVoice = false;
@@ -121,6 +121,22 @@
   wrap.id = 'kisan-ai-widget';
   wrap.innerHTML = chatHtml;
   document.body.appendChild(wrap);
+
+  // Belt-and-suspenders Enter-to-send: the <form onsubmit> already handles
+  // a plain Enter keypress via the browser's native implicit submission,
+  // but that can silently fail to fire when the keypress is instead
+  // consumed by an IME composing Tamil text (very common for this app's
+  // audience) — isComposing / keyCode 229 marks that case, which we skip
+  // so we don't send a message mid-composition.
+  const kisanInputEl = document.getElementById('kisan-user-input');
+  if (kisanInputEl) {
+    kisanInputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.isComposing && e.keyCode !== 229) {
+        e.preventDefault();
+        sendKisanChatMessage();
+      }
+    });
+  }
 
   // Initialize Speech Recognition (Web Speech API)
   function initSpeechRecognition() {
@@ -452,7 +468,14 @@
     }
   }
 
-  function updateChatbotLanguage() {
+  function updateChatbotLanguage(siteLang) {
+    // Called from i18n.js whenever the site-wide language toggle changes,
+    // as well as internally after the chat widget's own language button.
+    // Only re-derive currentLang when a siteLang is actually passed in —
+    // the internal toggle calls this with no args after setting currentLang
+    // itself, and re-deriving here would stomp that.
+    if (siteLang) currentLang = (siteLang === 'en') ? 'en' : 'ta';
+
     const isTa = (currentLang === 'ta');
     const fabLabel = document.getElementById('kisan-fab-label');
     const title = document.getElementById('kisan-modal-title');
