@@ -256,23 +256,55 @@ Two roles, one login modal (reachable from the sidebar's "Sign Up / Log In" butt
 
 ## 🔌 ESP32 Live Soil Sensor Integration
 
-Two supported device types, same endpoint and same `ESP32_DEVICE_KEY`:
+### Supported Hardware Configurations
 
-**Option A — full 7-in-1 RS485 soil sensor** (NPK + pH + organic carbon):
-1. Set `ESP32_DEVICE_KEY` in `backend/.env` (see `.env.example` for how to generate one).
-2. Flash [`esp32/soil_sensor_client.ino`](esp32/soil_sensor_client.ino) onto an ESP32 wired to the sensor (wiring diagram and register map are documented inline) — fill in your WiFi credentials, your machine's LAN IP, and the device key.
-3. It POSTs `{ farm_id, device_id, nitrogen, phosphorus, potassium, ph, organic_carbon }` to `/api/soil-sensor/ingest` every few seconds.
-4. No hardware yet? Run `npm run sim:esp32` from `backend/`.
+#### Option A: 7-in-1 RS485 Modbus Soil Sensor (N, P, K, pH, Moisture, Temp, EC)
+* **Firmware Sketch:** [`esp32/soil_sensor_client.ino`](esp32/soil_sensor_client.ino)
+* **Wiring Table:**
+  | Sensor / Module Pin | ESP32 Pin | Description / Notes |
+  |---|---|---|
+  | MAX485 DI | GPIO 17 (TX2) | Serial Transmit |
+  | MAX485 RO | GPIO 16 (RX2) | Serial Receive |
+  | MAX485 DE + RE | GPIO 4 | Direction control (tied together) |
+  | MAX485 VCC & GND | 3.3V / 5V & GND | Module power |
+  | Sensor RS485 A & B | MAX485 A & B | Modbus differential pair |
+  | Sensor Power (VCC/GND)| External 12V DC | *Do not power 12V sensor directly from ESP32* |
 
-**Option B — DHT11 + analog soil-moisture probe** (no NPK/pH capability, just air temp/humidity + soil moisture):
-1. Same `ESP32_DEVICE_KEY` setup.
-2. Flash [`esp32/dht11_soil_moisture_client.ino`](esp32/dht11_soil_moisture_client.ino) — wiring is documented inline; it also serves its own local debug webpage on the ESP32's IP, independent of this app.
-3. It POSTs `{ farm_id, device_id, air_temperature, air_humidity, soil_moisture }` — the health-score nutrient fields are simply omitted, and the backend carries over whatever nutrient reading the farm already has (from manual entry, seed data, or a full sensor) so this device's readings never blank that out.
-4. No hardware yet? Run `npm run sim:esp32:env` from `backend/`.
+#### Option B: DHT11 Air & Soil Moisture Station
+* **Firmware Sketch:** [`esp32/dht11_soil_moisture_client.ino`](esp32/dht11_soil_moisture_client.ino)
+* **Wiring Table:**
+  | Component | ESP32 Pin | Notes |
+  |---|---|---|
+  | DHT11 VCC / GND | 3.3V & GND | Power supply |
+  | DHT11 DATA | GPIO 4 | Digital data pin with pull-up |
+  | Soil Moisture Sensor AO | GPIO 34 | Analog input (ADC1) |
+  | Soil Moisture Sensor VCC / GND | 3.3V & GND | Power supply |
+
+### Direct HTTP / cURL Ingestion Test
+You can test the endpoint directly from PowerShell or terminal:
+
+```bash
+curl -X POST http://localhost:3000/api/soil-sensor/ingest \
+  -H "Content-Type: application/json" \
+  -H "X-Device-Key: b2cd3ba3dca8ce14d6da53f323b802f759111246836157dc" \
+  -d '{
+    "farm_id": 101,
+    "device_id": "esp32-field-01",
+    "nitrogen": 65,
+    "phosphorus": 35,
+    "potassium": 75,
+    "ph": 6.8,
+    "organic_carbon": 0.75,
+    "air_temperature": 28.5,
+    "air_humidity": 62,
+    "soil_moisture": 48
+  }'
+```
 
 Both device types can post for the **same farm_id** — the app merges them into one live view (nutrient sliders from whichever device/entry last reported them, env tiles from whichever device last reported those).
 
-**Honest caveat** (documented in the firmware comments too): the 7-in-1 RS485 sensor does not measure organic carbon directly — its sketch estimates it from conductivity + moisture as a rough proxy, not a lab-grade reading. Swap in a real OC sensor or a manual override if agronomic accuracy matters for your use case.
+> [!NOTE]
+> The 7-in-1 RS485 sensor does not measure organic carbon directly — its sketch estimates it from conductivity + moisture as a rough proxy. Swap in a lab-grade OC sensor or manual override if required.
 
 ---
 
@@ -395,7 +427,8 @@ Every variable is optional; the app tells you at boot what's missing and what fa
 │   ├── package.json
 │   └── .env.example
 ├── esp32/
-│   └── soil_sensor_client.ino     # Reference Arduino firmware for the live soil sensor
+│   ├── dht11_soil_moisture_client.ino   # ESP32 + DHT11 + Analog Soil Moisture probe firmware
+│   └── soil_sensor_client.ino           # Reference Arduino firmware for 7-in-1 Modbus RS485 soil sensor
 ├── frontend/
 │   ├── css/
 │   │   └── style.css              # "Midnight Harvest" dark theme, responsive, per-nutrient colors

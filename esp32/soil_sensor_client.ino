@@ -42,12 +42,12 @@ const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 // or `ifconfig`/`ip addr` (Mac/Linux) — look for the WiFi adapter's
 // IPv4 address, e.g. 192.168.1.42. localhost will NOT work here —
 // the ESP32 is a different device on the network.
-const char* SERVER_HOST = "192.168.1.42";
+const char* SERVER_HOST = "10.243.107.129";
 const int   SERVER_PORT = 3000;
 
 // Must exactly match ESP32_DEVICE_KEY in backend/.env — copy the value from
 // there (do NOT commit your real key into this file or version control).
-const char* DEVICE_KEY = "PASTE_YOUR_ESP32_DEVICE_KEY_FROM_BACKEND_ENV_HERE";
+const char* DEVICE_KEY = "b2cd3ba3dca8ce14d6da53f323b802f759111246836157dc";
 const char* DEVICE_ID  = "esp32-field-01";
 
 // Which farm this sensor belongs to (see /api/farms for valid ids)

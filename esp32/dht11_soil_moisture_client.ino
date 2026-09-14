@@ -54,11 +54,11 @@ const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 // `ipconfig` / `ifconfig`, the WiFi adapter's IPv4), NOT localhost (the
 // ESP32 is a different device on the network), including "http://" and
 // the port, e.g. "http://192.168.1.42:3000".
-const char* SERVER_HOST = "http://192.168.1.XX:3000"; // <-- your backend LAN IP
+const char* SERVER_HOST = "http://10.243.107.129:3000"; // <-- your backend LAN IP
 const char* INGEST_PATH = "/api/soil-sensor/ingest";
 
 // Must exactly match ESP32_DEVICE_KEY in backend/.env
-const char* DEVICE_KEY  = "PASTE_ESP32_DEVICE_KEY_HERE";
+const char* DEVICE_KEY  = "b2cd3ba3dca8ce14d6da53f323b802f759111246836157dc";
 const char* DEVICE_ID   = "esp32-desk-station-01";
 
 // Which farm this device belongs to (see /api/farms for valid ids)
