@@ -83,11 +83,11 @@ const TRANSLATIONS = {
     // Soil Analysis View
     soilAnalysisTitle: "Soil Analysis",
     soilAnalysisSubtitle: "Enter your soil test readings to compute health score and detect deficiencies",
-    nitrogenLabel: "Nitrogen (N) <span class=\"unit\">kg/ha · ideal: 80–160</span>",
-    phosphorusLabel: "Phosphorus (P) <span class=\"unit\">kg/ha · ideal: 30–60</span>",
-    potassiumLabel: "Potassium (K) <span class=\"unit\">kg/ha · ideal: 60–120</span>",
-    phLabel: "Soil pH <span class=\"unit\">ideal: 6.0–7.5</span>",
-    organicCarbonLabel: "Organic Carbon <span class=\"unit\">% · ideal: 0.8–1.5</span>",
+    nitrogenLabel: "🌿 Nitrogen (N) <span class=\"unit\">kg/ha · ideal: 80–160</span>",
+    phosphorusLabel: "💎 Phosphorus (P) <span class=\"unit\">kg/ha · ideal: 30–60</span>",
+    potassiumLabel: "🍌 Potassium (K) <span class=\"unit\">kg/ha · ideal: 60–120</span>",
+    phLabel: "⚗️ Soil pH <span class=\"unit\">ideal: 6.0–7.5</span>",
+    organicCarbonLabel: "🍂 Organic Carbon <span class=\"unit\">% · ideal: 0.8–1.5</span>",
     btnAnalyseSoil: "🔬 Analyse Soil",
     btnNextCropHistory: "Next: Crop History →",
 
@@ -243,11 +243,11 @@ const TRANSLATIONS = {
     // Soil Analysis View
     soilAnalysisTitle: "மண் வள நோயறிதல்",
     soilAnalysisSubtitle: "மண் பரிசோதனை முடிவுகளை உள்ளிட்டு உங்கள் நிலத்தின் ஆரோக்கியத்தை பரிசோதிக்கவும்",
-    nitrogenLabel: "தழைச்சத்து (நைட்ரஜன் - N) <span class=\"unit\">கிலோ/ஹெக்டேர் · உகந்தது: 80–160</span>",
-    phosphorusLabel: "மணிச்சத்து (பாஸ்பரஸ் - P) <span class=\"unit\">கிலோ/ஹெக்டேர் · உகந்தது: 30–60</span>",
-    potassiumLabel: "சாம்பல் சத்து (பொட்டாசியம் - K) <span class=\"unit\">கிலோ/ஹெக்டேர் · உகந்தது: 60–120</span>",
-    phLabel: "மண் கார அமிலத்தன்மை (pH) <span class=\"unit\">உகந்தது: 6.0–7.5</span>",
-    organicCarbonLabel: "மண் கரிம வளம் <span class=\"unit\">% · உகந்தது: 0.8–1.5</span>",
+    nitrogenLabel: "🌿 தழைச்சத்து (நைட்ரஜன் - N) <span class=\"unit\">கிலோ/ஹெக்டேர் · உகந்தது: 80–160</span>",
+    phosphorusLabel: "💎 மணிச்சத்து (பாஸ்பரஸ் - P) <span class=\"unit\">கிலோ/ஹெக்டேர் · உகந்தது: 30–60</span>",
+    potassiumLabel: "🍌 சாம்பல் சத்து (பொட்டாசியம் - K) <span class=\"unit\">கிலோ/ஹெக்டேர் · உகந்தது: 60–120</span>",
+    phLabel: "⚗️ மண் கார அமிலத்தன்மை (pH) <span class=\"unit\">உகந்தது: 6.0–7.5</span>",
+    organicCarbonLabel: "🍂 மண் கரிம வளம் <span class=\"unit\">% · உகந்தது: 0.8–1.5</span>",
     btnAnalyseSoil: "🔬 மண் பரிசோதனை செய்",
     btnNextCropHistory: "அடுத்து: பயிர் வரலாறு →",
 

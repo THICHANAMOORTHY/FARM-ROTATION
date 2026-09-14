@@ -6,7 +6,7 @@
 //   3. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
 //   4. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
 // Total empirical records analyzed: 782,374 | Unique crops: 60
-// Generated: 2026-09-03 11:42:16
+// Generated: 2026-09-14 11:40:42
 // ============================================================
 
 const kaggleCrops = [

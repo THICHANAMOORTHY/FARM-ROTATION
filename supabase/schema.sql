@@ -180,6 +180,35 @@ CREATE TABLE IF NOT EXISTS recommendations (
     created_at          TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 13. Users — Account credentials for Farmer Mode & B2B Enterprise Hub
+CREATE TABLE IF NOT EXISTS users (
+    user_id              SERIAL PRIMARY KEY,
+    role                 VARCHAR(10) NOT NULL CHECK (role IN ('farmer', 'buyer')),
+    name                 VARCHAR(120) NOT NULL,
+    email                VARCHAR(150) UNIQUE NOT NULL,
+    phone                VARCHAR(20),
+    org_name             VARCHAR(150),
+    farmer_id            INT REFERENCES farmers(farmer_id) ON DELETE SET NULL,
+    buyer_id             INT,
+    password_hash        VARCHAR(255) NOT NULL,
+    email_verified        BOOLEAN DEFAULT FALSE,
+    verification_token   VARCHAR(255),
+    verification_expires  TIMESTAMPTZ,
+    token_version        INT DEFAULT 0,
+    created_at           TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public access on users" ON users;
+CREATE POLICY "Public access on users" ON users FOR ALL USING (true) WITH CHECK (true);
+-- NOTE: This app authenticates with its own JWTs (see backend/routes/auth.js), not
+-- Supabase Auth, so RLS can't scope rows to "the current user" — the API layer is
+-- the trust boundary. Tighten this policy if you ever expose the Supabase anon key
+-- to a client that talks to Supabase directly.
+
 -- ─────────────────────────────────────────────────────────────
 -- Indexes
 -- ─────────────────────────────────────────────────────────────

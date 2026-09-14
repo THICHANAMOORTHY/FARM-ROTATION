@@ -1,6 +1,7 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 const { supabase, isConfigured } = require('./db/supabase');
 
@@ -9,23 +10,26 @@ const app = express();
 // ── Middleware ─────────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 
-// Serverless / Proxy URL normalization
+// Serve frontend static files FIRST
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
+
+// Serverless / Proxy URL normalization (only for API routes missing /api prefix)
+const KNOWN_API_ROUTES = [
+  'soil-analysis', 'crop-history', 'candidate-crops', 'crop-evaluation',
+  'optimize-rotation', 'soil-simulation', 'recommendation', 'dashboard',
+  'weather', 'report', 'chat', 'gps-zones', 'crops', 'farms', 'seasons',
+  'farmers', 'health', 'db-status', 'b2b', 'auth', 'soil-sensor'
+];
+
 app.use((req, res, next) => {
-  if (
-    !req.url.startsWith('/api') &&
-    !req.url.startsWith('/download') &&
-    !req.url.startsWith('/downloads') &&
-    req.url !== '/' &&
-    !req.url.startsWith('/?')
-  ) {
+  const segment = req.path.replace(/^\/+/, '').split('/')[0];
+  if (KNOWN_API_ROUTES.includes(segment) && !req.url.startsWith('/api')) {
     req.url = '/api' + req.url;
   }
   next();
 });
-
-// Serve frontend static files
-app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // ── API Routes ─────────────────────────────────────────────
 app.use('/api/soil-analysis',    require('./routes/soilAnalysis'));
@@ -40,6 +44,9 @@ app.use('/api/weather',          require('./routes/weather'));
 app.use('/api/report',           require('./routes/report'));
 app.use('/api/chat',             require('./routes/chat'));
 app.use('/api/gps-zones',        require('./routes/gpsZones'));
+app.use('/api/b2b',              require('./routes/b2b'));
+app.use('/api/auth',             require('./routes/auth'));
+app.use('/api/soil-sensor',      require('./routes/soilSensor'));
 
 // ── Downloadable Assets & Export Routes ────────────────────
 const fs = require('fs');

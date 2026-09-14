@@ -2,6 +2,10 @@
 //  soilAnalysis.js — Soil Analysis view
 // ============================================================
 
+let soilDataMode = 'manual'; // 'manual' | 'live'
+let sensorPollTimer = null;
+const SENSOR_POLL_MS = 4000;
+
 VIEW_LOADERS['soil-analysis'] = async function loadSoilAnalysis() {
   // Load last known soil data to pre-fill sliders
   try {
@@ -9,6 +13,69 @@ VIEW_LOADERS['soil-analysis'] = async function loadSoilAnalysis() {
     if (soil) prefillSliders(soil);
   } catch(_) {}
 };
+
+// ── Manual / Live (ESP32) mode switcher ─────────────────────
+function setSoilDataMode(mode) {
+  soilDataMode = mode;
+  const manualBtn = document.getElementById('soil-mode-btn-manual');
+  const liveBtn = document.getElementById('soil-mode-btn-live');
+  const banner = document.getElementById('sensor-live-banner');
+  const sliderIds = ['n-slider', 'p-slider', 'k-slider', 'ph-slider', 'oc-slider'];
+
+  if (mode === 'live') {
+    manualBtn?.classList.remove('active');
+    liveBtn?.classList.add('active');
+    if (banner) banner.style.display = 'flex';
+    sliderIds.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
+    startSensorPolling();
+  } else {
+    liveBtn?.classList.remove('active');
+    manualBtn?.classList.add('active');
+    if (banner) banner.style.display = 'none';
+    sliderIds.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = false; });
+    stopSensorPolling();
+  }
+}
+window.setSoilDataMode = setSoilDataMode;
+
+function stopSensorPolling() {
+  if (sensorPollTimer) { clearInterval(sensorPollTimer); sensorPollTimer = null; }
+}
+window.stopSensorPolling = stopSensorPolling;
+
+function startSensorPolling() {
+  stopSensorPolling();
+  pollSensorOnce(); // immediate first check, don't wait for the interval
+  sensorPollTimer = setInterval(() => {
+    const viewActive = document.getElementById('view-soil-analysis')?.classList.contains('active');
+    if (!viewActive || soilDataMode !== 'live') { stopSensorPolling(); return; }
+    pollSensorOnce();
+  }, SENSOR_POLL_MS);
+}
+
+async function pollSensorOnce() {
+  const dot = document.getElementById('sensor-live-dot');
+  const text = document.getElementById('sensor-live-status-text');
+  try {
+    const data = await apiGet(`/soil-sensor/latest?farm_id=${state.farm_id}`);
+    if (!data.ever_connected) {
+      dot.className = 'sensor-live-dot error';
+      text.textContent = '⚠ No ESP32 has ever reported for this farm yet. Check that the device is powered on and on the same network.';
+      return;
+    }
+    if (data.connected) {
+      dot.className = 'sensor-live-dot connected';
+      text.textContent = `🟢 Live · device "${data.device_id}" · updated ${data.seconds_ago}s ago`;
+    } else {
+      dot.className = 'sensor-live-dot stale';
+      text.textContent = `🟡 Signal lost · showing last known reading from ${data.seconds_ago}s ago (device "${data.device_id}")`;
+    }
+    if (data.reading) prefillSliders(data.reading);
+  } catch (err) {
+    dot.className = 'sensor-live-dot error';
+    text.textContent = `⚠ Could not reach sensor status endpoint: ${err.message}`;
+  }
+}
 
 function prefillSliders(soil) {
   setSlider('n-slider',  soil.nitrogen,       'n-val');

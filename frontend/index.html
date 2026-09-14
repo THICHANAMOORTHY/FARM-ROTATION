@@ -57,6 +57,19 @@
       </button>
     </div>
 
+    <!-- ── Mode Switcher (Farmer vs B2B Enterprise) ──── -->
+    <div class="mode-toggle-wrap">
+      <button id="mode-btn-farmer" class="mode-btn active" onclick="setAppMode('farmer')">
+        <span>🌾</span> Farmer Mode
+      </button>
+      <button id="mode-btn-b2b" class="mode-btn" onclick="setAppMode('b2b')">
+        <span>🏢</span> B2B Enterprise
+      </button>
+    </div>
+
+    <!-- ── Account (Sign Up / Log In) ──────────────────── -->
+    <div id="account-widget-mount"></div>
+
     <div class="nav-items">
       <p class="sidebar-section-label" data-i18n="navMain">Main</p>
       <div class="nav-link active" data-view="dashboard">
@@ -90,6 +103,12 @@
       <div class="nav-link" data-view="recommendation">
         <span class="nav-icon">⭐</span> <span data-i18n="navRecommendation">Recommendation</span>
         <span class="nav-badge">NEW</span>
+      </div>
+
+      <p class="sidebar-section-label" style="margin-top:8px">B2B Enterprise</p>
+      <div class="nav-link" data-view="b2b" id="nav-b2b-link" onclick="setAppMode('b2b')">
+        <span class="nav-icon">🏢</span> <span>B2B Enterprise Hub</span>
+        <span class="nav-badge" style="background:#0284c7">ENTERPRISE</span>
       </div>
     </div>
 
@@ -321,50 +340,65 @@
         </div>
       </div>
 
+      <!-- ── Soil Data Source Toggle ──────────────────────── -->
+      <div class="sensor-mode-toggle-wrap mb-16">
+        <button id="soil-mode-btn-manual" class="sensor-mode-btn active" onclick="setSoilDataMode('manual')">
+          <span>✍️</span> Manual Entry
+        </button>
+        <button id="soil-mode-btn-live" class="sensor-mode-btn" onclick="setSoilDataMode('live')">
+          <span>🔌</span> Live Sensor (ESP32)
+        </button>
+      </div>
+
+      <div id="sensor-live-banner" class="sensor-live-banner mb-16" style="display:none">
+        <span id="sensor-live-dot" class="sensor-live-dot"></span>
+        <span id="sensor-live-status-text">Waiting for ESP32…</span>
+      </div>
+
       <div class="glass-card">
         <form id="soil-form">
           <div class="form-grid">
 
             <!-- Nitrogen -->
-            <div class="form-group">
+            <div class="form-group" data-nutrient="n">
               <label class="form-label" for="n-slider" data-i18n="nitrogenLabel">
-                Nitrogen (N) <span class="unit">kg/ha · ideal: 80–160</span>
+                🌿 Nitrogen (N) <span class="unit">kg/ha · ideal: 80–160</span>
               </label>
               <input type="range" id="n-slider" min="0" max="200" value="42" step="1"/>
               <div class="range-value" id="n-val">42</div>
             </div>
 
             <!-- Phosphorus -->
-            <div class="form-group">
+            <div class="form-group" data-nutrient="p">
               <label class="form-label" for="p-slider" data-i18n="phosphorusLabel">
-                Phosphorus (P) <span class="unit">kg/ha · ideal: 30–60</span>
+                💎 Phosphorus (P) <span class="unit">kg/ha · ideal: 30–60</span>
               </label>
               <input type="range" id="p-slider" min="0" max="100" value="28" step="1"/>
               <div class="range-value" id="p-val">28</div>
             </div>
 
             <!-- Potassium -->
-            <div class="form-group">
+            <div class="form-group" data-nutrient="k">
               <label class="form-label" for="k-slider" data-i18n="potassiumLabel">
-                Potassium (K) <span class="unit">kg/ha · ideal: 60–120</span>
+                🍌 Potassium (K) <span class="unit">kg/ha · ideal: 60–120</span>
               </label>
               <input type="range" id="k-slider" min="0" max="200" value="55" step="1"/>
               <div class="range-value" id="k-val">55</div>
             </div>
 
             <!-- pH -->
-            <div class="form-group">
+            <div class="form-group" data-nutrient="ph">
               <label class="form-label" for="ph-slider" data-i18n="phLabel">
-                Soil pH <span class="unit">ideal: 6.0–7.5</span>
+                ⚗️ Soil pH <span class="unit">ideal: 6.0–7.5</span>
               </label>
               <input type="range" id="ph-slider" min="40" max="90" value="65" step="1"/>
               <div class="range-value" id="ph-val">6.5</div>
             </div>
 
             <!-- Organic Carbon -->
-            <div class="form-group">
+            <div class="form-group" data-nutrient="oc">
               <label class="form-label" for="oc-slider" data-i18n="organicCarbonLabel">
-                Organic Carbon <span class="unit">% · ideal: 0.8–1.5</span>
+                🍂 Organic Carbon <span class="unit">% · ideal: 0.8–1.5</span>
               </label>
               <input type="range" id="oc-slider" min="1" max="300" value="52" step="1"/>
               <div class="range-value" id="oc-val">0.52</div>
@@ -722,6 +756,11 @@
       <div id="gps-zones-container"></div>
     </div>
 
+    <!-- ── VIEW: B2B ENTERPRISE HUB ──────────────────────── -->
+    <div id="view-b2b" class="view">
+      <div id="b2b-view-content"></div>
+    </div>
+
   </main><!-- end .main -->
 
   <!-- ══════════════════ MOBILE BOTTOM NAVIGATION ══════════════════ -->
@@ -742,9 +781,9 @@
       <span class="mb-icon">♻️</span>
       <span class="mb-label" data-i18n="navRotation">Rotation</span>
     </button>
-    <button class="mb-nav-item" data-view="recommendation" onclick="navigate('recommendation')">
-      <span class="mb-icon">⭐</span>
-      <span class="mb-label" data-i18n="navRecommendation">Plan</span>
+    <button class="mb-nav-item" data-view="b2b" onclick="setAppMode('b2b')">
+      <span class="mb-icon">🏢</span>
+      <span class="mb-label">B2B Hub</span>
     </button>
   </nav>
 
@@ -753,6 +792,7 @@
 <!-- Scripts -->
 <script src="js/i18n.js"></script>
 <script src="js/app.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/soilAnalysis.js"></script>
 <script src="js/cropHistory.js"></script>
@@ -762,6 +802,7 @@
 <script src="js/recommendation.js"></script>
 <script src="js/weather.js"></script>
 <script src="js/gpsZones.js"></script>
+<script src="js/b2b.js"></script>
 <script src="js/reportPdf.js"></script>
 <script src="js/chatbot.js"></script>
 

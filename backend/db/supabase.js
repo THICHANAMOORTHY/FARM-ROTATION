@@ -2,7 +2,7 @@
 // supabase.js — Supabase client & repository layer
 // ============================================================
 
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const { createClient } = require('@supabase/supabase-js');
 const memDb = require('../data/seed');
 

@@ -20,20 +20,73 @@ window.state = {
   dashboard:  null,
 };
 
+// ── Auth token (in-memory access token; refresh token lives in an
+//    httpOnly cookie set by the server, never touched from JS) ──
+let ACCESS_TOKEN = null;
+function setAccessToken(t) { ACCESS_TOKEN = t; }
+function getAccessToken()  { return ACCESS_TOKEN; }
+window.setAccessToken = setAccessToken;
+window.getAccessToken = getAccessToken;
+
+function authHeaders() {
+  return ACCESS_TOKEN ? { 'Authorization': `Bearer ${ACCESS_TOKEN}` } : {};
+}
+
+// Attempts one silent refresh using the httpOnly refresh cookie.
+// Returns true if a new access token was obtained.
+let refreshInFlight = null;
+async function trySilentRefresh() {
+  if (refreshInFlight) return refreshInFlight;
+  refreshInFlight = (async () => {
+    try {
+      const res = await fetch(API + '/auth/refresh', { method: 'POST', credentials: 'same-origin' });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (data.access_token) {
+        setAccessToken(data.access_token);
+        if (window.onAuthRestored) window.onAuthRestored(data.user);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+  return refreshInFlight;
+}
+window.trySilentRefresh = trySilentRefresh;
+
 // ── API Helpers ─────────────────────────────────────────────
-async function apiGet(path) {
-  const res = await fetch(API + path);
+async function apiGet(path, { retry = true } = {}) {
+  const res = await fetch(API + path, { headers: authHeaders(), credentials: 'same-origin' });
+  if (res.status === 401 && retry && !path.startsWith('/auth/')) {
+    const refreshed = await trySilentRefresh();
+    if (refreshed) return apiGet(path, { retry: false });
+  }
   if (!res.ok) throw new Error(`API error ${res.status}: ${path}`);
   return res.json();
 }
 
-async function apiPost(path, body) {
+async function apiPost(path, body, { retry = true } = {}) {
   const res = await fetch(API + path, {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    credentials: 'same-origin',
     body:    JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`API error ${res.status}: ${path}`);
+  if (res.status === 401 && retry && !path.startsWith('/auth/')) {
+    const refreshed = await trySilentRefresh();
+    if (refreshed) return apiPost(path, body, { retry: false });
+  }
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    const err = new Error(errBody.error || `API error ${res.status}: ${path}`);
+    err.status = res.status;
+    err.body = errBody;
+    throw err;
+  }
   return res.json();
 }
 

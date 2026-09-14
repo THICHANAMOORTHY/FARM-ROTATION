@@ -1,0 +1,8 @@
+# Direct downloads
+/download/farmer-plan-pdf   /downloads/UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan.pdf   302
+/download/uzhavu-kaappaan-pdf   /downloads/UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan.pdf   302
+/download/crops-csv   /downloads/CropSmart_Master_60_Crops_Agronomy_Mandi.csv   302
+/download/crops-json   /downloads/CropSmart_Master_60_Crops_Agronomy_Mandi.json   302
+
+# SPA fallback
+/*   /index.html   200
