@@ -218,7 +218,10 @@ async function parseSourcingQueryText(queryText, cropNames) {
     try {
       const { GoogleGenerativeAI } = require('@google/generative-ai');
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const candidateModels = ['gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+      // See the matching comment in chat.js — gemini-2.5-flash-lite and
+      // gemini-2.0-flash are retired (404); gemini-3.5-flash(-lite) is
+      // confirmed working with separate quota as of 2026-09.
+      const candidateModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest'];
 
       const prompt = `Extract a corporate crop-sourcing request into STRICT JSON only (no markdown, no commentary).
 Valid crop names (pick the closest match, case-sensitive as given): ${cropNames.join(', ')}
@@ -273,22 +276,30 @@ Return exactly this shape:
 // it is never the source of the numbers themselves, so it can't hallucinate figures.
 async function generateMatchReasoning(payload) {
   if (!process.env.GEMINI_API_KEY) return null;
-  try {
-    const { GoogleGenerativeAI } = require('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
+  const { GoogleGenerativeAI } = require('@google/generative-ai');
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const candidateModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest'];
 
-    const prompt = `You are a B2B agri-procurement analyst. Using ONLY the JSON data below (do not invent any numbers not present here), write a concise 3-4 sentence recommendation for a corporate buyer explaining why the recommended FPO and matched farms are a good sourcing fit. Be specific and cite the real figures given.
+  const prompt = `You are a B2B agri-procurement analyst. Using ONLY the JSON data below (do not invent any numbers not present here), write a concise 3-4 sentence recommendation for a corporate buyer explaining why the recommended FPO and matched farms are a good sourcing fit. Be specific and cite the real figures given.
 
 DATA:
 ${JSON.stringify(payload, null, 2)}`;
 
-    const result = await withTimeout(model.generateContent(prompt), GEMINI_TIMEOUT_MS, 'Gemini reasoning generation timed out');
-    return result.response.text().trim();
-  } catch (err) {
+  let text = null;
+  await withTimeout((async () => {
+    for (const modelName of candidateModels) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        text = result.response.text().trim();
+        if (text) return;
+      } catch (mErr) { /* try next model */ }
+    }
+  })(), GEMINI_TIMEOUT_MS, 'Gemini reasoning generation timed out').catch((err) => {
     console.warn('[b2b] Gemini reasoning generation failed:', err.message);
-    return null;
-  }
+  });
+
+  return text;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -374,7 +385,11 @@ router.post('/match-contract', async (req, res) => {
 
   const aiReasoning = await generateMatchReasoning(responsePayload);
   responsePayload.ai_match_reasoning = aiReasoning || `Recommended based on ${selectedFpo.name}'s ${selectedFpo.total_acreage}-acre network in ${selectedFpo.district}, ${selectedFpo.state}, matched against ${crop.name}'s soil and season fit across ${matchedFarms.length} monitored farms.`;
-  responsePayload.ai_reasoning_provider = aiReasoning ? 'Google Gemini AI' : 'Rule-Based Engine (Gemini unavailable or not configured)';
+  responsePayload.ai_reasoning_provider = aiReasoning
+    ? 'Google Gemini AI'
+    : (process.env.GEMINI_API_KEY
+      ? 'Rule-Based Engine (Gemini call failed or rate-limited — see server logs)'
+      : 'Rule-Based Engine (GEMINI_API_KEY not configured)');
 
   res.json(responsePayload);
 });

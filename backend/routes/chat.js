@@ -42,7 +42,13 @@ router.post('/', async (req, res) => {
         const { GoogleGenerativeAI } = require('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         
-        const candidateModels = ['gemini-flash-latest', 'gemini-2.5-flash-lite', 'gemini-3.7-flash', 'gemini-3.8-flash'];
+        // Verified against the live API (2026-09): gemini-2.5-flash-lite and
+        // gemini-2.0-flash have been retired for new users (404), and
+        // gemini-flash-latest / gemini-3.8-flash are prone to hitting the
+        // free-tier daily quota fast. gemini-3.5-flash(-lite) currently has
+        // separate, available quota — listed first so most requests succeed
+        // without needing the timeout/fallback path at all.
+        const candidateModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
         let text = null;
 
         const prompt = `You are "CropSmart Kisan AI", an expert agricultural advisor and agronomist.
