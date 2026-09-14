@@ -7,7 +7,8 @@
     "start": "node server.js",
     "dev": "node server.js",
     "db:sync": "node scripts/sync_to_supabase.js",
-    "sim:esp32": "node scripts/simulate_esp32.js"
+    "sim:esp32": "node scripts/simulate_esp32.js",
+    "sim:esp32:env": "node scripts/simulate_esp32.js 101 --env"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

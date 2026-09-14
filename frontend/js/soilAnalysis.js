@@ -32,6 +32,8 @@ function setSoilDataMode(mode) {
     liveBtn?.classList.remove('active');
     manualBtn?.classList.add('active');
     if (banner) banner.style.display = 'none';
+    const extraTiles = document.getElementById('sensor-extra-readings');
+    if (extraTiles) extraTiles.style.display = 'none';
     sliderIds.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = false; });
     stopSensorPolling();
   }
@@ -78,11 +80,36 @@ async function pollSensorOnce() {
 }
 
 function prefillSliders(soil) {
-  setSlider('n-slider',  soil.nitrogen,       'n-val');
-  setSlider('p-slider',  soil.phosphorus,     'p-val');
-  setSlider('k-slider',  soil.potassium,      'k-val');
-  setSlider('ph-slider', soil.ph * 10,        'ph-val', v => (v/10).toFixed(1));
-  setSlider('oc-slider', soil.organic_carbon * 100, 'oc-val', v => (v/100).toFixed(2));
+  // A live sensor reading may only carry env fields (temp/humidity/soil
+  // moisture) with no nutrient data yet — e.g. a simple DHT11 device with
+  // no NPK/pH capability, before any full soil test has ever been recorded
+  // for this farm. Leave the corresponding sliders untouched rather than
+  // setting them to NaN in that case.
+  if (soil.nitrogen       !== undefined && soil.nitrogen       !== null) setSlider('n-slider',  soil.nitrogen,  'n-val');
+  if (soil.phosphorus     !== undefined && soil.phosphorus     !== null) setSlider('p-slider',  soil.phosphorus,'p-val');
+  if (soil.potassium      !== undefined && soil.potassium      !== null) setSlider('k-slider',  soil.potassium, 'k-val');
+  if (soil.ph              !== undefined && soil.ph             !== null) setSlider('ph-slider', soil.ph * 10,   'ph-val', v => (v/10).toFixed(1));
+  if (soil.organic_carbon !== undefined && soil.organic_carbon !== null) setSlider('oc-slider', soil.organic_carbon * 100, 'oc-val', v => (v/100).toFixed(2));
+
+  updateSensorExtraTiles(soil);
+}
+
+function updateSensorExtraTiles(soil) {
+  const wrap = document.getElementById('sensor-extra-readings');
+  if (!wrap) return;
+
+  const hasAnyEnvField = ['air_temperature', 'air_humidity', 'soil_moisture']
+    .some(k => soil[k] !== undefined && soil[k] !== null);
+  wrap.style.display = hasAnyEnvField ? 'grid' : 'none';
+  if (!hasAnyEnvField) return;
+
+  const tempEl = document.getElementById('sensor-temp-val');
+  const humEl = document.getElementById('sensor-humidity-val');
+  const moistEl = document.getElementById('sensor-soil-moisture-val');
+
+  if (tempEl) tempEl.textContent = (soil.air_temperature !== undefined && soil.air_temperature !== null) ? `${soil.air_temperature.toFixed(1)} °C` : '— °C';
+  if (humEl) humEl.textContent = (soil.air_humidity !== undefined && soil.air_humidity !== null) ? `${soil.air_humidity.toFixed(0)} %` : '— %';
+  if (moistEl) moistEl.textContent = (soil.soil_moisture !== undefined && soil.soil_moisture !== null) ? `${soil.soil_moisture.toFixed(0)} %` : '— %';
 }
 
 function setSlider(sliderId, value, valId, formatter) {

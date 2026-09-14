@@ -102,9 +102,9 @@ The B2B Contract Matchmaker is both AI-powered and live:
 - **Real-time**: matching updates live as you type (debounced ~900ms) — no button click needed — and the result panel silently re-checks every 15 seconds while open, flashing a "🔄 Live-updated" badge if the underlying match actually changes.
 
 ### 15. 🔌 ESP32 Live Soil Sensor Integration
-- A device-authenticated ingestion endpoint (`X-Device-Key` header, independent of the user JWT system) accepts real-time NPK/pH/organic-carbon readings from a physical ESP32 + 7-in-1 RS485 soil sensor.
-- The Soil Analysis page's **Live Sensor mode** polls every 4 seconds and shows connection state: 🟢 live, 🟡 signal lost (last known reading), or 🔴 never connected.
-- A reference Arduino sketch ([`esp32/soil_sensor_client.ino`](esp32/soil_sensor_client.ino)) and a Node.js simulator ([`backend/scripts/simulate_esp32.js`](backend/scripts/simulate_esp32.js)) let you test the entire pipeline before any hardware is flashed.
+- A device-authenticated ingestion endpoint (`X-Device-Key` header, independent of the user JWT system) accepts real-time sensor readings from a physical ESP32, supporting two device types on the same endpoint: a full 7-in-1 RS485 soil sensor (NPK/pH/organic-carbon) and a simpler DHT11 + analog soil-moisture probe (air temperature, air humidity, soil moisture — no nutrient capability). Whichever fields a given device doesn't report are carried over from the farm's last known reading, so an env-only device never blanks out an existing soil test.
+- The Soil Analysis page's **Live Sensor mode** polls every 4 seconds, shows connection state (🟢 live, 🟡 signal lost, or 🔴 never connected), and displays air temperature / air humidity / soil moisture as supplementary tiles alongside the NPK/pH sliders.
+- Two reference Arduino sketches — [`esp32/soil_sensor_client.ino`](esp32/soil_sensor_client.ino) (7-in-1 RS485) and [`esp32/dht11_soil_moisture_client.ino`](esp32/dht11_soil_moisture_client.ino) (DHT11 + soil moisture, also serves its own local debug webpage) — plus a Node.js simulator ([`backend/scripts/simulate_esp32.js`](backend/scripts/simulate_esp32.js), with an `--env` flag for the DHT11 variant) let you test the entire pipeline before any hardware is flashed.
 
 ### 16. 🎨 Modern Responsive "Midnight Harvest" Design System
 - Dark theme (near-black base, emerald/indigo/violet/gold accents) with layered card depth, per-nutrient color coding on the Soil Analysis page, and glassmorphism throughout.
@@ -256,12 +256,23 @@ Two roles, one login modal (reachable from the sidebar's "Sign Up / Log In" butt
 
 ## 🔌 ESP32 Live Soil Sensor Integration
 
-1. Set `ESP32_DEVICE_KEY` in `backend/.env` (see `.env.example` for how to generate one).
-2. Flash [`esp32/soil_sensor_client.ino`](esp32/soil_sensor_client.ino) onto an ESP32 wired to a 7-in-1 RS485/Modbus soil sensor (wiring diagram and register map are documented inline in the sketch) — fill in your WiFi credentials, your machine's LAN IP, and the same device key.
-3. The ESP32 POSTs `{ farm_id, device_id, nitrogen, phosphorus, potassium, ph, organic_carbon }` to `/api/soil-sensor/ingest` with an `X-Device-Key` header every few seconds.
-4. No hardware yet? Run `npm run sim:esp32` from `backend/` — it POSTs realistic randomized readings on the same endpoint so you can see the full Live Sensor UI working immediately.
+Two supported device types, same endpoint and same `ESP32_DEVICE_KEY`:
 
-**Honest caveat** (documented in the firmware comments too): the common cheap 7-in-1 RS485 sensor this sketch targets does not measure organic carbon directly — the sketch estimates it from conductivity + moisture as a rough proxy, not a lab-grade reading. Swap in a real OC sensor or a manual override if agronomic accuracy matters for your use case.
+**Option A — full 7-in-1 RS485 soil sensor** (NPK + pH + organic carbon):
+1. Set `ESP32_DEVICE_KEY` in `backend/.env` (see `.env.example` for how to generate one).
+2. Flash [`esp32/soil_sensor_client.ino`](esp32/soil_sensor_client.ino) onto an ESP32 wired to the sensor (wiring diagram and register map are documented inline) — fill in your WiFi credentials, your machine's LAN IP, and the device key.
+3. It POSTs `{ farm_id, device_id, nitrogen, phosphorus, potassium, ph, organic_carbon }` to `/api/soil-sensor/ingest` every few seconds.
+4. No hardware yet? Run `npm run sim:esp32` from `backend/`.
+
+**Option B — DHT11 + analog soil-moisture probe** (no NPK/pH capability, just air temp/humidity + soil moisture):
+1. Same `ESP32_DEVICE_KEY` setup.
+2. Flash [`esp32/dht11_soil_moisture_client.ino`](esp32/dht11_soil_moisture_client.ino) — wiring is documented inline; it also serves its own local debug webpage on the ESP32's IP, independent of this app.
+3. It POSTs `{ farm_id, device_id, air_temperature, air_humidity, soil_moisture }` — the health-score nutrient fields are simply omitted, and the backend carries over whatever nutrient reading the farm already has (from manual entry, seed data, or a full sensor) so this device's readings never blank that out.
+4. No hardware yet? Run `npm run sim:esp32:env` from `backend/`.
+
+Both device types can post for the **same farm_id** — the app merges them into one live view (nutrient sliders from whichever device/entry last reported them, env tiles from whichever device last reported those).
+
+**Honest caveat** (documented in the firmware comments too): the 7-in-1 RS485 sensor does not measure organic carbon directly — its sketch estimates it from conductivity + moisture as a rough proxy, not a lab-grade reading. Swap in a real OC sensor or a manual override if agronomic accuracy matters for your use case.
 
 ---
 
@@ -307,7 +318,7 @@ Two roles, one login modal (reachable from the sidebar's "Sign Up / Log In" butt
 ### ESP32 Live Soil Sensor
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/soil-sensor/ingest` | Device-authenticated (`X-Device-Key`) sensor reading submission |
+| `POST` | `/api/soil-sensor/ingest` | Device-authenticated (`X-Device-Key`) sensor reading submission — full NPK/pH/OC, env-only (air_temperature/air_humidity/soil_moisture), or both |
 | `GET` | `/api/soil-sensor/latest?farm_id=…` | Poll target: latest reading + connected/stale status |
 
 ### B2B Enterprise & Corporate Sourcing Hub

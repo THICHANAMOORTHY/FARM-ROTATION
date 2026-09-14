@@ -355,6 +355,22 @@
         <span id="sensor-live-status-text">Waiting for ESP32…</span>
       </div>
 
+      <!-- Supplementary sensor readings (not part of the health score) -->
+      <div id="sensor-extra-readings" class="sensor-extra-grid mb-16" style="display:none">
+        <div class="sensor-extra-tile">
+          <div class="sensor-extra-label">🌡️ Air Temperature</div>
+          <div class="sensor-extra-value" id="sensor-temp-val">— °C</div>
+        </div>
+        <div class="sensor-extra-tile">
+          <div class="sensor-extra-label">💨 Air Humidity</div>
+          <div class="sensor-extra-value" id="sensor-humidity-val">— %</div>
+        </div>
+        <div class="sensor-extra-tile">
+          <div class="sensor-extra-label">💧 Soil Moisture</div>
+          <div class="sensor-extra-value" id="sensor-soil-moisture-val">— %</div>
+        </div>
+      </div>
+
       <div class="glass-card">
         <form id="soil-form">
           <div class="form-grid">

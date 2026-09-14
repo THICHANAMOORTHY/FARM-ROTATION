@@ -3369,3 +3369,38 @@ select option { background: var(--bg-surface); }
   box-shadow: none;
 }
 
+/* Supplementary ESP32 readings (air temp/humidity, soil moisture) */
+.sensor-extra-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.sensor-extra-tile {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  transition: var(--transition);
+}
+
+.sensor-extra-tile:hover {
+  border-color: var(--border-light);
+}
+
+.sensor-extra-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.sensor-extra-value {
+  font-family: 'Outfit', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
