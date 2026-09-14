@@ -50,18 +50,19 @@ const char* WIFI_SSID     = "YOUR_WIFI_NAME";
 const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 
 // ---- UZHAVU KAAPPAAN backend ----
-// LAN IP of the machine running `npm start` (find with `ipconfig` /
-// `ifconfig` — the WiFi adapter's IPv4, e.g. 192.168.1.42). localhost
-// will NOT work — the ESP32 is a different device on the network.
-const char* SERVER_HOST = "192.168.1.42";
-const int   SERVER_PORT = 3000;
+// Full base URL of the machine running `npm start` — LAN IP (find with
+// `ipconfig` / `ifconfig`, the WiFi adapter's IPv4), NOT localhost (the
+// ESP32 is a different device on the network), including "http://" and
+// the port, e.g. "http://192.168.1.42:3000".
+const char* SERVER_HOST = "http://192.168.1.XX:3000"; // <-- your backend LAN IP
+const char* INGEST_PATH = "/api/soil-sensor/ingest";
 
 // Must exactly match ESP32_DEVICE_KEY in backend/.env
-const char* DEVICE_KEY = "PASTE_YOUR_ESP32_DEVICE_KEY_FROM_BACKEND_ENV_HERE";
-const char* DEVICE_ID  = "esp32-desk-station-01";
+const char* DEVICE_KEY  = "PASTE_ESP32_DEVICE_KEY_HERE";
+const char* DEVICE_ID   = "esp32-desk-station-01";
 
 // Which farm this device belongs to (see /api/farms for valid ids)
-const int FARM_ID = 101;
+const int FARM_ID = 101; // <-- set to your actual farm_id
 
 const unsigned long POST_INTERVAL_MS = 10000; // 10s; raise for a real deployment
 
@@ -139,7 +140,7 @@ void postToServer() {
   }
 
   HTTPClient http;
-  String url = String("http://") + SERVER_HOST + ":" + SERVER_PORT + "/api/soil-sensor/ingest";
+  String url = String(SERVER_HOST) + INGEST_PATH;
   http.begin(url);
   http.addHeader("Content-Type", "application/json");
   http.addHeader("X-Device-Key", DEVICE_KEY);
