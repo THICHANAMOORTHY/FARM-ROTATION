@@ -7,10 +7,13 @@ let sensorPollTimer = null;
 const SENSOR_POLL_MS = 4000;
 
 VIEW_LOADERS['soil-analysis'] = async function loadSoilAnalysis() {
-  // Load last known soil data to pre-fill sliders
+  // Only pre-fill sliders from a REAL prior reading (a manual submission or
+  // a live ESP32 post) — never from the seeded demo 'lab_report' entry.
+  // Otherwise every fresh page load looked like a soil test had already
+  // been run, when nobody had actually entered or measured anything.
   try {
     const soil = await apiGet(`/soil-analysis?farm_id=${state.farm_id}`);
-    if (soil) prefillSliders(soil);
+    if (soil && soil.source !== 'lab_report') prefillSliders(soil);
   } catch(_) {}
 };
 

@@ -119,9 +119,13 @@ router.post('/ingest', requireDeviceKey, (req, res) => {
     source: 'esp32',
   };
 
-  // Only add to the scored soil-test history when we actually have a full
-  // nutrient reading — an env-only ping shouldn't pollute that timeline.
-  if (numeric) db.soil_data.push(entry);
+  // Only add to the scored soil-test history when nutrients were actually
+  // freshly measured in THIS request — not when `numeric` is just carried
+  // over from a prior (possibly seeded/demo) reading. Otherwise an env-only
+  // device re-stamps old data as a "new" entry every time it pings, which
+  // would re-tag seeded demo numbers as fresh and defeat the whole point
+  // of not showing fake data.
+  if (nutrientsProvided) db.soil_data.push(entry);
 
   db.live_sensor_status[farm_id] = {
     device_id: device_id || 'esp32-unknown',
