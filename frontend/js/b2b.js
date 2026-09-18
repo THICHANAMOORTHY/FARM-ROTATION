@@ -59,7 +59,12 @@ function startB2BMatchPolling() {
     }
     const mySeq = ++matchRequestSeq;
     try {
-      const data = await apiPost('/b2b/match-contract', lastMatchRequestBody);
+      // Tell the server what we already have on screen so it can skip the
+      // Gemini reasoning call when the deterministic result hasn't moved —
+      // otherwise every 15s tick pays for AI text that gets thrown away
+      // below without ever being rendered (see matchResultSignature check).
+      const pollBody = { ...lastMatchRequestBody, client_known_signature: lastMatchSignature };
+      const data = await apiPost('/b2b/match-contract', pollBody);
       if (mySeq !== matchRequestSeq) return; // a newer request superseded this one
       const sig = matchResultSignature(data);
       if (sig !== lastMatchSignature) {

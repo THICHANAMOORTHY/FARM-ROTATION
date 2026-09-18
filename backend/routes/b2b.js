@@ -272,6 +272,20 @@ Return exactly this shape:
   };
 }
 
+// Mirrors the frontend's matchResultSignature() in b2b.js — lets us detect
+// a poll tick whose deterministic result is identical to what the client
+// already has, so we can skip the Gemini reasoning call below entirely
+// instead of paying for AI text that will be computed and then discarded
+// unrendered (the frontend only re-renders when this signature changes).
+function computeMatchSignature(payload) {
+  return JSON.stringify({
+    fpo: payload.recommended_fpo && payload.recommended_fpo.fpo_id,
+    price: payload.pricing_matrix && payload.pricing_matrix.guaranteed_farmer_payout_rs_kg,
+    value: payload.pricing_matrix && payload.pricing_matrix.total_contract_value_rs,
+    farms: (payload.matched_fleet_farms || []).map(f => f.farm_id + ':' + f.soil_score).join(','),
+  });
+}
+
 // Grounded explanation: Gemini only narrates numbers we already computed —
 // it is never the source of the numbers themselves, so it can't hallucinate figures.
 async function generateMatchReasoning(payload) {
@@ -308,7 +322,7 @@ ${JSON.stringify(payload, null, 2)}`;
 // preferred_state) or a free-text `query_text` that gets parsed by AI.
 // ─────────────────────────────────────────────────────────────
 router.post('/match-contract', async (req, res) => {
-  let { crop_name, target_quantity_mt, preferred_state, query_text } = req.body;
+  let { crop_name, target_quantity_mt, preferred_state, query_text, client_known_signature } = req.body;
   let parse_provider = null;
 
   if ((!crop_name || !target_quantity_mt) && query_text) {
@@ -383,13 +397,16 @@ router.post('/match-contract', async (req, res) => {
     traceability_guarantee: '100% Geo-tagged fields, real-time soil test audit & sensor logs provided.'
   };
 
-  const aiReasoning = await generateMatchReasoning(responsePayload);
+  const resultUnchangedSinceClient = client_known_signature && client_known_signature === computeMatchSignature(responsePayload);
+  const aiReasoning = resultUnchangedSinceClient ? null : await generateMatchReasoning(responsePayload);
   responsePayload.ai_match_reasoning = aiReasoning || `Recommended based on ${selectedFpo.name}'s ${selectedFpo.total_acreage}-acre network in ${selectedFpo.district}, ${selectedFpo.state}, matched against ${crop.name}'s soil and season fit across ${matchedFarms.length} monitored farms.`;
   responsePayload.ai_reasoning_provider = aiReasoning
     ? 'Google Gemini AI'
-    : (process.env.GEMINI_API_KEY
-      ? 'Rule-Based Engine (Gemini call failed or rate-limited — see server logs)'
-      : 'Rule-Based Engine (GEMINI_API_KEY not configured)');
+    : (resultUnchangedSinceClient
+      ? 'Rule-Based Engine (unchanged since last update — AI reasoning not re-run)'
+      : (process.env.GEMINI_API_KEY
+        ? 'Rule-Based Engine (Gemini call failed or rate-limited — see server logs)'
+        : 'Rule-Based Engine (GEMINI_API_KEY not configured)'));
 
   res.json(responsePayload);
 });
