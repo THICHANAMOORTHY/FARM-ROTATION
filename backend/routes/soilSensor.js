@@ -43,9 +43,9 @@ function requireDeviceKey(req, res, next) {
 //  - A full soil sensor: nitrogen, phosphorus, potassium, ph, organic_carbon
 //    (all required together) -> computes a real soil_health_score.
 //  - A simpler env sensor (e.g. DHT11 + analog soil moisture probe, no NPK/pH
-//    capability): just air_temperature / air_humidity / soil_moisture. These
-//    are never part of the health score — they're shown as supplementary
-//    info tiles in Live Sensor mode.
+//    capability): just air_temperature / air_humidity / soil_moisture / tds.
+//    These are never part of the health score — they're shown as
+//    supplementary info tiles in Live Sensor mode.
 // A request may send nutrients only, env fields only, or both. Whatever
 // isn't sent in THIS request is carried over from the farm's last known
 // reading, so an env-only device doesn't blank out an existing soil test
@@ -55,7 +55,7 @@ router.post('/ingest', requireDeviceKey, (req, res) => {
   const {
     farm_id = 101, device_id,
     nitrogen, phosphorus, potassium, ph, organic_carbon,
-    air_temperature, air_humidity, soil_moisture,
+    air_temperature, air_humidity, soil_moisture, tds,
   } = req.body;
 
   const nutrientFields = { nitrogen, phosphorus, potassium, ph, organic_carbon };
@@ -67,14 +67,14 @@ router.post('/ingest', requireDeviceKey, (req, res) => {
     }
   }
 
-  const envFields = { air_temperature, air_humidity, soil_moisture };
+  const envFields = { air_temperature, air_humidity, soil_moisture, tds };
   for (const [key, v] of Object.entries(envFields)) {
     if (v !== undefined && Number.isNaN(Number(v))) {
       return res.status(400).json({ error: `${key} must be a number if provided` });
     }
   }
   if (!nutrientsProvided && Object.values(envFields).every(v => v === undefined)) {
-    return res.status(400).json({ error: 'Provide either the full nutrient set (nitrogen/phosphorus/potassium/ph/organic_carbon) or at least one of air_temperature/air_humidity/soil_moisture' });
+    return res.status(400).json({ error: 'Provide either the full nutrient set (nitrogen/phosphorus/potassium/ph/organic_carbon) or at least one of air_temperature/air_humidity/soil_moisture/tds' });
   }
 
   const prevStatus = db.live_sensor_status[farm_id];
@@ -114,6 +114,7 @@ router.post('/ingest', requireDeviceKey, (req, res) => {
     air_temperature: air_temperature !== undefined ? Number(air_temperature) : (prevReading ? prevReading.air_temperature : null),
     air_humidity: air_humidity !== undefined ? Number(air_humidity) : (prevReading ? prevReading.air_humidity : null),
     soil_moisture: soil_moisture !== undefined ? Number(soil_moisture) : (prevReading ? prevReading.soil_moisture : null),
+    tds: tds !== undefined ? Number(tds) : (prevReading ? prevReading.tds : null),
     soil_health_score: score,
     deficiencies,
     source: 'esp32',

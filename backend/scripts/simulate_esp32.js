@@ -29,7 +29,7 @@ function randomWalk(prev, min, max, maxStep) {
 }
 
 let reading = { nitrogen: 60, phosphorus: 35, potassium: 70, ph: 6.6, organic_carbon: 0.7 };
-let envReading = { air_temperature: 28, air_humidity: 55, soil_moisture: 40 };
+let envReading = { air_temperature: 28, air_humidity: 55, soil_moisture: 40, tds: 340 };
 
 async function sendOnce() {
   let body;
@@ -40,9 +40,10 @@ async function sendOnce() {
       air_temperature: Math.round(randomWalk(envReading.air_temperature, 18, 42, 0.8) * 10) / 10,
       air_humidity: Math.round(randomWalk(envReading.air_humidity, 20, 95, 3)),
       soil_moisture: Math.round(randomWalk(envReading.soil_moisture, 5, 90, 4)),
+      tds: Math.round(randomWalk(envReading.tds, 50, 1200, 25)),
     };
     body = { farm_id: farmId, device_id: 'esp32-simulator-env', ...envReading };
-    logLine = `temp=${envReading.air_temperature}°C humidity=${envReading.air_humidity}% soil_moisture=${envReading.soil_moisture}%`;
+    logLine = `temp=${envReading.air_temperature}°C humidity=${envReading.air_humidity}% soil_moisture=${envReading.soil_moisture}% tds=${envReading.tds}ppm`;
   } else {
     reading = {
       nitrogen: Math.round(randomWalk(reading.nitrogen, 20, 180, 6)),

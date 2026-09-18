@@ -101,7 +101,7 @@ function updateSensorExtraTiles(soil) {
   const wrap = document.getElementById('sensor-extra-readings');
   if (!wrap) return;
 
-  const hasAnyEnvField = ['air_temperature', 'air_humidity', 'soil_moisture']
+  const hasAnyEnvField = ['air_temperature', 'air_humidity', 'soil_moisture', 'tds']
     .some(k => soil[k] !== undefined && soil[k] !== null);
   wrap.style.display = hasAnyEnvField ? 'grid' : 'none';
   if (!hasAnyEnvField) return;
@@ -109,10 +109,12 @@ function updateSensorExtraTiles(soil) {
   const tempEl = document.getElementById('sensor-temp-val');
   const humEl = document.getElementById('sensor-humidity-val');
   const moistEl = document.getElementById('sensor-soil-moisture-val');
+  const tdsEl = document.getElementById('sensor-tds-val');
 
   if (tempEl) tempEl.textContent = (soil.air_temperature !== undefined && soil.air_temperature !== null) ? `${soil.air_temperature.toFixed(1)} °C` : '— °C';
   if (humEl) humEl.textContent = (soil.air_humidity !== undefined && soil.air_humidity !== null) ? `${soil.air_humidity.toFixed(0)} %` : '— %';
   if (moistEl) moistEl.textContent = (soil.soil_moisture !== undefined && soil.soil_moisture !== null) ? `${soil.soil_moisture.toFixed(0)} %` : '— %';
+  if (tdsEl) tdsEl.textContent = (soil.tds !== undefined && soil.tds !== null) ? `${soil.tds.toFixed(0)} ppm` : '— ppm';
 }
 
 function setSlider(sliderId, value, valId, formatter) {
