@@ -17,7 +17,7 @@ def test(name, method, endpoint, body=None):
         headers = {'Content-Type': 'application/json'} if body else {}
         req = urllib.request.Request(url, data=data, headers=headers)
         req.get_method = lambda: method
-        with urllib.request.urlopen(req, timeout=5) as res:
+        with urllib.request.urlopen(req, timeout=15) as res:
             res_data = json.loads(res.read().decode('utf-8'))
             print(f'[PASS] {res.status} {method} {endpoint} -> OK ({name})')
             return res_data

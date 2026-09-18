@@ -101,7 +101,7 @@ function updateSensorExtraTiles(soil) {
   const wrap = document.getElementById('sensor-extra-readings');
   if (!wrap) return;
 
-  const hasAnyEnvField = ['air_temperature', 'air_humidity', 'soil_moisture', 'tds']
+  const hasAnyEnvField = ['air_temperature', 'air_humidity', 'soil_moisture', 'tds', 'conductivity']
     .some(k => soil[k] !== undefined && soil[k] !== null);
   wrap.style.display = hasAnyEnvField ? 'grid' : 'none';
   if (!hasAnyEnvField) return;
@@ -110,11 +110,43 @@ function updateSensorExtraTiles(soil) {
   const humEl = document.getElementById('sensor-humidity-val');
   const moistEl = document.getElementById('sensor-soil-moisture-val');
   const tdsEl = document.getElementById('sensor-tds-val');
+  const tdsStatusEl = document.getElementById('sensor-tds-status');
 
   if (tempEl) tempEl.textContent = (soil.air_temperature !== undefined && soil.air_temperature !== null) ? `${soil.air_temperature.toFixed(1)} °C` : '— °C';
   if (humEl) humEl.textContent = (soil.air_humidity !== undefined && soil.air_humidity !== null) ? `${soil.air_humidity.toFixed(0)} %` : '— %';
   if (moistEl) moistEl.textContent = (soil.soil_moisture !== undefined && soil.soil_moisture !== null) ? `${soil.soil_moisture.toFixed(0)} %` : '— %';
-  if (tdsEl) tdsEl.textContent = (soil.tds !== undefined && soil.tds !== null) ? `${soil.tds.toFixed(0)} ppm` : '— ppm';
+
+  const rawTds = (soil.tds !== undefined && soil.tds !== null)
+    ? Number(soil.tds)
+    : ((soil.conductivity !== undefined && soil.conductivity !== null) ? Number(soil.conductivity) * 0.5 : null);
+
+  if (tdsEl) {
+    if (rawTds !== null && !isNaN(rawTds)) {
+      const roundedTds = Math.round(rawTds);
+      tdsEl.textContent = `${roundedTds} ppm`;
+      if (tdsStatusEl) {
+        if (roundedTds < 300) {
+          tdsStatusEl.textContent = '🟢 Low · ideal: 300–700 ppm';
+          tdsStatusEl.style.color = 'var(--text-muted)';
+        } else if (roundedTds <= 700) {
+          tdsStatusEl.textContent = '🟢 Optimal (300–700 ppm)';
+          tdsStatusEl.style.color = '#10b981';
+        } else if (roundedTds <= 1200) {
+          tdsStatusEl.textContent = '🟡 Moderate salinity';
+          tdsStatusEl.style.color = '#f59e0b';
+        } else {
+          tdsStatusEl.textContent = '🔴 High salinity stress';
+          tdsStatusEl.style.color = '#ef4444';
+        }
+      }
+    } else {
+      tdsEl.textContent = '— ppm';
+      if (tdsStatusEl) {
+        tdsStatusEl.textContent = 'ideal: 300–700 ppm';
+        tdsStatusEl.style.color = 'var(--text-muted)';
+      }
+    }
+  }
 }
 
 function setSlider(sliderId, value, valId, formatter) {

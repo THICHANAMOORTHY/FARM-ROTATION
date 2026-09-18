@@ -28,8 +28,8 @@ function randomWalk(prev, min, max, maxStep) {
   return Math.max(min, Math.min(max, next));
 }
 
-let reading = { nitrogen: 60, phosphorus: 35, potassium: 70, ph: 6.6, organic_carbon: 0.7 };
-let envReading = { air_temperature: 28, air_humidity: 55, soil_moisture: 40, tds: 340 };
+let reading = { nitrogen: 60, phosphorus: 35, potassium: 70, ph: 6.6, organic_carbon: 0.7, tds: 450 };
+let envReading = { air_temperature: 28, air_humidity: 55, soil_moisture: 40, tds: 420 };
 
 async function sendOnce() {
   let body;
@@ -40,7 +40,7 @@ async function sendOnce() {
       air_temperature: Math.round(randomWalk(envReading.air_temperature, 18, 42, 0.8) * 10) / 10,
       air_humidity: Math.round(randomWalk(envReading.air_humidity, 20, 95, 3)),
       soil_moisture: Math.round(randomWalk(envReading.soil_moisture, 5, 90, 4)),
-      tds: Math.round(randomWalk(envReading.tds, 50, 1200, 25)),
+      tds: Math.round(randomWalk(envReading.tds, 150, 950, 15)),
     };
     body = { farm_id: farmId, device_id: 'esp32-simulator-env', ...envReading };
     logLine = `temp=${envReading.air_temperature}°C humidity=${envReading.air_humidity}% soil_moisture=${envReading.soil_moisture}% tds=${envReading.tds}ppm`;
@@ -51,9 +51,10 @@ async function sendOnce() {
       potassium: Math.round(randomWalk(reading.potassium, 20, 150, 5)),
       ph: Math.round(randomWalk(reading.ph, 5.0, 8.5, 0.15) * 10) / 10,
       organic_carbon: Math.round(randomWalk(reading.organic_carbon, 0.2, 1.8, 0.05) * 100) / 100,
+      tds: Math.round(randomWalk(reading.tds, 200, 850, 20)),
     };
     body = { farm_id: farmId, device_id: 'esp32-simulator', ...reading };
-    logLine = `N=${reading.nitrogen} P=${reading.phosphorus} K=${reading.potassium} pH=${reading.ph} OC=${reading.organic_carbon}`;
+    logLine = `N=${reading.nitrogen} P=${reading.phosphorus} K=${reading.potassium} pH=${reading.ph} OC=${reading.organic_carbon} TDS=${reading.tds}ppm`;
   }
 
   try {

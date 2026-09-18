@@ -69,6 +69,7 @@ void postTransmission() { digitalWrite(RS485_DE_RE_PIN, LOW); }
 // id, sensor not powered) — caller skips sending that cycle.
 struct SoilReading {
   float nitrogen, phosphorus, potassium, ph, organic_carbon;
+  float tds, moisture, temperature;
 };
 
 bool readSoilSensor(SoilReading &out) {
@@ -95,6 +96,9 @@ bool readSoilSensor(SoilReading &out) {
   out.phosphorus = phosphorus;
   out.potassium  = potassium;
   out.ph         = ph;
+  out.moisture   = moisture;
+  out.temperature= temperature;
+  out.tds        = conductivity * 0.5; // EC (µS/cm) converted to TDS (ppm)
 
   // NOTE: this class of sensor does NOT measure organic carbon
   // directly. This is a rough proxy from conductivity + moisture,
@@ -103,8 +107,8 @@ bool readSoilSensor(SoilReading &out) {
   // if you have one, or just hardcode a manual estimate here.
   out.organic_carbon = estimateOrganicCarbon(conductivity, moisture);
 
-  Serial.printf("N=%.0f P=%.0f K=%.0f pH=%.1f OC(est)=%.2f moisture=%.1f%% temp=%.1fC\n",
-    out.nitrogen, out.phosphorus, out.potassium, out.ph, out.organic_carbon, moisture, temperature);
+  Serial.printf("N=%.0f P=%.0f K=%.0f pH=%.1f OC(est)=%.2f TDS=%.0fppm moisture=%.1f%% temp=%.1fC\n",
+    out.nitrogen, out.phosphorus, out.potassium, out.ph, out.organic_carbon, out.tds, moisture, temperature);
 
   return true;
 }
@@ -139,14 +143,17 @@ void sendReading(const SoilReading &r) {
   http.addHeader("Content-Type", "application/json");
   http.addHeader("X-Device-Key", DEVICE_KEY);
 
-  StaticJsonDocument<256> doc;
-  doc["farm_id"]        = FARM_ID;
-  doc["device_id"]      = DEVICE_ID;
-  doc["nitrogen"]       = r.nitrogen;
-  doc["phosphorus"]     = r.phosphorus;
-  doc["potassium"]      = r.potassium;
-  doc["ph"]             = r.ph;
-  doc["organic_carbon"] = r.organic_carbon;
+  StaticJsonDocument<384> doc;
+  doc["farm_id"]         = FARM_ID;
+  doc["device_id"]       = DEVICE_ID;
+  doc["nitrogen"]        = r.nitrogen;
+  doc["phosphorus"]      = r.phosphorus;
+  doc["potassium"]       = r.potassium;
+  doc["ph"]              = r.ph;
+  doc["organic_carbon"]  = r.organic_carbon;
+  doc["tds"]             = r.tds;
+  doc["soil_moisture"]   = r.moisture;
+  doc["air_temperature"] = r.temperature;
 
   String body;
   serializeJson(doc, body);
