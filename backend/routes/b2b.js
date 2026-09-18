@@ -362,7 +362,7 @@ router.post('/match-contract', async (req, res) => {
   const totalEstCost = Math.round(requiredKg * priceWithBonus);
 
   const responsePayload = {
-    query: { crop_name: crop.name, target_quantity_mt: Number(target_quantity_mt), required_acres: requiredAcres },
+    query: { crop_name: crop.name, target_quantity_mt: Number(target_quantity_mt), preferred_state: preferred_state || null, required_acres: requiredAcres },
     query_interpreted_from_text: query_text ? { text: query_text, parsed_by: parse_provider } : null,
     recommended_fpo: {
       fpo_id: selectedFpo.fpo_id,

@@ -605,7 +605,16 @@ async function runB2BAIMatchmaker(opts = {}) {
     }
     if (qtyEl && data.query) qtyEl.value = data.query.target_quantity_mt;
 
-    lastMatchRequestBody = requestBody;
+    // Cache the AI-PARSED structured fields (not the raw query_text) for the
+    // background poll below. Re-sending query_text would make every 15s poll
+    // re-run the Gemini free-text parse, which is non-deterministic — the
+    // "Live-updated" badge would then fire from the AI reinterpreting the
+    // same sentence differently, not from any real underlying data change.
+    lastMatchRequestBody = {
+      crop_name: data.query.crop_name,
+      target_quantity_mt: data.query.target_quantity_mt,
+      preferred_state: data.query.preferred_state || undefined
+    };
     lastMatchSignature = matchResultSignature(data);
     renderMatchResultsCard(data, data.query.crop_name, data.query.target_quantity_mt, buyer);
     startB2BMatchPolling();
