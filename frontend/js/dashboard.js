@@ -20,6 +20,12 @@ VIEW_LOADERS['dashboard'] = async function loadDashboard() {
     const data = await apiGet(`/dashboard?farm_id=${state.farm_id}`);
     state.dashboard = data;
     renderDashboard(data);
+
+    // Buyer demand is supplementary — never let it block or fail the main
+    // dashboard render, so it's fetched separately after the core data.
+    apiGet(`/b2b/farmer-demand?farm_id=${state.farm_id}`)
+      .then(renderBuyerDemandCard)
+      .catch(err => console.warn('Buyer demand fetch failed:', err.message));
   } catch (e) {
     console.error('Dashboard load error:', e);
     if (loadingEl) loadingEl.style.display = 'none';
@@ -133,6 +139,51 @@ function renderDashboard(d) {
   document.getElementById('dash-content').style.display = '';
   document.getElementById('dash-loading').style.display = 'none';
 }
+
+function renderBuyerDemandCard(data) {
+  const card = document.getElementById('dash-buyer-demand-card');
+  const body = document.getElementById('dash-buyer-demand');
+  if (!card || !body) return;
+
+  if (!data || !data.total_buyers) {
+    card.style.display = 'none';
+    return;
+  }
+
+  const cropName = data.farm_crop.name;
+  const cropLabel = window.tCrop ? tCrop(cropName) : cropName;
+  const buyerCount = data.total_buyers;
+  const headline = window.t
+    ? t('buyerDemandHeadline', `${buyerCount} buyer${buyerCount > 1 ? 's' : ''} want your ${cropLabel}`)
+    : `${buyerCount} buyer${buyerCount > 1 ? 's' : ''} want your ${cropLabel}`;
+
+  body.innerHTML = `
+    <p class="text-muted mb-16">${cropIcon(cropName)} ${headline}</p>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>${window.t ? t('thBuyer', 'Buyer') : 'Buyer'}</th>
+          <th>${window.t ? t('thDemand', 'Demand') : 'Demand'}</th>
+          <th>${window.t ? t('thAction', 'Action') : 'Action'}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.buyers.map(b => {
+          const totalQty = b.deals.reduce((s, d) => s + (d.quantity_mt || 0), 0);
+          const priced = b.deals.find(d => d.price_rs_kg);
+          return `
+            <tr>
+              <td>${b.buyer_name}</td>
+              <td>${totalQty.toLocaleString('en-IN')} MT${priced ? ` @ ₹${priced.price_rs_kg}/kg` : ''}</td>
+              <td><button class="btn btn-secondary btn-sm" onclick="viewBuyerDemandForCrop(${jsAttrStr(cropName)}, ${totalQty})">${window.t ? t('btnViewInMarketplace', 'View in Marketplace') : 'View in Marketplace'}</button></td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+  card.style.display = '';
+}
+window.renderBuyerDemandCard = renderBuyerDemandCard;
 
 function renderRotationStrip(containerId, plan) {
   const el = document.getElementById(containerId);

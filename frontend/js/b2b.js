@@ -646,6 +646,34 @@ function prefillContractMatch(cropName, approxQty) {
 }
 window.prefillContractMatch = prefillContractMatch;
 
+// Called from the Farmer dashboard's "Buyers want what you're growing" card
+// (see dashboard.js renderBuyerDemandCard) — unlike prefillContractMatch,
+// this has to switch app mode from Farmer into B2B first, which loads 5
+// endpoints in parallel (initB2BView), so the matchmaker inputs don't exist
+// in the DOM yet on the first few ticks. Retry briefly instead of the fixed
+// 100ms prefillContractMatch relies on when already inside the B2B view.
+function viewBuyerDemandForCrop(cropName, approxQty) {
+  currentB2BTab = 'contracts';
+  if (typeof setAppMode === 'function') setAppMode('b2b');
+
+  let attempts = 0;
+  const tryPrefill = () => {
+    const cropSel = document.getElementById('b2b-input-crop');
+    const qtyInput = document.getElementById('b2b-input-qty');
+    if (!cropSel || !qtyInput) {
+      if (attempts++ < 20) setTimeout(tryPrefill, 150);
+      return;
+    }
+    const opt = [...cropSel.options].find(o => o.value.toLowerCase() === cropName.toLowerCase());
+    if (opt) cropSel.value = opt.value;
+    else cropSel.insertAdjacentHTML('beforeend', `<option value="${cropName}" selected>${cropName}</option>`);
+    qtyInput.value = Math.min(5000, approxQty || 100);
+    runB2BMatchmaker();
+  };
+  setTimeout(tryPrefill, 150);
+}
+window.viewBuyerDemandForCrop = viewBuyerDemandForCrop;
+
 async function executeMatchedContract(buyerName, fpoId, cropName, qty, basePrice, bonusPct) {
   try {
     const res = await apiPost('/b2b/contracts', {

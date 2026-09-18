@@ -698,5 +698,60 @@ router.get('/scorecard', (req, res) => {
   res.json(db.b2b_scorecard || {});
 });
 
+// ─────────────────────────────────────────────────────────────
+// 18. GET /api/b2b/farmer-demand — Inverse of the AI Matchmaker:
+// given a FARMER's farm, surface corporate buyer demand for the crop
+// that farm is currently recommended to grow ("3 buyers want what
+// you're growing"). Farms don't carry a current_crop field, so we
+// derive it the same way dashboard.js/recommendation.js do: the
+// rank-1 crop_evaluation, falling back to Green Gram if none exists.
+// ─────────────────────────────────────────────────────────────
+router.get('/farmer-demand', (req, res) => {
+  const farm_id = parseInt(req.query.farm_id);
+  if (!farm_id) return res.status(400).json({ error: 'farm_id is required' });
+
+  const bestEval = db.crop_evaluations.filter(e => e.farm_id === farm_id && e.rank === 1)[0];
+  const farmCrop = bestEval
+    ? db.crops.find(c => c.crop_id === bestEval.crop_id)
+    : db.crops.find(c => c.name === 'Green Gram');
+  const cropName = farmCrop?.name || 'Green Gram';
+  const cropNameLc = cropName.toLowerCase();
+
+  // Contracts store a single crop_name; programs sometimes store a
+  // compound string like "Soybean & Chickpea", so split before comparing.
+  const matchedContracts = db.b2b_contracts.filter(c => c.crop_name.toLowerCase() === cropNameLc);
+  const matchedPrograms = (db.b2b_programs || []).filter(p =>
+    (p.crop || '').split(/&|,/).some(part => part.trim().toLowerCase() === cropNameLc)
+  );
+
+  const buyerDeals = new Map();
+  const addDeal = (buyerName, deal) => {
+    if (!buyerDeals.has(buyerName)) buyerDeals.set(buyerName, []);
+    buyerDeals.get(buyerName).push(deal);
+  };
+  matchedContracts.forEach(c => addDeal(c.buyer_name, {
+    type: 'contract',
+    id: c.contract_id,
+    fpo_name: c.fpo_name,
+    quantity_mt: c.target_quantity_mt,
+    price_rs_kg: c.base_price_rs_kg,
+    status: c.status
+  }));
+  matchedPrograms.forEach(p => addDeal(p.buyer_name, {
+    type: 'program',
+    id: p.program_id,
+    fpo_name: p.fpo_name,
+    quantity_mt: p.expected_volume_mt,
+    price_rs_kg: null,
+    status: p.status
+  }));
+
+  res.json({
+    farm_crop: { name: cropName, family: farmCrop?.crop_family || null },
+    total_buyers: buyerDeals.size,
+    buyers: [...buyerDeals.entries()].map(([buyer_name, deals]) => ({ buyer_name, deals }))
+  });
+});
+
 module.exports = router;
 
