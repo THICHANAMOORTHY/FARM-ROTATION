@@ -59,7 +59,12 @@ function startB2BMatchPolling() {
     }
     const mySeq = ++matchRequestSeq;
     try {
-      const data = await apiPost('/b2b/match-contract', lastMatchRequestBody);
+      // Tell the server what we already have on screen so it can skip the
+      // Gemini reasoning call when the deterministic result hasn't moved —
+      // otherwise every 15s tick pays for AI text that gets thrown away
+      // below without ever being rendered (see matchResultSignature check).
+      const pollBody = { ...lastMatchRequestBody, client_known_signature: lastMatchSignature };
+      const data = await apiPost('/b2b/match-contract', pollBody);
       if (mySeq !== matchRequestSeq) return; // a newer request superseded this one
       const sig = matchResultSignature(data);
       if (sig !== lastMatchSignature) {
@@ -605,7 +610,16 @@ async function runB2BAIMatchmaker(opts = {}) {
     }
     if (qtyEl && data.query) qtyEl.value = data.query.target_quantity_mt;
 
-    lastMatchRequestBody = requestBody;
+    // Cache the AI-PARSED structured fields (not the raw query_text) for the
+    // background poll below. Re-sending query_text would make every 15s poll
+    // re-run the Gemini free-text parse, which is non-deterministic — the
+    // "Live-updated" badge would then fire from the AI reinterpreting the
+    // same sentence differently, not from any real underlying data change.
+    lastMatchRequestBody = {
+      crop_name: data.query.crop_name,
+      target_quantity_mt: data.query.target_quantity_mt,
+      preferred_state: data.query.preferred_state || undefined
+    };
     lastMatchSignature = matchResultSignature(data);
     renderMatchResultsCard(data, data.query.crop_name, data.query.target_quantity_mt, buyer);
     startB2BMatchPolling();
@@ -631,6 +645,34 @@ function prefillContractMatch(cropName, approxQty) {
   }, 100);
 }
 window.prefillContractMatch = prefillContractMatch;
+
+// Called from the Farmer dashboard's "Buyers want what you're growing" card
+// (see dashboard.js renderBuyerDemandCard) — unlike prefillContractMatch,
+// this has to switch app mode from Farmer into B2B first, which loads 5
+// endpoints in parallel (initB2BView), so the matchmaker inputs don't exist
+// in the DOM yet on the first few ticks. Retry briefly instead of the fixed
+// 100ms prefillContractMatch relies on when already inside the B2B view.
+function viewBuyerDemandForCrop(cropName, approxQty) {
+  currentB2BTab = 'contracts';
+  if (typeof setAppMode === 'function') setAppMode('b2b');
+
+  let attempts = 0;
+  const tryPrefill = () => {
+    const cropSel = document.getElementById('b2b-input-crop');
+    const qtyInput = document.getElementById('b2b-input-qty');
+    if (!cropSel || !qtyInput) {
+      if (attempts++ < 20) setTimeout(tryPrefill, 150);
+      return;
+    }
+    const opt = [...cropSel.options].find(o => o.value.toLowerCase() === cropName.toLowerCase());
+    if (opt) cropSel.value = opt.value;
+    else cropSel.insertAdjacentHTML('beforeend', `<option value="${cropName}" selected>${cropName}</option>`);
+    qtyInput.value = Math.min(5000, approxQty || 100);
+    runB2BMatchmaker();
+  };
+  setTimeout(tryPrefill, 150);
+}
+window.viewBuyerDemandForCrop = viewBuyerDemandForCrop;
 
 async function executeMatchedContract(buyerName, fpoId, cropName, qty, basePrice, bonusPct) {
   try {

@@ -10,11 +10,11 @@
  *
  * This board has NO NPK/pH sensor, so it only ever sends the
  * env fields the backend supports for that case: air_temperature,
- * air_humidity, soil_moisture. It will never carry a soil_health_score
+ * air_humidity, soil_moisture, tds. It will never carry a soil_health_score
  * on its own — that still needs a real soil test (manual entry, or a
  * full 7-in-1 sensor — see esp32/soil_sensor_client.ino) at least once.
  * Once one exists, the app keeps showing it alongside this device's
- * live temp/humidity/moisture rather than blanking it out.
+ * live temp/humidity/moisture/tds rather than blanking it out.
  *
  * Wiring:
  *   DHT11 VCC  -> 3.3V
@@ -24,6 +24,14 @@
  *   Soil sensor VCC -> 3.3V
  *   Soil sensor GND -> GND
  *   Soil sensor AO  -> GPIO 34 (analog input only pin)
+ *
+ *   TDS sensor VCC  -> 3.3V
+ *   TDS sensor GND  -> GND
+ *   TDS sensor AO   -> GPIO 35 (analog input only pin)
+ *   (Measures a water sample — e.g. irrigation water or a soil-water
+ *   extract — not the bare soil itself. A standard analog TDS probe's
+ *   output is temperature-sensitive, so this reading is compensated
+ *   using the DHT11's own temperature below.)
  *
  * Setup:
  *   1. Fill in WIFI_SSID / WIFI_PASSWORD / SERVER_HOST / DEVICE_KEY below.
@@ -80,12 +88,18 @@ DHT dht(DHTPIN, DHTTYPE);
 const int SOIL_DRY_VALUE = 4095;
 const int SOIL_WET_VALUE = 1200;
 
+// ---- TDS sensor setup (standard analog "Gravity" style probe) ----
+#define TDSPIN   35
+const float TDS_VREF = 3.3; // ADC reference voltage
+const int   ADC_MAX  = 4095; // 12-bit ADC
+
 WebServer server(80);
 
 float lastTemp = NAN;
 float lastHum  = NAN;
 int   lastSoilRaw = -1;
 int   lastSoilPercent = -1;
+float lastTds = -1; // ppm; stays -1 until a valid reading is taken
 unsigned long lastRead = 0;
 unsigned long lastPost = 0;
 const unsigned long READ_INTERVAL = 2000;
@@ -126,13 +140,20 @@ void handleRoot() {
     html += "<div class='value'>" + String(lastSoilPercent) + " %</div>";
   }
 
+  html += "<div class='label'>TDS</div>";
+  if (lastTds < 0) {
+    html += "<div class='value err'>Sensor Err</div>";
+  } else {
+    html += "<div class='value'>" + String(lastTds, 0) + " ppm</div>";
+  }
+
   html += "</body></html>";
   server.send(200, "text/html", html);
 }
 
 // ── POST the latest reading to the app ────────────────────────────
 void postToServer() {
-  if (isnan(lastTemp) && isnan(lastHum) && lastSoilPercent < 0) return; // nothing valid to send yet
+  if (isnan(lastTemp) && isnan(lastHum) && lastSoilPercent < 0 && lastTds < 0) return; // nothing valid to send yet
 
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println("WiFi dropped — skipping this post.");
@@ -149,6 +170,7 @@ void postToServer() {
   if (!isnan(lastTemp))        body += ",\"air_temperature\":" + String(lastTemp, 1);
   if (!isnan(lastHum))         body += ",\"air_humidity\":" + String(lastHum, 1);
   if (lastSoilPercent >= 0)    body += ",\"soil_moisture\":" + String(lastSoilPercent);
+  if (lastTds >= 0)            body += ",\"tds\":" + String(lastTds, 0);
   body += "}";
 
   int statusCode = http.POST(body);
@@ -164,6 +186,7 @@ void setup() {
   Serial.begin(115200);
   dht.begin();
   pinMode(SOILPIN, INPUT);
+  pinMode(TDSPIN, INPUT);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to WiFi");
@@ -199,6 +222,20 @@ void loop() {
     int percent = map(lastSoilRaw, SOIL_DRY_VALUE, SOIL_WET_VALUE, 0, 100);
     lastSoilPercent = constrain(percent, 0, 100);
     Serial.printf("Soil raw: %d  Soil moisture: %d %%\n", lastSoilRaw, lastSoilPercent);
+
+    // Standard analog TDS probe conversion (DFRobot Gravity formula),
+    // temperature-compensated using the DHT11 reading above (falls back to
+    // 25C — the formula's reference temperature — if that read failed).
+    int tdsRaw = analogRead(TDSPIN);
+    float tdsVoltage = tdsRaw / (float)ADC_MAX * TDS_VREF;
+    float compensationTemp = isnan(lastTemp) ? 25.0 : lastTemp;
+    float compensationCoefficient = 1.0 + 0.02 * (compensationTemp - 25.0);
+    float compensationVoltage = tdsVoltage / compensationCoefficient;
+    lastTds = (133.42 * pow(compensationVoltage, 3)
+             - 255.86 * pow(compensationVoltage, 2)
+             + 857.39 * compensationVoltage) * 0.5;
+    lastTds = max(lastTds, 0.0f);
+    Serial.printf("TDS raw: %d  TDS: %.0f ppm\n", tdsRaw, lastTds);
   }
 
   if (now - lastPost >= POST_INTERVAL_MS) {

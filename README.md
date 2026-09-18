@@ -102,8 +102,8 @@ The B2B Contract Matchmaker is both AI-powered and live:
 - **Real-time**: matching updates live as you type (debounced ~900ms) — no button click needed — and the result panel silently re-checks every 15 seconds while open, flashing a "🔄 Live-updated" badge if the underlying match actually changes.
 
 ### 15. 🔌 ESP32 Live Soil Sensor Integration
-- A device-authenticated ingestion endpoint (`X-Device-Key` header, independent of the user JWT system) accepts real-time sensor readings from a physical ESP32, supporting two device types on the same endpoint: a full 7-in-1 RS485 soil sensor (NPK/pH/organic-carbon) and a simpler DHT11 + analog soil-moisture probe (air temperature, air humidity, soil moisture — no nutrient capability). Whichever fields a given device doesn't report are carried over from the farm's last known reading, so an env-only device never blanks out an existing soil test.
-- The Soil Analysis page's **Live Sensor mode** polls every 4 seconds, shows connection state (🟢 live, 🟡 signal lost, or 🔴 never connected), and displays air temperature / air humidity / soil moisture as supplementary tiles alongside the NPK/pH sliders.
+- A device-authenticated ingestion endpoint (`X-Device-Key` header, independent of the user JWT system) accepts real-time sensor readings from a physical ESP32, supporting two device types on the same endpoint: a full 7-in-1 RS485 soil sensor (NPK/pH/organic-carbon) and a simpler DHT11 + analog soil-moisture/TDS probe (air temperature, air humidity, soil moisture, TDS — no nutrient capability). Whichever fields a given device doesn't report are carried over from the farm's last known reading, so an env-only device never blanks out an existing soil test.
+- The Soil Analysis page's **Live Sensor mode** polls every 4 seconds, shows connection state (🟢 live, 🟡 signal lost, or 🔴 never connected), and displays air temperature / air humidity / soil moisture / TDS as supplementary tiles alongside the NPK/pH sliders.
 - Two reference Arduino sketches — [`esp32/soil_sensor_client.ino`](esp32/soil_sensor_client.ino) (7-in-1 RS485) and [`esp32/dht11_soil_moisture_client.ino`](esp32/dht11_soil_moisture_client.ino) (DHT11 + soil moisture, also serves its own local debug webpage) — plus a Node.js simulator ([`backend/scripts/simulate_esp32.js`](backend/scripts/simulate_esp32.js), with an `--env` flag for the DHT11 variant) let you test the entire pipeline before any hardware is flashed.
 
 ### 16. 🎨 Modern Responsive "Midnight Harvest" Design System
@@ -279,6 +279,8 @@ Two roles, one login modal (reachable from the sidebar's "Sign Up / Log In" butt
   | DHT11 DATA | GPIO 4 | Digital data pin with pull-up |
   | Soil Moisture Sensor AO | GPIO 34 | Analog input (ADC1) |
   | Soil Moisture Sensor VCC / GND | 3.3V & GND | Power supply |
+  | TDS Sensor AO | GPIO 35 | Analog input (ADC1); measures a water sample (e.g. irrigation water or a soil-water extract), temperature-compensated using the DHT11 reading |
+  | TDS Sensor VCC / GND | 3.3V & GND | Power supply |
 
 ### Direct HTTP / cURL Ingestion Test
 You can test the endpoint directly from PowerShell or terminal:
@@ -297,7 +299,8 @@ curl -X POST http://localhost:3000/api/soil-sensor/ingest \
     "organic_carbon": 0.75,
     "air_temperature": 28.5,
     "air_humidity": 62,
-    "soil_moisture": 48
+    "soil_moisture": 48,
+    "tds": 340
   }'
 ```
 
@@ -350,7 +353,7 @@ Both device types can post for the **same farm_id** — the app merges them into
 ### ESP32 Live Soil Sensor
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/soil-sensor/ingest` | Device-authenticated (`X-Device-Key`) sensor reading submission — full NPK/pH/OC, env-only (air_temperature/air_humidity/soil_moisture), or both |
+| `POST` | `/api/soil-sensor/ingest` | Device-authenticated (`X-Device-Key`) sensor reading submission — full NPK/pH/OC, env-only (air_temperature/air_humidity/soil_moisture/tds), or both |
 | `GET` | `/api/soil-sensor/latest?farm_id=…` | Poll target: latest reading + connected/stale status |
 
 ### B2B Enterprise & Corporate Sourcing Hub

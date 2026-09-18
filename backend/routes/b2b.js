@@ -272,6 +272,20 @@ Return exactly this shape:
   };
 }
 
+// Mirrors the frontend's matchResultSignature() in b2b.js — lets us detect
+// a poll tick whose deterministic result is identical to what the client
+// already has, so we can skip the Gemini reasoning call below entirely
+// instead of paying for AI text that will be computed and then discarded
+// unrendered (the frontend only re-renders when this signature changes).
+function computeMatchSignature(payload) {
+  return JSON.stringify({
+    fpo: payload.recommended_fpo && payload.recommended_fpo.fpo_id,
+    price: payload.pricing_matrix && payload.pricing_matrix.guaranteed_farmer_payout_rs_kg,
+    value: payload.pricing_matrix && payload.pricing_matrix.total_contract_value_rs,
+    farms: (payload.matched_fleet_farms || []).map(f => f.farm_id + ':' + f.soil_score).join(','),
+  });
+}
+
 // Grounded explanation: Gemini only narrates numbers we already computed —
 // it is never the source of the numbers themselves, so it can't hallucinate figures.
 async function generateMatchReasoning(payload) {
@@ -308,7 +322,7 @@ ${JSON.stringify(payload, null, 2)}`;
 // preferred_state) or a free-text `query_text` that gets parsed by AI.
 // ─────────────────────────────────────────────────────────────
 router.post('/match-contract', async (req, res) => {
-  let { crop_name, target_quantity_mt, preferred_state, query_text } = req.body;
+  let { crop_name, target_quantity_mt, preferred_state, query_text, client_known_signature } = req.body;
   let parse_provider = null;
 
   if ((!crop_name || !target_quantity_mt) && query_text) {
@@ -362,7 +376,7 @@ router.post('/match-contract', async (req, res) => {
   const totalEstCost = Math.round(requiredKg * priceWithBonus);
 
   const responsePayload = {
-    query: { crop_name: crop.name, target_quantity_mt: Number(target_quantity_mt), required_acres: requiredAcres },
+    query: { crop_name: crop.name, target_quantity_mt: Number(target_quantity_mt), preferred_state: preferred_state || null, required_acres: requiredAcres },
     query_interpreted_from_text: query_text ? { text: query_text, parsed_by: parse_provider } : null,
     recommended_fpo: {
       fpo_id: selectedFpo.fpo_id,
@@ -383,13 +397,16 @@ router.post('/match-contract', async (req, res) => {
     traceability_guarantee: '100% Geo-tagged fields, real-time soil test audit & sensor logs provided.'
   };
 
-  const aiReasoning = await generateMatchReasoning(responsePayload);
+  const resultUnchangedSinceClient = client_known_signature && client_known_signature === computeMatchSignature(responsePayload);
+  const aiReasoning = resultUnchangedSinceClient ? null : await generateMatchReasoning(responsePayload);
   responsePayload.ai_match_reasoning = aiReasoning || `Recommended based on ${selectedFpo.name}'s ${selectedFpo.total_acreage}-acre network in ${selectedFpo.district}, ${selectedFpo.state}, matched against ${crop.name}'s soil and season fit across ${matchedFarms.length} monitored farms.`;
   responsePayload.ai_reasoning_provider = aiReasoning
     ? 'Google Gemini AI'
-    : (process.env.GEMINI_API_KEY
-      ? 'Rule-Based Engine (Gemini call failed or rate-limited — see server logs)'
-      : 'Rule-Based Engine (GEMINI_API_KEY not configured)');
+    : (resultUnchangedSinceClient
+      ? 'Rule-Based Engine (unchanged since last update — AI reasoning not re-run)'
+      : (process.env.GEMINI_API_KEY
+        ? 'Rule-Based Engine (Gemini call failed or rate-limited — see server logs)'
+        : 'Rule-Based Engine (GEMINI_API_KEY not configured)'));
 
   res.json(responsePayload);
 });
@@ -679,6 +696,61 @@ router.post('/escalations', (req, res) => {
 // ─────────────────────────────────────────────────────────────
 router.get('/scorecard', (req, res) => {
   res.json(db.b2b_scorecard || {});
+});
+
+// ─────────────────────────────────────────────────────────────
+// 18. GET /api/b2b/farmer-demand — Inverse of the AI Matchmaker:
+// given a FARMER's farm, surface corporate buyer demand for the crop
+// that farm is currently recommended to grow ("3 buyers want what
+// you're growing"). Farms don't carry a current_crop field, so we
+// derive it the same way dashboard.js/recommendation.js do: the
+// rank-1 crop_evaluation, falling back to Green Gram if none exists.
+// ─────────────────────────────────────────────────────────────
+router.get('/farmer-demand', (req, res) => {
+  const farm_id = parseInt(req.query.farm_id);
+  if (!farm_id) return res.status(400).json({ error: 'farm_id is required' });
+
+  const bestEval = db.crop_evaluations.filter(e => e.farm_id === farm_id && e.rank === 1)[0];
+  const farmCrop = bestEval
+    ? db.crops.find(c => c.crop_id === bestEval.crop_id)
+    : db.crops.find(c => c.name === 'Green Gram');
+  const cropName = farmCrop?.name || 'Green Gram';
+  const cropNameLc = cropName.toLowerCase();
+
+  // Contracts store a single crop_name; programs sometimes store a
+  // compound string like "Soybean & Chickpea", so split before comparing.
+  const matchedContracts = db.b2b_contracts.filter(c => c.crop_name.toLowerCase() === cropNameLc);
+  const matchedPrograms = (db.b2b_programs || []).filter(p =>
+    (p.crop || '').split(/&|,/).some(part => part.trim().toLowerCase() === cropNameLc)
+  );
+
+  const buyerDeals = new Map();
+  const addDeal = (buyerName, deal) => {
+    if (!buyerDeals.has(buyerName)) buyerDeals.set(buyerName, []);
+    buyerDeals.get(buyerName).push(deal);
+  };
+  matchedContracts.forEach(c => addDeal(c.buyer_name, {
+    type: 'contract',
+    id: c.contract_id,
+    fpo_name: c.fpo_name,
+    quantity_mt: c.target_quantity_mt,
+    price_rs_kg: c.base_price_rs_kg,
+    status: c.status
+  }));
+  matchedPrograms.forEach(p => addDeal(p.buyer_name, {
+    type: 'program',
+    id: p.program_id,
+    fpo_name: p.fpo_name,
+    quantity_mt: p.expected_volume_mt,
+    price_rs_kg: null,
+    status: p.status
+  }));
+
+  res.json({
+    farm_crop: { name: cropName, family: farmCrop?.crop_family || null },
+    total_buyers: buyerDeals.size,
+    buyers: [...buyerDeals.entries()].map(([buyer_name, deals]) => ({ buyer_name, deals }))
+  });
 });
 
 module.exports = router;
