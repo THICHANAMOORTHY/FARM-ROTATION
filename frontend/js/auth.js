@@ -4,6 +4,10 @@
 
 window.authUser = null; // sanitized user object once logged in, else null
 
+function escapeHtml(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
 // ── Sidebar account widget ──────────────────────────────────
 function renderAccountWidget() {
   const mount = document.getElementById('account-widget-mount');
@@ -30,7 +34,7 @@ function renderAccountWidget() {
       <div class="account-widget-signedin">
         <div class="account-avatar">${initials}</div>
         <div class="account-info">
-          <div class="account-name">${u.name}</div>
+          <div class="account-name">${escapeHtml(u.name)}</div>
           <div class="account-role-badge ${u.role === 'buyer' ? 'buyer' : ''}">${roleLabel}</div>
         </div>
         <button class="account-logout-btn" onclick="logoutUser()">Logout</button>
@@ -66,7 +70,8 @@ function switchAuthMode(mode) { authModalMode = mode; renderAuthModal(); }
 window.switchAuthRole = switchAuthRole;
 window.switchAuthMode = switchAuthMode;
 
-function renderAuthModal(errorMsg, successMsg) {
+// opts.resendEmail: when set, shows a "Resend verification email" button under the message.
+function renderAuthModal(errorMsg, successMsg, opts = {}) {
   let overlay = document.getElementById('auth-modal-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -99,8 +104,9 @@ function renderAuthModal(errorMsg, successMsg) {
         <button class="auth-tab-btn ${isSignup ? 'active' : ''}" onclick="switchAuthMode('signup')">Sign Up</button>
       </div>
 
-      ${errorMsg ? `<div class="auth-error-box">⚠ ${errorMsg}</div>` : ''}
-      ${successMsg ? `<div class="auth-success-box">✓ ${successMsg}</div>` : ''}
+      ${errorMsg ? `<div class="auth-error-box">⚠ ${escapeHtml(errorMsg)}</div>` : ''}
+      ${successMsg ? `<div class="auth-success-box">✓ ${escapeHtml(successMsg)}</div>` : ''}
+      ${opts.resendEmail ? `<button type="button" class="btn btn-secondary" style="width:100%;margin-bottom:10px" onclick="resendVerification('${escapeHtml(opts.resendEmail).replace(/'/g, '')}')">📧 Resend verification email</button>` : ''}
 
       <form id="auth-form" class="auth-form-fields" onsubmit="return submitAuthForm(event)">
         ${isSignup ? `
@@ -183,10 +189,19 @@ async function submitAuthForm(e) {
       }
 
       const data = await apiPost('/auth/register', body);
-      window.setAccessToken(data.access_token);
-      window.authUser = data.user;
       if (data.farm_id) window.state.farm_id = data.farm_id;
 
+      if (data.verification_required) {
+        // Real email flow: the account is locked until the emailed link is used,
+        // so there is no session yet — send them to Log In with instructions.
+        authModalMode = 'login';
+        renderAuthModal(null, data.message, data.email_sent ? {} : { resendEmail: data.email });
+        return false;
+      }
+
+      // Dev mode (no SMTP configured on the server): logged in immediately.
+      window.setAccessToken(data.access_token);
+      window.authUser = data.user;
       renderAuthModal(null, `Account created! (Dev mode: no email provider configured — verification link: ${data.verification_link})`);
       setTimeout(() => { closeAuthModal(); onAuthChanged(); }, 2600);
     } else {
@@ -197,7 +212,9 @@ async function submitAuthForm(e) {
       onAuthChanged();
     }
   } catch (err) {
-    renderAuthModal(err.body && err.body.error ? err.body.error : err.message);
+    const needsVerify = err.body && err.body.code === 'EMAIL_NOT_VERIFIED';
+    renderAuthModal(err.body && err.body.error ? err.body.error : err.message, null,
+      needsVerify ? { resendEmail: err.body.email || email } : {});
   } finally {
     btn.disabled = false;
     btn.textContent = isSignup ? '✨ Create Account' : '🔐 Log In';
@@ -214,11 +231,18 @@ async function logoutUser() {
 }
 window.logoutUser = logoutUser;
 
-async function resendVerification() {
-  if (!window.authUser) return;
+async function resendVerification(email) {
+  const target = email || (window.authUser && window.authUser.email);
+  if (!target) return;
   try {
-    const data = await apiPost('/auth/resend-verification', { email: window.authUser.email });
-    alert('Dev mode: no email provider configured.\nVerification link: ' + data.verification_link);
+    const data = await apiPost('/auth/resend-verification', { email: target });
+    if (data.verification_link) {
+      alert('Dev mode: no email provider configured.\nVerification link: ' + data.verification_link);
+    } else if (document.getElementById('auth-modal-overlay')) {
+      renderAuthModal(null, data.message);
+    } else {
+      alert(data.message);
+    }
   } catch (err) {
     alert(err.message);
   }

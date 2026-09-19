@@ -85,7 +85,7 @@ Generates three distinct 3-season actionable rotation plans:
 ### 12. 🔐 Account System — Farmer & B2B Buyer Roles
 - Real sign-up/login for two account types, with production-style security: **bcrypt** password hashing, **JWT** access tokens (short-lived) + rotating **httpOnly refresh cookies**, and rate limiting on auth endpoints.
 - Signing up as a Farmer auto-provisions a starter farm tied to the account; signing up as a Buyer auto-fills their organization into every B2B contract/program they create afterward.
-- Email verification is implemented end-to-end (token, expiry, resend) but currently in **dev mode**: since no SMTP/SendGrid key is wired up, the verification link is returned directly in the API response instead of emailed — see [Account System](#-account-system--authentication) for how to wire a real provider.
+- Email verification by SMTP (single-use hashed token, 24h expiry, resend with cooldown) — accounts can't log in until verified. Falls back to a dev mode that returns the link in the API response when no SMTP is configured — see [Account System](#-account-system--authentication).
 
 ### 13. 🏢 B2B Enterprise & Corporate Sourcing Hub
 A second application mode for corporate buyers and Farmer Producer Organizations (FPOs), reachable via the sidebar's Farmer Mode / B2B Enterprise switch:
@@ -248,7 +248,7 @@ Two roles, one login modal (reachable from the sidebar's "Sign Up / Log In" butt
 
 **Session mechanics**: a short-lived JWT access token lives in memory on the client and is sent as `Authorization: Bearer …`; a long-lived refresh token lives in an `httpOnly` cookie the client never touches directly. On page load, the client attempts one silent refresh so a logged-in user doesn't have to re-enter credentials after closing the tab. On any `401`, the client retries once after a silent refresh before giving up.
 
-**Email verification (dev mode)**: registering or requesting a resend returns `verification_link` directly in the JSON response and logs it to the server console, instead of emailing it — there's no SMTP/SendGrid integration wired up yet. To make this production-ready, replace the `console.log` in [`backend/routes/auth.js`](backend/routes/auth.js) with a real email send and drop `verification_link` from the response.
+**Email verification**: on sign-up the server emails a single-use link (valid 24h, stored hashed in the database). Until it's used the account can't log in. The link opens a confirmation page whose button completes the verification, so mail scanners that pre-open links can't burn the token. "Resend verification email" is available from the login screen (60s cooldown, and it answers identically whether or not the email has an account). Configure any SMTP provider with `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` and `APP_BASE_URL` (see [`backend/.env.example`](backend/.env.example)). **Without SMTP configured the app stays in dev mode**: sign-up logs you in straight away and the verification link is returned in the API response and logged to the console.
 
 **Where accounts live**: `backend/routes/auth.js` tries Supabase first (table: `users`, see `supabase/schema.sql`) and falls back to an in-memory array if Supabase isn't configured or the table doesn't exist yet — same dual-mode pattern used everywhere else in this app. Run the migration (step 4 above) if you want accounts to survive a server restart.
 
@@ -346,8 +346,9 @@ Both device types can post for the **same farm_id** — the app merges them into
 | `POST` | `/api/auth/login` | Log in, receive an access token + refresh cookie (rate-limited) |
 | `POST` | `/api/auth/refresh` | Rotate the refresh cookie, issue a new access token |
 | `POST` | `/api/auth/logout` | Clear the refresh cookie |
-| `GET` | `/api/auth/verify-email?token=…` | Verify an email address |
-| `POST` | `/api/auth/resend-verification` | Regenerate and resend (dev mode: return) a verification link |
+| `GET` | `/api/auth/verify-email?token=…` | Confirmation page linked from the email (does not consume the token) |
+| `POST` | `/api/auth/verify-email` | Consume the token and mark the email verified |
+| `POST` | `/api/auth/resend-verification` | Send a fresh verification email (generic response; dev mode returns the link) |
 | `GET` | `/api/auth/me` | Get the current authenticated user's profile |
 
 ### ESP32 Live Soil Sensor
@@ -387,6 +388,7 @@ Every variable is optional; the app tells you at boot what's missing and what fa
 | `GEMINI_API_KEY` | AI chatbot replies, B2B free-text parsing & match reasoning | Rule-based chatbot; keyword-scan B2B matching |
 | `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | Account creation & login sessions | An ephemeral secret generated at boot — **all sessions invalidate on every server restart** |
 | `JWT_ACCESS_EXPIRES` / `JWT_REFRESH_EXPIRES` | Token lifetimes | `15m` / `30d` |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `MAIL_FROM` / `APP_BASE_URL` | Sending verification emails and requiring them before login | Dev mode: link returned in the API response, no login gate |
 | `ESP32_DEVICE_KEY` | Accepting live sensor readings | `/api/soil-sensor/ingest` returns `503` until set |
 
 ---
@@ -471,7 +473,7 @@ Every variable is optional; the app tells you at boot what's missing and what fa
 
 ## 🚧 Known Limitations & Roadmap
 
-- **Email delivery is dev-mode only** — verification links are returned in the API response, not emailed. Wire a real provider (SendGrid, SES, etc.) in `backend/routes/auth.js` before treating this as production auth.
+- **Email verification needs SMTP configured to be enforced** — with no `SMTP_HOST`/`MAIL_FROM` the app deliberately stays in dev mode (no email, no login gate) so the demo runs offline. There's also no password-reset flow yet.
 - **Personalization doesn't reach every view** — the account system correctly ties Dashboard, Soil Analysis, Crop History, Evaluation, Rotation, Recommendation, and Weather to the logged-in farmer's own farm; GPS Zones and Soil Simulation still operate on a shared/demo dataset rather than per-farmer state.
 - **ESP32 organic-carbon reading is an estimate**, not a direct measurement — see [ESP32 Live Soil Sensor Integration](#-esp32-live-soil-sensor-integration).
 - **Real-time B2B matching re-parses free text on every poll** — if you're using the free-text AI matcher, a "Live-updated" badge can reflect the AI's non-deterministic re-interpretation of your text as much as an actual underlying data change.

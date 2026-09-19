@@ -66,7 +66,14 @@ function generateOpaqueToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+// Verification tokens are stored hashed so a database leak doesn't hand out
+// working verification links; only the raw token in the email can verify.
+function hashToken(token) {
+  return crypto.createHash('sha256').update(String(token)).digest('hex');
+}
+
 module.exports = {
+  hashToken,
   hashPassword,
   verifyPassword,
   signAccessToken,
