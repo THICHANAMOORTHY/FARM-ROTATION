@@ -202,4 +202,5 @@ router.post('/', (req, res) => {
   res.json({ run_id, results });
 });
 
+router.scoreCrop = scoreCrop;
 module.exports = router;

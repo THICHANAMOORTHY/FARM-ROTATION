@@ -7,6 +7,7 @@
     "start": "node server.js",
     "dev": "node server.js",
     "db:sync": "node scripts/sync_to_supabase.js",
+    "mail:test": "node scripts/test_mail.js",
     "sim:esp32": "node scripts/simulate_esp32.js",
     "sim:esp32:env": "node scripts/simulate_esp32.js 101 --env"
   },

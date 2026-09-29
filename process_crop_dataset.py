@@ -1,17 +1,15 @@
 """
 process_crop_dataset.py
 =============================================================
-Unified Quad-Source Agronomy & Multi-Mandi Pricing Engine:
-  1. arjunyadav99/indian-agricultural-mandi-prices-20232025 (737,392 rows)
-     -> Long-term APMC Mandi trading prices (2023-2025)
-  2. anshtanwar/current-daily-price-of-various-commodities-india (23,093 rows)
+Unified Tri-Source Agronomy & Mandi Pricing Engine:
+  1. anshtanwar/current-daily-price-of-various-commodities-india (23,093 rows)
      -> Daily APMC prices covering 224 commodities (Fruits, Spices, Pulses)
-  3. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
+  2. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
      -> Precise sensor soil N, P, K, pH, Temperature, Humidity, Rainfall
-  4. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
+  3. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
      -> State-level harvest yields, areas, pesticide & season distributions
 
-Total empirical records: ~782,374
+Total empirical records: ~44,982
 Outputs: backend/data/kaggle_crops.js
 """
 
@@ -20,30 +18,26 @@ from collections import defaultdict
 from datetime import datetime
 
 print("=" * 75)
-print("  CropSmart P025: Quad-Source Agronomy & Real-Time Mandi Price Engine")
+print("  CropSmart P025: Tri-Source Agronomy & Mandi Price Engine")
 print("=" * 75)
 
-# 1. Download / Verify All 4 Datasets
-print("\n[1/6] Downloading / Locating Datasets via KaggleHub...")
-
-dir_mandi1 = kagglehub.dataset_download("arjunyadav99/indian-agricultural-mandi-prices-20232025")
-csv_mandi1 = os.path.join(dir_mandi1, "Agriculture_price_dataset.csv")
-print(f"      1. Mandi Prices CSV (737k rows)  : {csv_mandi1}")
+# 1. Download / Verify All 3 Datasets
+print("\n[1/5] Downloading / Locating Datasets via KaggleHub...")
 
 dir_mandi2 = kagglehub.dataset_download("anshtanwar/current-daily-price-of-various-commodities-india")
 csv_mandi2 = os.path.join(dir_mandi2, "Price_Agriculture_commodities_Week.csv")
-print(f"      2. Daily Commodity Prices (23k)  : {csv_mandi2}")
+print(f"      1. Daily Commodity Prices (23k)  : {csv_mandi2}")
 
 dir_rec = kagglehub.dataset_download("madhuraatmarambhagat/crop-recommendation-dataset")
 csv_rec = os.path.join(dir_rec, "Crop_recommendation.csv")
-print(f"      3. Soil Sensor NPK/pH CSV        : {csv_rec}")
+print(f"      2. Soil Sensor NPK/pH CSV        : {csv_rec}")
 
 dir_yld = kagglehub.dataset_download("akshatgupta7/crop-yield-in-indian-states-dataset")
 csv_yld = os.path.join(dir_yld, "crop_yield.csv")
-print(f"      4. Indian States Harvest Yields  : {csv_yld}")
+print(f"      3. Indian States Harvest Yields  : {csv_yld}")
 
 # 2. Parse Daily Commodity Prices (anshtanwar: 23,093 rows, 224 commodities)
-print("\n[2/6] Parsing Daily Commodity Mandi Prices (23,093 records)...")
+print("\n[2/5] Parsing Daily Commodity Mandi Prices (23,093 records)...")
 daily_mandi_prices = defaultdict(list)
 daily_rows = 0
 
@@ -83,30 +77,12 @@ with open(csv_mandi2, newline="", encoding="utf-8", errors="replace") as fp:
 
 print(f"      Mapped daily market prices across {len(daily_mandi_prices)} crop categories.")
 
-# 3. Parse Long-Term Mandi Prices (arjunyadav99: 737,392 rows)
-print("\n[3/6] Parsing Long-Term Mandi Trading Prices (737,392 records)...")
-longterm_mandi_prices = defaultdict(list)
-longterm_rows = 0
-
-with open(csv_mandi1, newline="", encoding="utf-8", errors="replace") as fp:
-    reader = csv.DictReader(fp)
-    for r in reader:
-        longterm_rows += 1
-        comm = r.get("Commodity", "").strip()
-        if comm in ["Wheat", "Tomato", "Potato", "Onion", "Rice"]:
-            try:
-                modal = float(r.get("Modal_Price", 0) or 0)
-                if 50 < modal < 500000:
-                    longterm_mandi_prices[comm].append(modal)
-            except ValueError: pass
-
-# Combine mandi prices
+# Median modal price per crop (Rs/quintal -> Rs/kg)
 combined_mandi_prices_kg = {}
 combined_mandi_record_counts = {}
 
-all_mandi_crops = set(daily_mandi_prices.keys()).union(set(longterm_mandi_prices.keys()))
-for c in all_mandi_crops:
-    all_quotes = longterm_mandi_prices[c] + daily_mandi_prices[c]
+for c in daily_mandi_prices:
+    all_quotes = daily_mandi_prices[c]
     if all_quotes:
         med_quintal = statistics.median(all_quotes)
         rs_kg = round(med_quintal / 100.0, 2)
@@ -118,7 +94,7 @@ for c, p in sorted(combined_mandi_prices_kg.items(), key=lambda x: -combined_man
     print(f"        • {c:<12}: Rs. {p:>6.2f}/kg ({combined_mandi_record_counts[c]:,} quotes)")
 
 # 4. Parse Soil Sensor NPK/pH Data (2,200 rows)
-print("\n[4/6] Parsing Soil Sensor Recommendation Dataset (2,200 rows)...")
+print("\n[3/5] Parsing Soil Sensor Recommendation Dataset (2,200 rows)...")
 soil_sensor_data = defaultdict(lambda: {
     "N": [], "P": [], "K": [], "ph": [], "temperature": [], "humidity": [], "rainfall": []
 })
@@ -139,7 +115,7 @@ with open(csv_rec, newline="", encoding="utf-8") as f:
         except ValueError: pass
 
 # 5. Parse Indian States Harvest Yields (19,689 rows)
-print("\n[5/6] Parsing Indian States Harvest Yields (19,689 rows)...")
+print("\n[4/5] Parsing Indian States Harvest Yields (19,689 rows)...")
 yield_groups = defaultdict(lambda: {
     "yields": [], "rainfall": [], "fert_per_ha": [], "pest_per_ha": [],
     "seasons": set(), "states": defaultdict(int), "records": 0
@@ -183,7 +159,7 @@ with open(csv_yld, newline="", encoding="utf-8", errors="replace") as f:
         except Exception: continue
 
 # 6. Unify Into 60 Agronomic Profiles
-print("\n[6/6] Unifying 4 datasets into comprehensive profiles...")
+print("\n[5/5] Unifying 3 datasets into comprehensive profiles...")
 
 ALIASES = {
     "Blackgram": "Black Gram", "Mungbean": "Green Gram", "Moong(Green Gram)": "Green Gram",
@@ -326,7 +302,7 @@ for name in sorted(all_crop_names):
         top_states = ["All India"]
         yield_records = 0
 
-    # Market Price: Real Mandi empirical price from 760k transaction quotes!
+    # Market Price: median modal price from the daily APMC mandi quotes
     mandi_records_count = combined_mandi_record_counts.get(name, 0)
     if name in combined_mandi_prices_kg:
         mkt_price = combined_mandi_prices_kg[name]
@@ -379,13 +355,12 @@ for i, c in enumerate(crops_out, start=1):
 print(f"\nWriting {len(crops_out)} unified crops to backend/data/kaggle_crops.js...")
 output_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backend", "data", "kaggle_crops.js")
 js_content = f"""// ============================================================
-// kaggle_crops.js — Unified Quad-Source Kaggle Agronomy Model
+// kaggle_crops.js — Unified Tri-Source Kaggle Agronomy Model
 // Datasets merged:
-//   1. arjunyadav99/indian-agricultural-mandi-prices-20232025 (737,392 rows)
-//   2. anshtanwar/current-daily-price-of-various-commodities-india (23,093 rows)
-//   3. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
-//   4. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
-// Total empirical records analyzed: 782,374 | Unique crops: {len(crops_out)}
+//   1. anshtanwar/current-daily-price-of-various-commodities-india (23,093 rows)
+//   2. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
+//   3. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
+// Total empirical records analyzed: 44,982 | Unique crops: {len(crops_out)}
 // Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 // ============================================================
 
@@ -399,5 +374,5 @@ with open(output_file, "w", encoding="utf-8") as fp:
 
 print(f"      Saved to: {output_file}")
 print("\n" + "=" * 75)
-print(f"  SUCCESS: {len(crops_out)} Crops Enriched from 782,374 Empirical Records!")
+print(f"  SUCCESS: {len(crops_out)} Crops Enriched from 44,982 Empirical Records!")
 print("=" * 75)

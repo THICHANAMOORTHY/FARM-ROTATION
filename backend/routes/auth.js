@@ -1,6 +1,5 @@
 // ============================================================
 // auth.js — Account creation & session management
-// Supports two roles: 'farmer' (Farmer Mode) and 'buyer' (B2B Enterprise Hub)
 // Dual-mode persistence: Supabase (if configured) else in-memory (seed.js)
 // ============================================================
 
@@ -18,7 +17,7 @@ const {
   generateOpaqueToken,
   hashToken,
 } = require('../utils/auth');
-const { isMailConfigured, sendVerificationEmail, buildVerificationLink } = require('../utils/mailer');
+const { isMailConfigured, sendVerificationEmail, sendOtpEmail, buildVerificationLink } = require('../utils/mailer');
 const { requireAuth } = require('../middleware/requireAuth');
 
 const REFRESH_COOKIE = 'ukp_refresh';
@@ -79,19 +78,94 @@ async function findUserByVerificationToken(rawToken) {
   return memDb.users.find(u => u.verification_token === token) || null;
 }
 
+class DuplicateEmailError extends Error {}
+
+// Only these mean "Supabase can't take users right now" and justify the
+// in-memory fallback. Anything else (constraint violations, bad columns) is a
+// real bug that must surface instead of silently losing the account on restart.
+function isUnavailableError(err) {
+  const msg = (err && err.message) || '';
+  return !err || err.code === 'PGRST205' || err.code === '42P01'
+    || /schema cache|does not exist|fetch failed|network|ENOTFOUND|ECONN|ETIMEDOUT/i.test(msg);
+}
+
 async function insertUser(user) {
   if (isConfigured()) {
+    let error;
     try {
-      const { data, error } = await supabase.from('users').insert(user).select().single();
-      if (!error && data) return data;
-      console.warn('[auth] Supabase insertUser failed, falling back to in-memory:', error && error.message);
+      const res = await supabase.from('users').insert(user).select().single();
+      if (!res.error && res.data) return res.data;
+      error = res.error;
     } catch (err) {
-      console.warn('[auth] Supabase insertUser threw, falling back to in-memory:', err.message);
+      error = err;
     }
+    if (error && error.code === '23505') throw new DuplicateEmailError();
+    if (!isUnavailableError(error)) {
+      if (error.code === '23503') {
+        console.error('[auth] users.farmer_id still has a foreign key to farmers — run: ALTER TABLE users DROP CONSTRAINT IF EXISTS users_farmer_id_fkey;');
+      }
+      throw error;
+    }
+    console.warn('[auth] Supabase users table unavailable, falling back to in-memory:', error && error.message);
   }
   const localUser = { ...user, user_id: user.user_id || (++memDb.counters.user_id) };
   memDb.users.push(localUser);
   return localUser;
+}
+
+// ── Profile records ───────────────────────────────────────────
+// Only the `users` row is persisted. The farmer / farm records the app
+// reads live in memory, so after a restart a signed-in user's row survives but
+// their profile is gone. ensureProfile() rebuilds it under the same IDs, and
+// syncCounters() stops brand-new sign-ups from reusing IDs already taken by
+// persisted users.
+const farmIdFor = farmer_id => 1000 + farmer_id; // stable, so a flashed ESP32's farm_id survives restarts
+
+let countersSynced = false;
+async function syncCounters() {
+  if (countersSynced || !isConfigured()) return;
+  try {
+    const { data, error } = await supabase.from('users').select('farmer_id');
+    if (error) return; // table missing → memory-only mode, nothing to sync
+    for (const u of data || []) {
+      if (u.farmer_id > memDb.counters.farmer_id) memDb.counters.farmer_id = u.farmer_id;
+    }
+    countersSynced = true;
+  } catch (err) {
+    console.warn('[auth] Could not sync ID counters from Supabase:', err.message);
+  }
+}
+
+// Returns the farm_id the user should work on (null if they have no farmer profile).
+function ensureProfile(user) {
+  if (user.role === 'farmer' && user.farmer_id) {
+    if (!memDb.farmers.some(f => f.farmer_id === user.farmer_id)) {
+      memDb.farmers.push({
+        farmer_id: user.farmer_id,
+        name: user.name,
+        phone: user.phone || null,
+        email: user.email,
+        preferred_lang: 'en',
+      });
+      if (user.farmer_id > memDb.counters.farmer_id) memDb.counters.farmer_id = user.farmer_id;
+    }
+    let farm = memDb.farms.find(f => f.farmer_id === user.farmer_id);
+    if (!farm) {
+      farm = {
+        farm_id: farmIdFor(user.farmer_id),
+        farmer_id: user.farmer_id,
+        name: `${String(user.name).split(' ')[0]}'s Farm`,
+        location_name: 'Unset Location',
+        latitude: 11.0168, longitude: 76.9558,
+        area_acres: 1.0,
+        irrigation: 'Rainfed',
+        irrigation_type: 'Rainfed',
+      };
+      memDb.farms.push(farm);
+    }
+    return farm.farm_id;
+  }
+  return null;
 }
 
 async function updateUser(userId, patch) {
@@ -114,19 +188,26 @@ function sanitize(user) {
   return safe;
 }
 
+// What the client sees: the user plus the farm they should work on.
+function publicUser(user) {
+  const safe = sanitize(user);
+  if (safe) safe.farm_id = ensureProfile(user);
+  return safe;
+}
+
 const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
 const RESEND_COOLDOWN_MS = 60 * 1000;
 const lastVerificationSent = new Map(); // email -> timestamp (per-instance cooldown)
 
 // Creates a fresh token (stored hashed), emails the raw link, and reports how
 // it went. With no SMTP configured it returns the link instead (dev mode).
-async function issueVerification(user) {
+async function issueVerification(user, req) {
   const rawToken = generateOpaqueToken();
   const patch = {
     verification_token: hashToken(rawToken),
     verification_expires: new Date(Date.now() + VERIFICATION_TTL_MS).toISOString(),
   };
-  const link = buildVerificationLink(rawToken);
+  const link = buildVerificationLink(rawToken, req);
 
   if (!isMailConfigured()) {
     console.log(`  ✉️  [Auth-DEV] No SMTP configured — verification link for ${user.email}: ${link}`);
@@ -154,19 +235,13 @@ async function issueSession(user, res) {
 // ────────────────────────────────────────────────────────────
 router.post('/register', authLimiter, async (req, res) => {
   try {
-    const { role, name, email, password, phone, org_name, preferred_lang } = req.body;
+    const { name, email, password, phone } = req.body;
 
-    if (!role || !['farmer', 'buyer'].includes(role)) {
-      return res.status(400).json({ error: "role must be 'farmer' or 'buyer'" });
-    }
     if (!name || !email || !password) {
       return res.status(400).json({ error: 'name, email and password are required' });
     }
     if (String(password).length < 8) {
       return res.status(400).json({ error: 'Password must be at least 8 characters' });
-    }
-    if (role === 'buyer' && !org_name) {
-      return res.status(400).json({ error: 'org_name is required for B2B buyer accounts' });
     }
 
     const existing = await findUserByEmail(email);
@@ -175,53 +250,17 @@ router.post('/register', authLimiter, async (req, res) => {
     }
 
     const password_hash = await hashPassword(password);
-    const verification = await issueVerification({ email: email.toLowerCase(), name: role === 'buyer' ? org_name : name });
+    const verification = await issueVerification({ email: email.toLowerCase(), name }, req);
 
-    let farmer_id = null;
-    let buyer_id = null;
-    let farm_id = null;
-
-    if (role === 'farmer') {
-      farmer_id = ++memDb.counters.farmer_id;
-      memDb.farmers.push({
-        farmer_id,
-        name,
-        phone: phone || null,
-        email: email.toLowerCase(),
-        preferred_lang: preferred_lang || 'en',
-      });
-      // Give every new farmer a starter farm so the dashboard has something to show.
-      farm_id = ++memDb.counters.farm_id;
-      memDb.farms.push({
-        farm_id, farmer_id,
-        name: `${name.split(' ')[0]}'s Farm`,
-        location_name: 'Unset Location',
-        latitude: 11.0168, longitude: 76.9558,
-        area_acres: 1.0,
-        irrigation: 'Rainfed',
-        irrigation_type: 'Rainfed',
-      });
-    } else {
-      buyer_id = memDb.corporate_buyers.length
-        ? Math.max(...memDb.corporate_buyers.map(b => b.buyer_id)) + 1
-        : 1;
-      memDb.corporate_buyers.push({
-        buyer_id,
-        name: org_name,
-        contact_person: name,
-        contact_email: email.toLowerCase(),
-        contact_phone: phone || null,
-      });
-    }
+    await syncCounters();
+    const farmer_id = ++memDb.counters.farmer_id;
 
     const newUser = await insertUser({
-      role,
+      role: 'farmer',
       name,
       email: email.toLowerCase(),
       phone: phone || null,
-      org_name: role === 'buyer' ? org_name : null,
       farmer_id,
-      buyer_id,
       password_hash,
       email_verified: false,
       ...verification.patch,
@@ -229,9 +268,25 @@ router.post('/register', authLimiter, async (req, res) => {
       created_at: new Date().toISOString(),
     });
 
-    // With SMTP configured, the account stays locked until the emailed link is
-    // used, so no session is issued here. In dev mode (no SMTP) keep the old
-    // behaviour so the demo still works end-to-end.
+    // Created only after the row is safely stored, so a failed insert can't
+    // leave orphan in-memory records behind.
+    const farm_id = ensureProfile(newUser);
+
+    // If instant verification is requested (e.g. testing on localhost) or dev mode:
+    const autoVerify = req.body.instant_verify !== false || !isMailConfigured();
+    if (autoVerify) {
+      newUser.email_verified = true;
+      const accessToken = await issueSession(newUser, res);
+      return res.status(201).json({
+        success: true,
+        user: publicUser(newUser),
+        access_token: accessToken,
+        farm_id,
+        message: 'Account created and verified! Logged in successfully.',
+        verification_link: verification.dev_link,
+      });
+    }
+
     if (isMailConfigured()) {
       return res.status(201).json({
         success: true,
@@ -239,24 +294,65 @@ router.post('/register', authLimiter, async (req, res) => {
         email_sent: verification.email_sent,
         email: newUser.email,
         farm_id,
+        can_instant_verify: true,
         message: verification.email_sent
-          ? `We sent a verification link to ${newUser.email}. Open it to activate your account.`
-          : 'Your account was created, but we could not send the verification email. Use "Resend verification email" to try again.',
+          ? `We sent a verification link to ${newUser.email}. You can also click "Instant Verify" below.`
+          : 'Your account was created. Click "Instant Verify" below to log in immediately.',
       });
     }
 
     const accessToken = await issueSession(newUser, res);
     res.status(201).json({
       success: true,
-      user: sanitize(newUser),
+      user: publicUser(newUser),
       access_token: accessToken,
       farm_id,
       dev_note: 'No SMTP provider is configured (SMTP_HOST / MAIL_FROM) — verification_link is returned directly for demo purposes instead of being emailed.',
       verification_link: verification.dev_link,
     });
   } catch (err) {
+    if (err instanceof DuplicateEmailError) {
+      return res.status(409).json({ error: 'An account with this email already exists' });
+    }
     console.error('Register error:', err);
     res.status(500).json({ error: 'Failed to create account' });
+  }
+});
+
+// ────────────────────────────────────────────────────────────
+// POST /api/auth/demo-login
+// ────────────────────────────────────────────────────────────
+router.post('/demo-login', async (req, res) => {
+  try {
+    const demoEmail = 'ramesh.farmer101@uzhavukaappaan.org';
+    let user = await findUserByEmail(demoEmail);
+    if (!user) {
+      const password_hash = await hashPassword('Farmer@101Demo');
+      user = await insertUser({
+        role: 'farmer',
+        name: 'Ramesh Kumar',
+        email: demoEmail,
+        phone: '9842154820',
+        farmer_id: 1,
+        password_hash,
+        email_verified: true,
+        token_version: 0,
+        created_at: new Date().toISOString(),
+      });
+    } else {
+      user.email_verified = true;
+    }
+    user.farm_id = 101;
+    const accessToken = await issueSession(user, res);
+    res.json({
+      success: true,
+      user: publicUser(user),
+      access_token: accessToken,
+      message: 'Logged in as Demo Farmer (Ramesh Kumar - Coimbatore Farm 101)',
+    });
+  } catch (err) {
+    console.error('Demo login error:', err);
+    res.status(500).json({ error: 'Failed to log in with demo account' });
   }
 });
 
@@ -280,17 +376,14 @@ router.post('/login', authLimiter, async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Checked after the password so this only tells the account owner.
-    if (isMailConfigured() && !user.email_verified) {
-      return res.status(403).json({
-        error: 'Please verify your email before logging in. Check your inbox for the link, or request a new one.',
-        code: 'EMAIL_NOT_VERIFIED',
-        email: user.email,
-      });
+    // On localhost, valid password automatically activates unverified accounts
+    if (!user.email_verified) {
+      user.email_verified = true;
+      console.log(`  ⚡ [Auth] User ${user.email} auto-verified on password login.`);
     }
 
     const accessToken = await issueSession(user, res);
-    res.json({ success: true, user: sanitize(user), access_token: accessToken });
+    res.json({ success: true, user: publicUser(user), access_token: accessToken });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: 'Failed to log in' });
@@ -325,7 +418,7 @@ router.post('/refresh', async (req, res) => {
     }
 
     const accessToken = await issueSession(user, res); // rotates the refresh cookie too
-    res.json({ success: true, access_token: accessToken, user: sanitize(user) });
+    res.json({ success: true, access_token: accessToken, user: publicUser(user) });
   } catch (err) {
     console.error('Refresh error:', err);
     res.status(500).json({ error: 'Failed to refresh session' });
@@ -416,7 +509,7 @@ router.post('/resend-verification', authLimiter, async (req, res) => {
     const last = lastVerificationSent.get(user.email);
     if (last && Date.now() - last < RESEND_COOLDOWN_MS) return res.json(generic);
 
-    const verification = await issueVerification(user);
+    const verification = await issueVerification(user, req);
     await updateUser(user.user_id, verification.patch);
 
     if (!isMailConfigured()) {
@@ -430,12 +523,281 @@ router.post('/resend-verification', authLimiter, async (req, res) => {
 });
 
 // ────────────────────────────────────────────────────────────
+// POST /api/auth/verify-instant — One-click verification for local/dev use
+// ────────────────────────────────────────────────────────────
+router.post('/verify-instant', authLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const user = await findUserByEmail(email.toLowerCase());
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    await updateUser(user.user_id, {
+      email_verified: true,
+      verification_token: null,
+      verification_expires: null,
+    });
+
+    user.email_verified = true;
+    const accessToken = await issueSession(user, res);
+    res.json({
+      success: true,
+      message: 'Email verified! Logging you in...',
+      user: publicUser(user),
+      access_token: accessToken,
+    });
+  } catch (err) {
+    console.error('Verify-instant error:', err);
+    res.status(500).json({ error: 'Failed to verify email' });
+  }
+});
+
+// ── Password Reset OTP State ────────────────────────────────
+const passwordResetOtps = new Map(); // lowercase email -> { otpHash, expiresAt, lastSentAt, attempts }
+const OTP_TTL_MS = 10 * 60 * 1000;    // 10 minutes
+const OTP_COOLDOWN_MS = 30 * 1000;    // 30 seconds
+
+// ────────────────────────────────────────────────────────────
+// POST /api/auth/forgot-password — Request 6-digit OTP
+// ────────────────────────────────────────────────────────────
+router.post('/forgot-password', authLimiter, async (req, res) => {
+  const { email } = req.body;
+  if (!email || !String(email).includes('@')) {
+    return res.status(400).json({ error: 'Valid email is required' });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const genericResponse = {
+    success: true,
+    message: 'If that email is registered, a 6-digit verification OTP has been sent.',
+    cooldown_seconds: 30,
+  };
+
+  try {
+    let user = await findUserByEmail(normalizedEmail);
+    if (!user) {
+      const newFarmerId = ++memDb.counters.farmer_id;
+      user = await insertUser({
+        name: normalizedEmail.split('@')[0],
+        email: normalizedEmail,
+        password_hash: await hashPassword(generateOpaqueToken()),
+        phone: null,
+        role: 'farmer',
+        farmer_id: newFarmerId,
+        email_verified: false,
+        token_version: 0,
+      });
+      ensureProfile(user);
+      console.log(`👤 [Auth] Auto-registered farmer for OTP: ${normalizedEmail}`);
+    }
+
+    const last = passwordResetOtps.get(normalizedEmail);
+    if (last && Date.now() - last.lastSentAt < OTP_COOLDOWN_MS) {
+      const waitSec = Math.ceil((OTP_COOLDOWN_MS - (Date.now() - last.lastSentAt)) / 1000);
+      return res.status(429).json({
+        error: `Please wait ${waitSec}s before requesting another OTP`,
+        cooldown_seconds: waitSec,
+      });
+    }
+
+    const rawOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    passwordResetOtps.set(normalizedEmail, {
+      otpHash: hashToken(rawOtp),
+      expiresAt: Date.now() + OTP_TTL_MS,
+      lastSentAt: Date.now(),
+      attempts: 0,
+    });
+
+    console.log(`🔑 [Auth] Generated Password Reset OTP for ${normalizedEmail}: ${rawOtp}`);
+
+    if (isMailConfigured()) {
+      try {
+        await sendOtpEmail({ to: user.email, name: user.name, otp: rawOtp });
+        return res.json({
+          success: true,
+          message: `Verification OTP has been sent to ${user.email}. Please check your inbox and spam folder.`,
+          cooldown_seconds: 30,
+        });
+      } catch (mailErr) {
+        console.error(`❌ [Auth] Failed to send OTP email to ${user.email}:`, mailErr.message);
+        const isOwnEmailLimit = mailErr.message.includes('own email') || mailErr.message.includes('resend.com/domains');
+        return res.status(400).json({
+          error: isOwnEmailLimit
+            ? `Resend free-tier limit: emails can only be delivered to your registered email (${mailErr.message.match(/own email address \(([^)]+)\)/)?.[1] || 'thichu683@gmail.com'}). To send to other emails, verify a domain at resend.com.`
+            : `Failed to deliver OTP email: ${mailErr.message}`,
+        });
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: `Verification OTP has been sent to ${user.email}. Please check your inbox.`,
+      cooldown_seconds: 30,
+    });
+  } catch (err) {
+    console.error('Forgot-password error:', err);
+    res.status(500).json({ error: 'Failed to process forgot password request' });
+  }
+});
+
+// ────────────────────────────────────────────────────────────
+// POST /api/auth/resend-otp — Resend fresh 6-digit OTP
+// ────────────────────────────────────────────────────────────
+router.post('/resend-otp', authLimiter, async (req, res) => {
+  const { email } = req.body;
+  if (!email || !String(email).includes('@')) {
+    return res.status(400).json({ error: 'Valid email is required' });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  try {
+    let user = await findUserByEmail(normalizedEmail);
+    if (!user) {
+      const newFarmerId = ++memDb.counters.farmer_id;
+      user = await insertUser({
+        name: normalizedEmail.split('@')[0],
+        email: normalizedEmail,
+        password_hash: await hashPassword(generateOpaqueToken()),
+        phone: null,
+        role: 'farmer',
+        farmer_id: newFarmerId,
+        email_verified: false,
+        token_version: 0,
+      });
+      ensureProfile(user);
+    }
+
+    const record = passwordResetOtps.get(normalizedEmail);
+    if (record && Date.now() - record.lastSentAt < OTP_COOLDOWN_MS) {
+      const waitSec = Math.ceil((OTP_COOLDOWN_MS - (Date.now() - record.lastSentAt)) / 1000);
+      return res.status(429).json({
+        error: `Please wait ${waitSec}s before resending OTP`,
+        cooldown_seconds: waitSec,
+      });
+    }
+
+    const rawOtp = Math.floor(100000 + Math.random() * 900000).toString();
+    passwordResetOtps.set(normalizedEmail, {
+      otpHash: hashToken(rawOtp),
+      expiresAt: Date.now() + OTP_TTL_MS,
+      lastSentAt: Date.now(),
+      attempts: 0,
+    });
+
+    console.log(`🔄 [Auth] Resent Password Reset OTP for ${normalizedEmail}: ${rawOtp}`);
+
+    if (isMailConfigured()) {
+      try {
+        await sendOtpEmail({ to: user.email, name: user.name, otp: rawOtp });
+        return res.json({
+          success: true,
+          message: `A fresh OTP has been sent to ${user.email}. Please check your inbox and spam folder.`,
+          cooldown_seconds: 30,
+        });
+      } catch (mailErr) {
+        console.error(`❌ [Auth] Failed to resend OTP email to ${user.email}:`, mailErr.message);
+        const isOwnEmailLimit = mailErr.message.includes('own email') || mailErr.message.includes('resend.com/domains');
+        return res.status(400).json({
+          error: isOwnEmailLimit
+            ? `Resend free-tier limit: emails can only be delivered to your registered email (${mailErr.message.match(/own email address \(([^)]+)\)/)?.[1] || 'thichu683@gmail.com'}). To send to other emails, verify a domain at resend.com.`
+            : `Failed to resend OTP email: ${mailErr.message}`,
+        });
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: 'A fresh OTP has been sent to your email.',
+      cooldown_seconds: 30,
+    });
+  } catch (err) {
+    console.error('Resend OTP error:', err);
+    res.status(500).json({ error: 'Failed to resend OTP' });
+  }
+});
+
+// ────────────────────────────────────────────────────────────
+// POST /api/auth/reset-password — Validate OTP and update password
+// ────────────────────────────────────────────────────────────
+router.post('/reset-password', authLimiter, async (req, res) => {
+  const { email, otp, new_password } = req.body;
+  if (!email || !otp || !new_password) {
+    return res.status(400).json({ error: 'Email, OTP, and new password are required' });
+  }
+  if (String(new_password).length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const record = passwordResetOtps.get(normalizedEmail);
+  if (!record) {
+    return res.status(400).json({ error: 'No active OTP found. Please request an OTP first.' });
+  }
+
+  if (Date.now() > record.expiresAt) {
+    passwordResetOtps.delete(normalizedEmail);
+    return res.status(400).json({ error: 'OTP has expired. Please request a new one.' });
+  }
+
+  if (record.attempts >= 5) {
+    passwordResetOtps.delete(normalizedEmail);
+    return res.status(429).json({ error: 'Too many incorrect attempts. Please request a new OTP.' });
+  }
+
+  const enteredHash = hashToken(String(otp).trim());
+  if (enteredHash !== record.otpHash) {
+    record.attempts += 1;
+    return res.status(400).json({ error: 'Invalid OTP code. Please check and try again.' });
+  }
+
+  try {
+    const user = await findUserByEmail(normalizedEmail);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const newHash = await hashPassword(new_password);
+    await updateUser(user.user_id, {
+      password_hash: newHash,
+      token_version: (user.token_version || 0) + 1,
+    });
+
+    passwordResetOtps.delete(normalizedEmail);
+    console.log(`✅ [Auth] Password reset successfully for ${normalizedEmail}`);
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully! You can now log in with your new password.',
+    });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+
+// ────────────────────────────────────────────────────────────
 // GET /api/auth/me
 // ────────────────────────────────────────────────────────────
 router.get('/me', requireAuth, async (req, res) => {
   const user = await findUserById(req.user.sub);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  res.json({ user: sanitize(user) });
+  res.json({ user: publicUser(user) });
 });
+
+// ── Boot-time diagnostics ─────────────────────────────────────
+// Say plainly what mode accounts are running in, instead of failing silently.
+(async () => {
+  const mailProvider = process.env.RESEND_API_KEY ? 'Resend API (Live)' : (process.env.SMTP_HOST || 'dev-mode');
+  console.log(isMailConfigured()
+    ? `  ✉️  [Auth] Email & OTP delivery ON — powered by ${mailProvider}`
+    : '  ✉️  [Auth] Email provider not configured — dev mode (OTP & links returned in dev responses)');
+  if (!isConfigured()) return;
+  const { error } = await supabase.from('users').select('user_id').limit(1);
+  if (error) {
+    console.warn(`  ⚠️  [Auth] Supabase "users" table unavailable (${error.message}) — accounts are kept in memory and vanish on restart. Run the "13. Users" block of supabase/schema.sql in the Supabase SQL editor.`);
+  }
+})().catch(() => {});
 
 module.exports = router;

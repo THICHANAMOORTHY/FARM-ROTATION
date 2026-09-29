@@ -20,7 +20,7 @@ const KNOWN_API_ROUTES = [
   'soil-analysis', 'crop-history', 'candidate-crops', 'crop-evaluation',
   'optimize-rotation', 'soil-simulation', 'recommendation', 'dashboard',
   'weather', 'report', 'chat', 'gps-zones', 'crops', 'farms', 'seasons',
-  'farmers', 'health', 'db-status', 'b2b', 'auth', 'soil-sensor'
+  'farmers', 'health', 'db-status', 'auth', 'soil-sensor'
 ];
 
 app.use((req, res, next) => {
@@ -44,7 +44,6 @@ app.use('/api/weather',          require('./routes/weather'));
 app.use('/api/report',           require('./routes/report'));
 app.use('/api/chat',             require('./routes/chat'));
 app.use('/api/gps-zones',        require('./routes/gpsZones'));
-app.use('/api/b2b',              require('./routes/b2b'));
 app.use('/api/auth',             require('./routes/auth'));
 app.use('/api/soil-sensor',      require('./routes/soilSensor'));
 
@@ -52,31 +51,39 @@ app.use('/api/soil-sensor',      require('./routes/soilSensor'));
 const fs = require('fs');
 app.use('/downloads', express.static(path.join(__dirname, '..', 'downloads')));
 
-app.get(['/download/farmer-plan-pdf', '/download/uzhavu-kaappaan-pdf'], (req, res) => {
-  let filePath = path.join(__dirname, '..', 'downloads', 'UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan.pdf');
+app.get(['/download/farmer-plan-pdf', '/download/uzhavu-kaappaan-pdf', '/api/report/pdf'], (req, res) => {
+  const farmId = parseInt(req.query.farm_id, 10) || 101;
+  const fileName = `UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan_Farm_${farmId}.pdf`;
+  const tempOutPath = path.join(__dirname, '..', 'downloads', fileName);
+
+  try {
+    const { execSync } = require('child_process');
+    execSync(`python generate_farmer_pdf.py --farm-id ${farmId} --out "${tempOutPath}"`, {
+      cwd: path.join(__dirname, '..'),
+      timeout: 10000,
+    });
+  } catch (err) {
+    console.warn('[PDF] Live PDF generation fallback:', err.message);
+  }
+
+  let filePath = tempOutPath;
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(__dirname, '..', 'downloads', 'UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan.pdf');
+  }
   if (!fs.existsSync(filePath)) {
     filePath = path.join(__dirname, '..', 'downloads', 'CropSmart_Farmer_Soil_Health_Action_Plan.pdf');
-  }
-  
-  // If file doesn't exist, regenerate it via Python script
-  if (!fs.existsSync(filePath)) {
-    try {
-      const { execSync } = require('child_process');
-      execSync('python generate_farmer_pdf.py', { cwd: path.join(__dirname, '..') });
-    } catch (err) {
-      console.warn('PDF auto-generation note:', err.message);
-    }
   }
 
   if (fs.existsSync(filePath)) {
     const isInline = req.query.view === 'inline' || req.query.inline === 'true';
-    const disposition = isInline ? 'inline' : 'attachment; filename="UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan.pdf"';
+    const disposition = isInline ? 'inline' : `attachment; filename="${fileName}"`;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', disposition);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     return res.sendFile(filePath);
   }
 
-  res.status(404).json({ error: 'Action Plan PDF not found' });
+  res.status(404).json({ error: 'Action Plan PDF could not be generated' });
 });
 
 app.get('/download/crops-csv', (req, res) => {
@@ -168,11 +175,12 @@ app.get('*', (req, res) => {
 // ── Start ──────────────────────────────────────────────────
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log('');
     console.log('  🌱  UZHAVU KAAPPAAN (உழவு காப்பான்) P025 API');
     console.log(`  🚀  Running on http://localhost:${PORT}`);
     console.log(`  📊  Dashboard → http://localhost:${PORT}`);
+    console.log(`  🔌  ESP32 Wi-Fi Ingestion URL → http://10.216.224.129:${PORT}/api/soil-sensor/ingest`);
     console.log('');
   });
 }

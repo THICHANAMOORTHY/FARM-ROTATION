@@ -20,12 +20,6 @@ VIEW_LOADERS['dashboard'] = async function loadDashboard() {
     const data = await apiGet(`/dashboard?farm_id=${state.farm_id}`);
     state.dashboard = data;
     renderDashboard(data);
-
-    // Buyer demand is supplementary — never let it block or fail the main
-    // dashboard render, so it's fetched separately after the core data.
-    apiGet(`/b2b/farmer-demand?farm_id=${state.farm_id}`)
-      .then(renderBuyerDemandCard)
-      .catch(err => console.warn('Buyer demand fetch failed:', err.message));
   } catch (e) {
     console.error('Dashboard load error:', e);
     if (loadingEl) loadingEl.style.display = 'none';
@@ -45,23 +39,35 @@ function renderDashboard(d) {
   const errBanner = document.getElementById('dash-error-banner');
   if (errBanner) errBanner.remove();  // Farm info
   const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
-  document.getElementById('dash-farm-name').textContent   = isTa ? 'கோயம்புத்தூர், தமிழ்நாடு' : 'Coimbatore, Tamil Nadu';
-  document.getElementById('dash-farmer-name').textContent = isTa ? 'ரமேஷ் குமார்' : d.farm.farmer_name;
+  // Tamil text exists only for the demo farm/farmer; anyone else's real name is shown as-is.
+  document.getElementById('dash-farm-name').textContent   = (isTa && d.farm.name === 'Coimbatore, Tamil Nadu') ? 'கோயம்புத்தூர், தமிழ்நாடு' : d.farm.name;
+  document.getElementById('dash-farmer-name').textContent = (isTa && d.farm.farmer_name === 'Ramesh Kumar') ? 'ரமேஷ் குமார்' : d.farm.farmer_name;
   document.getElementById('dash-area').textContent        = isTa
     ? `${d.farm.area_acres} ஏக்கர் · ${d.farm.irrigation.includes('Drip') ? 'சொட்டு நீர் பாசனம்' : d.farm.irrigation}`
     : `${d.farm.area_acres} acres · ${d.farm.irrigation}`;
 
-  // KPI cards
-  const healthColor = d.farm_health >= 70 ? 'var(--green-400)' : d.farm_health >= 50 ? 'var(--amber-400)' : 'var(--red-400)';
-  document.getElementById('dash-health-val').textContent = d.farm_health;
-  document.getElementById('dash-health-val').style.color = healthColor;
+  // KPI cards. farm_health is null until the farm has had a real soil test —
+  // show that honestly rather than a made-up score.
+  const hasSoil = d.has_soil_data && d.farm_health !== null && d.farm_health !== undefined;
+  const healthColor = !hasSoil ? 'var(--text-muted)'
+                    : d.farm_health >= 70 ? 'var(--green-400)' : d.farm_health >= 50 ? 'var(--amber-400)' : 'var(--red-400)';
+  const healthEl = document.getElementById('dash-health-val');
+  healthEl.textContent = hasSoil ? d.farm_health : '—';
+  healthEl.style.color = healthColor;
 
   // Score ring
-  animateRing(document.getElementById('dash-ring'), d.farm_health, healthColor);
+  if (hasSoil) {
+    animateRing(document.getElementById('dash-ring'), d.farm_health, healthColor);
+  } else {
+    const fill = document.querySelector('#dash-ring .ring-fill');
+    if (fill) fill.style.strokeDashoffset = 2 * Math.PI * 40;
+  }
 
   // Soil alerts
   const alertsEl = document.getElementById('dash-alerts');
-  if (d.soil_alerts && d.soil_alerts.length) {
+  if (!hasSoil) {
+    alertsEl.innerHTML = chipWarning(isTa ? 'இன்னும் மண் பரிசோதனை இல்லை' : 'No soil test yet');
+  } else if (d.soil_alerts && d.soil_alerts.length) {
     alertsEl.innerHTML = d.soil_alerts.map(a => chipDanger(window.tAlert ? tAlert(a) : a)).join('');
   } else {
     alertsEl.innerHTML = chipSuccess(window.t ? t('optimalNutrients', 'All Nutrients Adequate') : 'All Nutrients Adequate');
@@ -79,16 +85,45 @@ function renderDashboard(d) {
   document.getElementById('dash-profit').textContent      = `₹${((d.expected_profit_per_acre||33500)/1000).toFixed(0)}K`;
   document.getElementById('dash-profit-3s').textContent   = `₹${((d.projected_3_season_profit||102000)/1000).toFixed(0)}K`;
 
+  // ── Read Light from Sensor Table (instead of weather) ──
+  const lightEl = document.getElementById('dash-sensor-light');
+  const lightSub = document.getElementById('dash-sensor-light-sub');
+  const sensorLight = (d.sensor_data && d.sensor_data.light !== undefined && d.sensor_data.light !== null)
+    ? d.sensor_data.light
+    : (d.light !== undefined && d.light !== null ? d.light : (d.soil_data?.light ?? null));
+
+  if (lightEl) {
+    if (sensorLight !== null && sensorLight !== undefined && !isNaN(Number(sensorLight))) {
+      lightEl.textContent = `${Number(sensorLight).toFixed(0)}%`;
+      lightEl.style.color = '#eab308';
+      if (lightSub) lightSub.textContent = `Live Probe (${d.sensor_data?.device_id || 'Soil Scout'})`;
+    } else {
+      lightEl.textContent = '— %';
+      if (lightSub) lightSub.textContent = 'Awaiting sensor reading';
+    }
+  }
+
   // Soil NPK chips
   const soil = d.soil_data;
+  const npkEl = document.getElementById('dash-npk');
   if (soil) {
-    document.getElementById('dash-npk').innerHTML = [
+    const src = soil.source === 'esp32' ? (isTa ? 'நேரடி சென்சார்' : 'Live sensor')
+              : soil.source === 'manual' ? (isTa ? 'கைமுறை உள்ளீடு' : 'Manual entry')
+              : (isTa ? 'ஆய்வக அறிக்கை' : 'Lab report (demo data)');
+    const chips = [
       chipInfo(`N: ${soil.nitrogen} kg/ha`),
       chipInfo(`P: ${soil.phosphorus} kg/ha`),
       chipInfo(`K: ${soil.potassium} kg/ha`),
       chipInfo(`pH: ${soil.ph}`),
       chipInfo(`OC: ${soil.organic_carbon}%`),
-    ].join('');
+    ];
+    if (sensorLight !== null && sensorLight !== undefined && !isNaN(Number(sensorLight))) {
+      chips.push(chipTeal(`☀️ Light: ${Number(sensorLight).toFixed(0)}%`));
+    }
+    npkEl.innerHTML = chips.join('') + `<div class="text-muted" style="flex-basis:100%;font-size:12px;margin-top:6px">${src} · ${soil.recorded_date}</div>`;
+  } else {
+    npkEl.innerHTML = `<p class="text-muted" style="font-size:13px;margin:0">${isTa ? 'மண் பரிசோதனை தரவு இல்லை.' : 'No soil data recorded for this farm yet.'}
+      <a href="#soil-analysis" onclick="navigate('soil-analysis');return false" style="color:var(--green-400)">${isTa ? 'மண் பகுப்பாய்வைத் தொடங்குங்கள் →' : 'Run a Soil Analysis →'}</a></p>`;
   }
 
   // Rotation strip
@@ -133,57 +168,17 @@ function renderDashboard(d) {
     histEl.innerHTML = `<p class="text-muted" style="text-align:center;padding:20px">${window.t ? t('noHistoryYet') : 'No history yet. Add crop history to get started.'}</p>`;
   }
 
-  // Recovery chart
-  renderRecoveryChart(d.soil_recovery_curve, d.rotation_plan);
+  // Recovery chart — it projects from the current soil score, so it needs a real one
+  if (d.soil_recovery_curve) {
+    renderRecoveryChart(d.soil_recovery_curve, d.rotation_plan);
+  } else if (recoveryChart) {
+    recoveryChart.destroy();
+    recoveryChart = null;
+  }
 
   document.getElementById('dash-content').style.display = '';
   document.getElementById('dash-loading').style.display = 'none';
 }
-
-function renderBuyerDemandCard(data) {
-  const card = document.getElementById('dash-buyer-demand-card');
-  const body = document.getElementById('dash-buyer-demand');
-  if (!card || !body) return;
-
-  if (!data || !data.total_buyers) {
-    card.style.display = 'none';
-    return;
-  }
-
-  const cropName = data.farm_crop.name;
-  const cropLabel = window.tCrop ? tCrop(cropName) : cropName;
-  const buyerCount = data.total_buyers;
-  const headline = window.t
-    ? t('buyerDemandHeadline', `${buyerCount} buyer${buyerCount > 1 ? 's' : ''} want your ${cropLabel}`)
-    : `${buyerCount} buyer${buyerCount > 1 ? 's' : ''} want your ${cropLabel}`;
-
-  body.innerHTML = `
-    <p class="text-muted mb-16">${cropIcon(cropName)} ${headline}</p>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>${window.t ? t('thBuyer', 'Buyer') : 'Buyer'}</th>
-          <th>${window.t ? t('thDemand', 'Demand') : 'Demand'}</th>
-          <th>${window.t ? t('thAction', 'Action') : 'Action'}</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.buyers.map(b => {
-          const totalQty = b.deals.reduce((s, d) => s + (d.quantity_mt || 0), 0);
-          const priced = b.deals.find(d => d.price_rs_kg);
-          return `
-            <tr>
-              <td>${b.buyer_name}</td>
-              <td>${totalQty.toLocaleString('en-IN')} MT${priced ? ` @ ₹${priced.price_rs_kg}/kg` : ''}</td>
-              <td><button class="btn btn-secondary btn-sm" onclick="viewBuyerDemandForCrop(${jsAttrStr(cropName)}, ${totalQty})">${window.t ? t('btnViewInMarketplace', 'View in Marketplace') : 'View in Marketplace'}</button></td>
-            </tr>`;
-        }).join('')}
-      </tbody>
-    </table>
-  `;
-  card.style.display = '';
-}
-window.renderBuyerDemandCard = renderBuyerDemandCard;
 
 function renderRotationStrip(containerId, plan) {
   const el = document.getElementById(containerId);

@@ -29,8 +29,9 @@ async function exportFarmerReportPDF() {
     let downloaded = false;
     try {
       const downloadEndpoints = [
-        '/download/farmer-plan-pdf',
-        '/download/uzhavu-kaappaan-pdf',
+        `/download/farmer-plan-pdf?farm_id=${farmId}&t=${Date.now()}`,
+        `/download/uzhavu-kaappaan-pdf?farm_id=${farmId}&t=${Date.now()}`,
+        `/api/report/pdf?farm_id=${farmId}&t=${Date.now()}`,
         '/downloads/UZHAVU_KAAPPAAN_Farmer_Soil_Health_Action_Plan.pdf',
         '/downloads/CropSmart_Farmer_Soil_Health_Action_Plan.pdf'
       ];
@@ -66,9 +67,10 @@ async function exportFarmerReportPDF() {
 
     // Strategy 2: Direct window.open / location trigger if blob was blocked
     if (!downloaded) {
+      const dynamicUrl = `/download/farmer-plan-pdf?farm_id=${farmId}&t=${Date.now()}`;
       try {
         const a = document.createElement('a');
-        a.href = '/download/farmer-plan-pdf';
+        a.href = dynamicUrl;
         a.target = '_blank';
         a.download = fileName;
         document.body.appendChild(a);
@@ -76,7 +78,7 @@ async function exportFarmerReportPDF() {
         setTimeout(() => { if (a.parentNode) a.parentNode.removeChild(a); }, 500);
         downloaded = true;
       } catch (e2) {
-        window.location.href = '/download/farmer-plan-pdf';
+        window.location.href = dynamicUrl;
         downloaded = true;
       }
     }
@@ -138,9 +140,9 @@ function showDownloadSuccessToast(fileName) {
 // Optional dynamic client-side generator helper
 async function generateClientSidePDF(dash, farmerName, farmId, fileName) {
   const farmName = dash?.farm?.name || 'Coimbatore Farm';
-  const soilScore = dash?.farm_health || 63;
+  const soilScore = dash?.farm_health ?? null; // null = farm has no soil test yet
   const recCrop = dash?.recommended_crop?.name || 'Green Gram';
-  const alerts = dash?.soil_alerts || ['Low Nitrogen', 'Low Organic Carbon'];
+  const alerts = dash?.soil_alerts || [];
 
   const container = document.createElement('div');
   container.style.position = 'fixed';
@@ -154,15 +156,15 @@ async function generateClientSidePDF(dash, farmerName, farmId, fileName) {
   container.innerHTML = `
     <div style="border-bottom:2px solid #065f46;padding-bottom:12px;margin-bottom:16px">
       <h1 style="color:#065f46;margin:0;font-size:22px">🌱 CropSmart — Farmer Soil Health Action Plan</h1>
-      <p style="color:#475569;margin:4px 0 0 0;font-size:12px">Certified P025 Agronomic Model · 782,000+ Records Analyzed</p>
+      <p style="color:#475569;margin:4px 0 0 0;font-size:12px">Certified P025 Agronomic Model · 45,000+ Records Analyzed</p>
     </div>
     <div style="display:flex;justify-content:space-between;margin-bottom:16px;font-size:12px">
       <div><strong>Farmer:</strong> ${farmerName} | <strong>Location:</strong> ${farmName}</div>
       <div><strong>Date:</strong> ${new Date().toLocaleDateString()} | <strong>ID:</strong> #P025-${farmId}</div>
     </div>
     <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:6px;margin-bottom:16px">
-      <h3 style="margin:0 0 6px 0;color:#166534">1. Soil Health: ${soilScore} / 100</h3>
-      <p style="margin:0;font-size:12px;color:#14532d">Deficiencies: ${alerts.join(', ')}</p>
+      <h3 style="margin:0 0 6px 0;color:#166534">1. Soil Health: ${soilScore === null ? 'Not yet tested' : `${soilScore} / 100`}</h3>
+      <p style="margin:0;font-size:12px;color:#14532d">Deficiencies: ${alerts.length ? alerts.join(', ') : (soilScore === null ? 'Run a soil analysis first' : 'None detected')}</p>
     </div>
     <div style="background:#eff6ff;border:1px solid #bfdbfe;padding:12px;border-radius:6px;margin-bottom:16px">
       <h3 style="margin:0 0 6px 0;color:#1e40af">2. Top Recommendation: ${recCrop} (Legume N-Fixer)</h3>

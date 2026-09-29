@@ -57,16 +57,6 @@
       </button>
     </div>
 
-    <!-- ── Mode Switcher (Farmer vs B2B Enterprise) ──── -->
-    <div class="mode-toggle-wrap">
-      <button id="mode-btn-farmer" class="mode-btn active" onclick="setAppMode('farmer')">
-        <span>🌾</span> Farmer Mode
-      </button>
-      <button id="mode-btn-b2b" class="mode-btn" onclick="setAppMode('b2b')">
-        <span>🏢</span> B2B Enterprise
-      </button>
-    </div>
-
     <!-- ── Account (Sign Up / Log In) ──────────────────── -->
     <div id="account-widget-mount"></div>
 
@@ -103,12 +93,6 @@
       <div class="nav-link" data-view="recommendation">
         <span class="nav-icon">⭐</span> <span data-i18n="navRecommendation">Recommendation</span>
         <span class="nav-badge">NEW</span>
-      </div>
-
-      <p class="sidebar-section-label" style="margin-top:8px">B2B Enterprise</p>
-      <div class="nav-link" data-view="b2b" id="nav-b2b-link" onclick="setAppMode('b2b')">
-        <span class="nav-icon">🏢</span> <span>B2B Enterprise Hub</span>
-        <span class="nav-badge" style="background:#0284c7">ENTERPRISE</span>
       </div>
     </div>
 
@@ -221,8 +205,9 @@
               <div class="weather-param-val" id="weather-param-wind">-- km/h</div>
             </div>
             <div class="weather-param-item">
-              <div class="weather-param-title" data-i18n="paramPressure">⏱️ Pressure</div>
-              <div class="weather-param-val" id="weather-param-pressure">-- hPa</div>
+              <div class="weather-param-title" data-i18n="paramLight">☀️ Sunlight / Light</div>
+              <div class="weather-param-val" id="dash-sensor-light">— %</div>
+              <div class="sensor-extra-sub" id="dash-sensor-light-sub" style="font-size:10px;color:var(--text-muted);margin-top:2px">Sensor Table</div>
             </div>
           </div>
         </div>
@@ -320,14 +305,6 @@
           </div>
         </div>
 
-        <!-- Buyer Demand for Your Crop -->
-        <div class="glass-card mt-24" id="dash-buyer-demand-card" style="display:none">
-          <div class="flex justify-between items-center mb-16">
-            <div class="card-title" data-i18n="cardBuyerDemand">Buyers Want What You're Growing</div>
-          </div>
-          <div id="dash-buyer-demand"></div>
-        </div>
-
         <!-- Recent History -->
         <div class="glass-card mt-24">
           <div class="flex justify-between items-center mb-16">
@@ -366,22 +343,47 @@
       <!-- Supplementary sensor readings (not part of the health score) -->
       <div id="sensor-extra-readings" class="sensor-extra-grid mb-16" style="display:none">
         <div class="sensor-extra-tile">
-          <div class="sensor-extra-label">🌡️ Air Temperature</div>
+          <div class="sensor-extra-label">🌡️ Temperature</div>
           <div class="sensor-extra-value" id="sensor-temp-val">— °C</div>
-        </div>
-        <div class="sensor-extra-tile">
-          <div class="sensor-extra-label">💨 Air Humidity</div>
-          <div class="sensor-extra-value" id="sensor-humidity-val">— %</div>
         </div>
         <div class="sensor-extra-tile">
           <div class="sensor-extra-label">💧 Soil Moisture</div>
           <div class="sensor-extra-value" id="sensor-soil-moisture-val">— %</div>
         </div>
         <div class="sensor-extra-tile">
+          <div class="sensor-extra-label">☀️ Sunlight / Light</div>
+          <div class="sensor-extra-value" id="sensor-light-val">— %</div>
+        </div>
+        <div class="sensor-extra-tile">
           <div class="sensor-extra-label">🧪 Soil TDS</div>
           <div class="sensor-extra-value" id="sensor-tds-val">— ppm</div>
           <div class="sensor-extra-sub" id="sensor-tds-status">ideal: 300–700 ppm</div>
         </div>
+        <div class="sensor-extra-tile">
+          <div class="sensor-extra-label">🛡️ Sensor Status</div>
+          <div class="sensor-extra-value" id="sensor-reliable-val" style="font-size:16px">—</div>
+          <div class="sensor-extra-sub" id="sensor-reliable-sub">Reliability Check</div>
+        </div>
+      </div>
+
+      <!-- Live Sensor Instant Crop Prediction Card -->
+      <div id="sensor-predict-banner" class="glass-card mb-16" style="display:none; border: 1px solid rgba(34, 197, 94, 0.35); background: rgba(34, 197, 94, 0.04); padding: 18px 22px;">
+        <div class="flex items-center justify-between gap-16" style="flex-wrap: wrap;">
+          <div class="flex items-center gap-12">
+            <span style="font-size: 30px;">🌾</span>
+            <div>
+              <div style="font-weight: 700; color: var(--text-primary); font-size: 16px;">Live Sensor AI Crop Predictor</div>
+              <div id="sensor-predict-sub" style="font-size: 13px; color: var(--text-secondary);">Predicts best crops in real time directly from your Soil Scout sensor values</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" id="btn-predict-sensor" onclick="predictCropsFromSensor()" style="display: inline-flex; align-items: center; gap: 8px;">
+            <span>⚡</span> Predict Crops From Sensor
+          </button>
+        </div>
+        <div id="sensor-dry-warning" class="alert-banner warning mt-12" style="display:none; font-size: 13px;">
+          ⚠ <b>Probe Reading Warning:</b> Soil moisture is 0.00% (too dry). Electrochemical probes cannot conduct ions without moisture, leading to 0 TDS/NPK and uncalibrated pH. Moisten your soil sample for true field readings.
+        </div>
+        <div id="sensor-predictions-output" style="display:none; margin-top: 16px; border-top: 1px solid var(--border); padding-top: 14px;"></div>
       </div>
 
       <div class="glass-card">
@@ -785,11 +787,6 @@
       <div id="gps-zones-container"></div>
     </div>
 
-    <!-- ── VIEW: B2B ENTERPRISE HUB ──────────────────────── -->
-    <div id="view-b2b" class="view">
-      <div id="b2b-view-content"></div>
-    </div>
-
   </main><!-- end .main -->
 
   <!-- ══════════════════ MOBILE BOTTOM NAVIGATION ══════════════════ -->
@@ -810,10 +807,6 @@
       <span class="mb-icon">♻️</span>
       <span class="mb-label" data-i18n="navRotation">Rotation</span>
     </button>
-    <button class="mb-nav-item" data-view="b2b" onclick="setAppMode('b2b')">
-      <span class="mb-icon">🏢</span>
-      <span class="mb-label">B2B Hub</span>
-    </button>
   </nav>
 
 </div><!-- end .app -->
@@ -831,7 +824,6 @@
 <script src="js/recommendation.js"></script>
 <script src="js/weather.js"></script>
 <script src="js/gpsZones.js"></script>
-<script src="js/b2b.js"></script>
 <script src="js/reportPdf.js"></script>
 <script src="js/chatbot.js"></script>
 

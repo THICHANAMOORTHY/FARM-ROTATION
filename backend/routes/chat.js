@@ -48,7 +48,7 @@ router.post('/', async (req, res) => {
         // free-tier daily quota fast. gemini-3.5-flash(-lite) currently has
         // separate, available quota — listed first so most requests succeed
         // without needing the timeout/fallback path at all.
-        const candidateModels = ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
+        const candidateModels = ['gemini-3.7-flash', 'gemini-flash-lite-latest', 'gemini-3.8-flash', 'gemini-flash-latest'];
         let text = null;
 
         const prompt = `You are "CropSmart Kisan AI", an expert agricultural advisor and agronomist.
@@ -99,8 +99,8 @@ User Question: "${message}"`;
     let reply = "";
     let suggestions = [];
 
-    // Question: What to plant next / Crop recommendation
-    if (q.includes("next") || q.includes("plant") || q.includes("grow") || q.includes("recommend") || q.includes("பயிர்") || q.includes("நடலாம்") || q.includes("சாகுபடி")) {
+    // Question: What to plant next / Crop recommendation / Rotation
+    if (q.includes("next") || q.includes("plant") || q.includes("grow") || q.includes("recommend") || q.includes("rotate") || q.includes("rotation") || q.includes("green gram") || q.includes("moong") || q.includes("pulse") || q.includes("legume") || q.includes("பயிர்") || q.includes("நடலாம்") || q.includes("சாகுபடி") || q.includes("சுழற்சி") || q.includes("பாசிப்பயறு")) {
       if (isTa) {
         reply = `🌱 **பரிந்துரைக்கப்படும் அடுத்த பயிர்: பாசிப்பயறு (Green Gram)**\n\n` +
           `உங்கள் நிலத்தில் கடந்த 3 பருவங்களாக தொடர்ச்சியாக தக்காளி பயிரிடப்பட்டுள்ளதால், மண்ணில் **தழைச்சத்து (Nitrogen) 42 kg/ha** ஆக குறைந்துள்ளது.\n\n` +
@@ -109,7 +109,7 @@ User Question: "${message}"`;
           `• **மண்டி சந்தை விலை**: ₹85.00/கிலோ.\n` +
           `• **எதிர்பார்க்கப்படும் லாபம்**: சுமார் ₹33,500/ஏக்கர்.\n\n` +
           `இதன் மூலம் அடுத்த பருவத்தில் ரசாயன யூரியா உரச்செலவு 30% வரை குறையும்!`;
-        suggestions = ["மண் பரிசோதனை பார்க்க", "3-பருவ சுழற்சி திட்டம்", "சந்தை விலை பட்டியல்"];
+        suggestions = ["மண் பரிசோதனை பார்க்க", "உர பரிந்துரை என்ன?", "3-பருவ சுழற்சி திட்டம்", "சந்தை விலை பட்டியல்"];
       } else {
         reply = `🌱 **Top Recommended Next Crop: Green Gram (Moong)**\n\n` +
           `Because your farm has grown Tomato continuously for 3 seasons, your soil's **Nitrogen level is depleted to 42 kg/ha** (critical threshold is 80 kg/ha).\n\n` +
@@ -118,7 +118,32 @@ User Question: "${message}"`;
           `• **Mandi Market Price**: ₹85.00/kg (based on real APMC trading data).\n` +
           `• **Projected Net Profit**: ~₹33,500 per acre.\n\n` +
           `Sowing Green Gram now will break the tomato blight disease cycle and restore your soil score from 63 to 72!`;
-        suggestions = ["Explain my soil deficiencies", "Show 3-season rotation", "View Mandi prices"];
+        suggestions = ["Explain my soil deficiencies", "What fertilizer to apply?", "Show 3-season rotation", "View Mandi prices"];
+      }
+    }
+
+    // Question: Fertilizer dosage / Soil feeding advice
+    else if (q.includes("fertiliz") || q.includes("urea") || q.includes("dap") || q.includes("fym") || q.includes("compost") || q.includes("feed") || q.includes("dose") || q.includes("உர") || q.includes("யூரியா") || q.includes("சாணம்")) {
+      if (isTa) {
+        reply = `🧪 **ஊட்டச்சத்து மற்றும் உரப் பரிந்துரை (#101 பண்ணை - 4.5 ஏக்கர்):**\n\n` +
+          `மண்ணில் தழைச்சத்து குறைவு (42 kg/ha) மற்றும் கரிமச்சத்து 0.52% உள்ளதால் பின்வரும் ஊட்டச்சத்து திட்டம் பரிந்துரைக்கப்படுகிறது:\n\n` +
+          `• **மக்கிய தொழுவுரம் / மண்புழு உரம்**: ஏக்கருக்கு 5 டன் (நில தயாரிப்பின் போது).\n` +
+          `• **ரைசோபியம் உயிரி உரம்**: விதை நேர்த்திக்கு 200 கிராம் / ஏக்கர்.\n` +
+          `• **டி.ஏ.பி (DAP)**: ஏக்கருக்கு 35 கிலோ (அடிப்படை உரமாக).\n` +
+          `• **பொட்டாஷ் (MOP)**: ஏக்கருக்கு 20 கிலோ.\n` +
+          `• **வேப்பம் புண்ணாக்கு**: ஏக்கருக்கு 100 கிலோ (மண் பூச்சிகளை கட்டுப்படுத்த).\n\n` +
+          `⚠️ *ரசாயன யூரியா பயன்பாட்டை குறைத்து பயறு வகை பயிர் மூலம் இயற்கையாக தழைச்சத்தை கூட்டவும்.*`;
+        suggestions = ["அடுத்த பயிர் என்ன நடலாம்?", "மண் பரிசோதனை அறிக்கை", "செயல்திட்டம் PDF"];
+      } else {
+        reply = `🧪 **Targeted Fertilizer & Nutrition Plan (Farm #101 - 4.5 Acres):**\n\n` +
+          `Based on your soil test (Nitrogen: 42 kg/ha deficit, Organic Carbon: 0.52%):\n\n` +
+          `• **Farmyard Manure / Vermicompost**: 5.0 Tonnes/acre during basal ploughing to restore organic carbon.\n` +
+          `• **Bio-Inoculant (Rhizobium)**: 200g per 10kg seed treatment to stimulate nodule formation.\n` +
+          `• **DAP (Di-Ammonium Phosphate)**: 35 kg/acre as basal dose for root development.\n` +
+          `• **MOP (Muriate of Potash)**: 20 kg/acre.\n` +
+          `• **Neem Cake**: 100 kg/acre to suppress soil-borne fungal pathogens.\n\n` +
+          `⚠️ *Avoid heavy chemical Urea dressing — let the Green Gram crop naturally fix atmospheric nitrates!*`;
+        suggestions = ["What crop to plant next?", "Download Action Plan PDF", "View Soil Test"];
       }
     }
 
@@ -151,23 +176,23 @@ User Question: "${message}"`;
     else if (q.includes("price") || q.includes("mandi") || q.includes("market") || q.includes("profit") || q.includes("rate") || q.includes("விலை") || q.includes("சந்தை") || q.includes("லாபம்")) {
       const topQuotes = [
         { name: isTa ? "பாசிப்பயறு (Green Gram)" : "Green Gram", price: "₹85.00/kg" },
-        { name: isTa ? "தக்காளி (Tomato)" : "Tomato", price: "₹36.50/kg" },
-        { name: isTa ? "வெங்காயம் (Onion)" : "Onion", price: "₹23.50/kg" },
-        { name: isTa ? "உருளைக்கிழங்கு (Potato)" : "Potato", price: "₹15.60/kg" },
-        { name: isTa ? "கோதுமை (Wheat)" : "Wheat", price: "₹23.75/kg" },
+        { name: isTa ? "தக்காளி (Tomato)" : "Tomato", price: "₹79.50/kg" },
+        { name: isTa ? "வெங்காயம் (Onion)" : "Onion", price: "₹15.80/kg" },
+        { name: isTa ? "உருளைக்கிழங்கு (Potato)" : "Potato", price: "₹12.60/kg" },
+        { name: isTa ? "கோதுமை (Wheat)" : "Wheat", price: "₹22.85/kg" },
         { name: isTa ? "வாழை (Banana)" : "Banana", price: "₹27.00/kg" },
         { name: isTa ? "பூண்டு (Garlic)" : "Garlic", price: "₹75.00/kg" },
       ];
 
       if (isTa) {
-        reply = `📊 **இந்திய மண்டி (APMC) நேரடி சந்தை விலைகள் (2023-2025 தரவுகள்):**\n\n` +
+        reply = `📊 **இந்திய மண்டி (APMC) சந்தை விலைகள் (சமீபத்திய தினசரி தரவுகள்):**\n\n` +
           topQuotes.map(q => `• **${q.name}**: ${q.price}`).join('\n') +
-          `\n\n💡 *குறிப்பு: இந்த விலைகள் 782,000+ நேரடி விவசாய மண்டி ஏல விற்பனை பதிவுகளின் சராசரி ஆகும்.*`;
+          `\n\n💡 *குறிப்பு: இந்த விலைகள் 23,000+ மண்டி சந்தை விலைப் பதிவுகளின் நடுநிலை மதிப்பு ஆகும்.*`;
         suggestions = ["பயிர்களின் லாபம் ஒப்பிடு", "பாசிப்பயறு லாபம் என்ன?", "முகப்பிற்கு செல்"];
       } else {
-        reply = `📊 **Real APMC Mandi Trading Prices (2023–2025 Multi-Mandi Analysis):**\n\n` +
+        reply = `📊 **Recent APMC Mandi Prices (daily commodity quotes):**\n\n` +
           topQuotes.map(q => `• **${q.name}**: ${q.price}`).join('\n') +
-          `\n\n💡 *Extracted from 782,374 real APMC market transactions across Indian states.*`;
+          `\n\n💡 *Median of 23,093 APMC market price quotes across Indian states.*`;
         suggestions = ["Which crop gives highest profit?", "Recommend best rotation", "Download CSV Dataset"];
       }
     }
@@ -212,7 +237,7 @@ User Question: "${message}"`;
     else {
       if (isTa) {
         reply = `வணக்கம் ${farmer.name}! நான் உங்கள் **CropSmart உழவன் AI ஆலோசகர்** 🌱\n\n` +
-          `உங்கள் கோவை பண்ணையின் (4.5 ஏக்கர்) மண் வளம், முந்தைய பயிர் வரலாறு மற்றும் 782,000+ மண்டி சந்தை விலைகளின் அடிப்படையில் நான் உங்களுக்கு உதவ முடியும்.\n\n` +
+          `உங்கள் கோவை பண்ணையின் (4.5 ஏக்கர்) மண் வளம், முந்தைய பயிர் வரலாறு மற்றும் 23,000+ மண்டி சந்தை விலைகளின் அடிப்படையில் நான் உங்களுக்கு உதவ முடியும்.\n\n` +
           `நீங்கள் கேட்கக்கூடிய கேள்விகள்:\n` +
           `• *"அடுத்த பருவத்தில் என்ன பயிர் நடலாம்?"*\n` +
           `• *"என் நிலத்தின் மண் வளம் மற்றும் குறைபாடுகள் என்ன?"*\n` +
@@ -221,7 +246,7 @@ User Question: "${message}"`;
         suggestions = ["அடுத்த பயிர் என்ன நடலாம்?", "மண் பரிசோதனை பார்க்க", "மண்டி சந்தை விலைகள்"];
       } else {
         reply = `Hello ${farmer.name}! I am your **CropSmart Kisan AI Agronomist** 🌱\n\n` +
-          `I have full context of your 4.5-acre Coimbatore farm, your current soil test (Score: ${soil.soil_health_score}/100, N: 42 kg/ha), your 3-season continuous Tomato history, and 782k+ live APMC Mandi market rates.\n\n` +
+          `I have full context of your 4.5-acre Coimbatore farm, your current soil test (Score: ${soil.soil_health_score}/100, N: 42 kg/ha), your 3-season continuous Tomato history, and 23k+ APMC Mandi market quotes.\n\n` +
           `Here are questions you can ask me:\n` +
           `• *"What crop should I plant next?"*\n` +
           `• *"Why is my soil nitrogen depleted?"*\n` +

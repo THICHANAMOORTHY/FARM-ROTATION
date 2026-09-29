@@ -200,6 +200,10 @@ window.nutrientChip = nutrientChip;
 const VIEW_LOADERS = {};
 
 function navigate(viewId) {
+  if (viewId === 'login' || viewId === 'signup') {
+    if (window.openAuthModal) window.openAuthModal(viewId);
+    return;
+  }
   state.activeView = viewId;
 
   // Update active view
@@ -269,14 +273,16 @@ window.toggleMobileSidebar = toggleMobileSidebar;
 window.closeMobileSidebar = closeMobileSidebar;
 window.toggleLanguageMobile = toggleLanguageMobile;
 
+function initAppAfterAuth() {
+  const hash = window.location.hash.replace('#', '') || 'dashboard';
+  navigate(hash);
+}
+window.initAppAfterAuth = initAppAfterAuth;
+
 // ── Init ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   // Attach nav click handlers
   document.querySelectorAll('.nav-link[data-view]').forEach(link => {
     link.addEventListener('click', () => navigate(link.dataset.view));
   });
-
-  // Load initial view from hash or default
-  const hash = window.location.hash.replace('#', '') || 'dashboard';
-  navigate(hash);
 });

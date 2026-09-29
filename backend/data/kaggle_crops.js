@@ -1,12 +1,11 @@
 // ============================================================
-// kaggle_crops.js — Unified Quad-Source Kaggle Agronomy Model
+// kaggle_crops.js — Unified Tri-Source Kaggle Agronomy Model
 // Datasets merged:
-//   1. arjunyadav99/indian-agricultural-mandi-prices-20232025 (737,392 rows)
-//   2. anshtanwar/current-daily-price-of-various-commodities-india (23,093 rows)
-//   3. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
-//   4. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
-// Total empirical records analyzed: 782,374 | Unique crops: 60
-// Generated: 2026-09-14 11:40:42
+//   1. anshtanwar/current-daily-price-of-various-commodities-india (23,093 rows)
+//   2. madhuraatmarambhagat/crop-recommendation-dataset (2,200 rows)
+//   3. akshatgupta7/crop-yield-in-indian-states-dataset (19,689 rows)
+// Total empirical records analyzed: 44,982 | Unique crops: 60
+// Generated: 2026-09-20 09:44:50
 // ============================================================
 
 const kaggleCrops = [
@@ -1265,7 +1264,7 @@ const kaggleCrops = [
     "p_demand": 45.2,
     "k_demand": 45.2,
     "avg_yield_per_acre": 3832.4,
-    "avg_market_price": 23.5,
+    "avg_market_price": 15.8,
     "avg_cultivation_cost": 22000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1282,9 +1281,9 @@ const kaggleCrops = [
       "Uttar Pradesh",
       "Gujarat"
     ],
-    "total_records": 300041,
+    "total_records": 1609,
     "data_sources": [
-      "indian-mandi-prices (299,594 trades)",
+      "indian-mandi-prices (1,162 trades)",
       "crop-yield-in-indian-states (447 harvest rows)"
     ]
   },
@@ -1469,7 +1468,7 @@ const kaggleCrops = [
     "p_demand": 45.2,
     "k_demand": 45.2,
     "avg_yield_per_acre": 4119.7,
-    "avg_market_price": 15.6,
+    "avg_market_price": 12.6,
     "avg_cultivation_cost": 25000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1486,9 +1485,9 @@ const kaggleCrops = [
       "West Bengal",
       "Himachal Pradesh"
     ],
-    "total_records": 328141,
+    "total_records": 1832,
     "data_sources": [
-      "indian-mandi-prices (327,514 trades)",
+      "indian-mandi-prices (1,205 trades)",
       "crop-yield-in-indian-states (627 harvest rows)"
     ]
   },
@@ -1575,7 +1574,7 @@ const kaggleCrops = [
     "p_demand": 47.0,
     "k_demand": 40.0,
     "avg_yield_per_acre": 890.3,
-    "avg_market_price": 33.0,
+    "avg_market_price": 24.35,
     "avg_cultivation_cost": 24000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -1592,9 +1591,9 @@ const kaggleCrops = [
       "West Bengal",
       "Bihar"
     ],
-    "total_records": 9992,
+    "total_records": 2210,
     "data_sources": [
-      "indian-mandi-prices (8,695 trades)",
+      "indian-mandi-prices (913 trades)",
       "crop-recommendation-dataset (100 sensor rows)",
       "crop-yield-in-indian-states (1,197 harvest rows)"
     ]
@@ -1960,7 +1959,7 @@ const kaggleCrops = [
     "p_demand": 36.0,
     "k_demand": 36.0,
     "avg_yield_per_acre": 4000.0,
-    "avg_market_price": 36.5,
+    "avg_market_price": 79.5,
     "avg_cultivation_cost": 35000,
     "disease_risk_index": 30.0,
     "suitable_seasons": [
@@ -1973,9 +1972,9 @@ const kaggleCrops = [
     "top_states": [
       "All India"
     ],
-    "total_records": 27314,
+    "total_records": 671,
     "data_sources": [
-      "indian-mandi-prices (27,314 trades)"
+      "indian-mandi-prices (671 trades)"
     ]
   },
   {
@@ -2057,7 +2056,7 @@ const kaggleCrops = [
     "p_demand": 36.1,
     "k_demand": 36.1,
     "avg_yield_per_acre": 675.8,
-    "avg_market_price": 23.75,
+    "avg_market_price": 22.85,
     "avg_cultivation_cost": 18000,
     "disease_risk_index": 18.0,
     "suitable_seasons": [
@@ -2074,9 +2073,9 @@ const kaggleCrops = [
       "Karnataka",
       "West Bengal"
     ],
-    "total_records": 78157,
+    "total_records": 1184,
     "data_sources": [
-      "indian-mandi-prices (77,614 trades)",
+      "indian-mandi-prices (641 trades)",
       "crop-yield-in-indian-states (543 harvest rows)"
     ]
   }

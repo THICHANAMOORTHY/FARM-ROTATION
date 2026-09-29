@@ -38,8 +38,6 @@ function signAccessToken(user) {
       email: user.email,
       name: user.name,
       farmer_id: user.farmer_id || null,
-      buyer_id: user.buyer_id || null,
-      org_name: user.org_name || null,
     },
     effectiveAccessSecret,
     { expiresIn: ACCESS_EXPIRES }

@@ -54,7 +54,10 @@
 
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-primary" onclick="detectLiveGpsLocation()" style="font-size:12px;padding:6px 14px">
-            <span>📡</span> ${isTa ? 'நேரடி ஜிபிஎஸ் கண்டறி (Detect Live GPS)' : 'Detect My Live GPS'}
+            <span>📡</span> ${isTa ? 'நேரடி ஜிபிஎஸ் கண்டறி (Browser GPS)' : 'Detect Browser GPS'}
+          </button>
+          <button class="btn btn-secondary" onclick="syncEsp32GpsLocation()" style="font-size:12px;padding:6px 14px">
+            <span>🛰️</span> ${isTa ? 'ESP32 சென்சார் ஜிபிஎஸ் (NEO-6M)' : 'Sync ESP32 (NEO-6M) GPS'}
           </button>
           <button class="btn btn-secondary" onclick="exportGpsZoneSummary()" style="font-size:12px;padding:6px 14px">
             <span>📋</span> ${isTa ? 'மண்டல அறிக்கை (Export Zones)' : 'Export Zone Report'}
@@ -105,24 +108,33 @@
                 const isSelected = z.zone_id === activeZoneId;
                 const scoreColor = z.soil_health_score >= 70 ? '#10b981' : z.soil_health_score >= 60 ? '#f59e0b' : '#ef4444';
                 return `
-                  <div class="gps-zone-card ${isSelected ? 'active' : ''}" onclick="selectGpsZone('${z.zone_id}')" style="border-top: 4px solid ${scoreColor}">
+                  <div class="gps-zone-card ${isSelected ? 'active' : ''}" onclick="selectGpsZone('${z.zone_id}')" style="border-top: 3px solid ${scoreColor};">
                     <div class="gps-zone-header">
-                      <span class="gps-zone-tag">${z.zone_id}</span>
-                      <span class="gps-zone-score" style="color:${scoreColor}">Score: ${z.soil_health_score}/100</span>
+                      <div style="display:flex;align-items:center;gap:6px">
+                        <span class="gps-zone-tag">${z.zone_id}</span>
+                        ${isSelected ? `<span class="chip success" style="font-size:10px;padding:2px 7px;font-weight:700">● Active</span>` : ''}
+                      </div>
+                      <span class="gps-zone-score" style="color:${scoreColor};border-color:${scoreColor}33">Score: ${z.soil_health_score}/100</span>
                     </div>
                     <div class="gps-zone-title">${isTa ? z.tamil_name : z.zone_name}</div>
                     <div class="gps-zone-meta">
-                      <span>📐 ${z.area_acres} Ac</span> · <span>⛰️ ${z.elevation_m}m</span>
+                      <span>📐 ${z.area_acres} Ac</span>
+                      <span>•</span>
+                      <span>⛰️ ${z.elevation_m}m</span>
+                      <span>•</span>
+                      <span>🌿 ${z.soil_texture}</span>
                     </div>
                     
                     <div class="gps-zone-soil-pill">
-                      <span>🧪 N: <b>${z.soil_data.nitrogen}</b></span>
-                      <span>P: <b>${z.soil_data.phosphorus}</b></span>
-                      <span>pH: <b>${z.soil_data.ph}</b></span>
+                      <span><span style="color:#818cf8;font-weight:600">N</span>: <b>${z.soil_data.nitrogen}</b></span>
+                      <span><span style="color:#c084fc;font-weight:600">P</span>: <b>${z.soil_data.phosphorus}</b></span>
+                      <span><span style="color:#fbbf24;font-weight:600">K</span>: <b>${z.soil_data.potassium}</b></span>
+                      <span><span style="color:#22d3ee;font-weight:600">pH</span>: <b>${z.soil_data.ph}</b></span>
                     </div>
 
                     <div class="gps-zone-crop-badge">
                       <span>🌱 ${isTa ? z.allocated_crop.tamil_name : z.allocated_crop.name}</span>
+                      <span style="margin-left:auto;font-size:11.5px;color:#34d399;font-weight:700">₹${z.allocated_crop.zone_total_profit.toLocaleString('en-IN')}</span>
                     </div>
                   </div>
                 `;
@@ -130,9 +142,9 @@
             </div>
 
             <div class="gps-legend-strip mt-12">
-              <span class="gps-legend-item"><span class="legend-dot" style="background:#10b981"></span> ${isTa ? 'சிறந்த மண் வளம் (70-100)' : 'Optimal Soil (>70)'}</span>
-              <span class="gps-legend-item"><span class="legend-dot" style="background:#f59e0b"></span> ${isTa ? 'மிதமான சத்து குறைவு (60-69)' : 'Moderate Depletion (60-69)'}</span>
-              <span class="gps-legend-item"><span class="legend-dot" style="background:#ef4444"></span> ${isTa ? 'கடுமையான தழைச்சத்து குறைவு (<60)' : 'Critical Deficit (<60)'}</span>
+              <span class="gps-legend-item"><span class="legend-dot" style="background:#10b981;box-shadow:0 0 8px #10b981;"></span> ${isTa ? 'சிறந்த மண் வளம் (70-100)' : 'Optimal Soil (>70)'}</span>
+              <span class="gps-legend-item"><span class="legend-dot" style="background:#f59e0b;box-shadow:0 0 8px #f59e0b;"></span> ${isTa ? 'மிதமான சத்து குறைவு (60-69)' : 'Moderate Depletion (60-69)'}</span>
+              <span class="gps-legend-item"><span class="legend-dot" style="background:#ef4444;box-shadow:0 0 8px #ef4444;"></span> ${isTa ? 'கடுமையான தழைச்சத்து குறைவு (<60)' : 'Critical Deficit (<60)'}</span>
             </div>
           </div>
         </div>
@@ -254,6 +266,30 @@
     );
   }
 
+  async function syncEsp32GpsLocation() {
+    const farmId = window.state?.farm_id || 101;
+    const btn = document.querySelector('button[onclick="syncEsp32GpsLocation()"]');
+    if (btn) btn.innerHTML = '<span>🛰️</span> Syncing NEO-6M…';
+
+    try {
+      const res = await fetch(`/api/soil-sensor/latest?farm_id=${farmId}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const r = data.reading || data.latest_reading;
+      if (r && r.latitude && r.longitude) {
+        currentLat = Number(r.latitude);
+        currentLon = Number(r.longitude);
+        loadGpsZones(currentLat, currentLon);
+      } else {
+        alert('No live GPS coordinates from ESP32 NEO-6M yet. Ensure the NEO-6M module has outdoor satellite fix (blinking LED) and your ESP32 is posting telemetry.');
+        if (btn) btn.innerHTML = '<span>🛰️</span> Sync ESP32 (NEO-6M) GPS';
+      }
+    } catch (err) {
+      alert('Could not fetch ESP32 sensor GPS: ' + err.message);
+      if (btn) btn.innerHTML = '<span>🛰️</span> Sync ESP32 (NEO-6M) GPS';
+    }
+  }
+
   function exportGpsZoneSummary() {
     exportFarmerReportPDF();
   }
@@ -268,5 +304,6 @@
   window.loadGpsZones = loadGpsZones;
   window.selectGpsZone = selectGpsZone;
   window.detectLiveGpsLocation = detectLiveGpsLocation;
+  window.syncEsp32GpsLocation = syncEsp32GpsLocation;
   window.exportGpsZoneSummary = exportGpsZoneSummary;
 })();

@@ -35,16 +35,16 @@ crop_id,name,crop_family,is_nitrogen_fixer,growth_duration_days,water_requiremen
 34,Muskmelon,Fruit,False,120,Low,5.6,7.1,100.0,18.0,50.0,4000.0,35,14000,30.0,"Kharif, Rabi",28.7,92.3,24.7,100
 35,Mustard,Oilseed,False,120,Medium,6.0,7.2,57.8,43.3,43.3,299.5,54.75,12000,18.0,"Kharif, Rabi",26.5,70.0,1281.1,906
 36,Niger seed,Oilseed,False,120,Medium,6.0,7.2,57.8,43.3,43.3,145.7,35,16000,18.0,"Kharif, Rabi",26.5,70.0,1306.0,190
-37,Onion,Vegetable,False,120,Medium,6.0,7.2,60.3,45.2,45.2,3832.4,23.5,22000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1111.7,300041
+37,Onion,Vegetable,False,120,Medium,6.0,7.2,60.3,45.2,45.2,3832.4,15.8,22000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1111.7,1609
 38,Orange,Fruit,False,120,Low,6.3,7.8,19.0,16.0,10.0,4000.0,70.0,22000,30.0,"Kharif, Rabi",22.8,92.2,110.7,120
 39,Papaya,Fruit,False,120,Low,6.0,7.5,49.0,60.0,50.0,4000.0,25.0,18000,30.0,"Kharif, Rabi",33.7,92.4,139.0,333
 40,Peas & Beans,Legume,True,75,Medium,6.0,7.5,25.0,52.8,45.2,376.4,35,16000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1317.2,369
 41,Pigeon Pea,Legume,True,75,Medium,5.0,6.5,20.0,69.5,20.0,315.7,87.2,12000,18.0,"Kharif, Rabi, Zaid",27.7,48.1,1178.9,747
 42,Pomegranate,Fruit,False,120,Low,5.7,7.2,18.0,20.0,40.0,4000.0,67.1,35000,30.0,"Kharif, Rabi",21.8,90.1,107.6,391
-43,Potato,Vegetable,False,120,Medium,6.0,7.2,60.3,45.2,45.2,4119.7,15.6,25000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1296.3,328141
+43,Potato,Vegetable,False,120,Medium,6.0,7.2,60.3,45.2,45.2,4119.7,12.6,25000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1296.3,1832
 44,Ragi,Cereal,False,110,Medium,5.8,7.2,72.2,36.1,36.1,420.9,32,11000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1255.4,498
 45,Red Lentil,Legume,True,75,Medium,6.2,7.7,16.5,68.0,19.0,283.3,35,9500,18.0,"Kharif, Rabi",24.5,64.8,1250.8,424
-46,Rice,Cereal,False,110,Medium,5.7,7.2,80.0,47.0,40.0,890.3,33.0,24000,18.0,"Kharif, Rabi, Zaid",23.7,82.3,1402.7,9992
+46,Rice,Cereal,False,110,Medium,5.7,7.2,80.0,47.0,40.0,890.3,24.35,24000,18.0,"Kharif, Rabi, Zaid",23.7,82.3,1402.7,2210
 47,Safflower,Oilseed,False,120,Medium,6.0,7.2,57.8,43.3,43.3,226.6,35,16000,18.0,"Kharif, Rabi",26.5,70.0,1157.0,168
 48,Sannhamp,Legume,True,75,Medium,6.0,7.5,25.0,50.1,42.9,190.2,35,16000,18.0,"Kharif, Rabi",26.5,70.0,1136.0,153
 49,Sesamum,Oilseed,False,120,Medium,6.0,7.2,60.3,45.2,45.2,178.1,110,11000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1309.0,684
@@ -55,7 +55,7 @@ crop_id,name,crop_family,is_nitrogen_fixer,growth_duration_days,water_requiremen
 54,Sweet Potato,Vegetable,False,120,Medium,6.0,7.2,57.8,43.3,43.3,3452.0,23.0,16000,18.0,"Kharif, Rabi",26.5,70.0,1291.5,293
 55,Tapioca,Vegetable,False,120,Medium,6.0,7.2,60.3,45.2,45.2,4508.2,30.0,16000,18.0,"Kharif, Rabi",26.5,70.0,1563.4,264
 56,Tobacco,Commercial,False,120,Medium,6.0,7.2,60.3,45.2,45.2,566.6,95,28000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1206.3,362
-57,Tomato,Solanaceae,False,120,Medium,6.0,7.2,48.0,36.0,36.0,4000.0,36.5,35000,30.0,"Kharif, Rabi",26.5,70.0,1000.0,27314
+57,Tomato,Solanaceae,False,120,Medium,6.0,7.2,48.0,36.0,36.0,4000.0,79.5,35000,30.0,"Kharif, Rabi",26.5,70.0,1000.0,671
 58,Turmeric,Spices,False,120,Medium,6.0,7.2,57.8,43.3,43.3,817.5,35,32000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1349.5,334
 59,Watermelon,Fruit,False,120,Low,5.8,7.2,99.0,17.5,50.5,4000.0,35,15000,30.0,"Kharif, Rabi",25.6,85.2,50.7,100
-60,Wheat,Cereal,False,110,Medium,5.8,7.2,72.2,36.1,36.1,675.8,23.75,18000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1246.2,78157
+60,Wheat,Cereal,False,110,Medium,5.8,7.2,72.2,36.1,36.1,675.8,22.85,18000,18.0,"Kharif, Rabi, Zaid",26.5,70.0,1246.2,1184

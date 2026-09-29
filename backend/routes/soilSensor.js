@@ -27,75 +27,145 @@ function getLatestNutrientReading(farm_id) {
 function requireDeviceKey(req, res, next) {
   const expected = process.env.ESP32_DEVICE_KEY;
   if (!expected) {
+    console.warn('⚠️ [ESP32 Ingest] 503: ESP32_DEVICE_KEY is not configured in backend/.env');
     return res.status(503).json({ error: 'ESP32_DEVICE_KEY is not configured on the server — set it in backend/.env' });
   }
   const provided = req.get('X-Device-Key');
   if (provided !== expected) {
+    console.warn(`⚠️ [ESP32 Ingest] 401 Unauthorized from ${req.ip}. Received header: "${provided || '(none)'}", Expected: "${expected}"`);
     return res.status(401).json({ error: 'Invalid or missing X-Device-Key header' });
   }
   next();
 }
 
+// Helper to estimate organic carbon if sensor does not provide it
+function estimateOrganicCarbon(tdsVal, moistVal) {
+  const tds = tdsVal || 0;
+  const moist = moistVal || 0;
+  const est = 0.3 + (tds / 1000.0) * 0.4 + (moist / 100.0) * 0.3;
+  return Math.min(2.0, Math.max(0.1, parseFloat(est.toFixed(2))));
+}
+
+// Predict crops based on a soil reading
+function evaluateCropsFromReading(soilReading, farmId = 101, season = 'Kharif') {
+  const farm = db.farms.find(f => f.farm_id === farmId) || db.farms[0] || { farm_id: farmId, irrigation_type: 'Drip' };
+  const history = db.crop_history.filter(h => h.farm_id === farmId);
+  const weather = db.weather_data.find(w => w.farm_id === farmId) || {
+    avg_temp_c: 28,
+    humidity_pct: 65,
+    rainfall_mm: 70
+  };
+
+  const weatherAdjusted = { ...weather };
+  if (soilReading.air_temperature !== undefined && soilReading.air_temperature !== null) {
+    weatherAdjusted.avg_temp_c = soilReading.air_temperature;
+  }
+  if (soilReading.air_humidity !== undefined && soilReading.air_humidity !== null) {
+    weatherAdjusted.humidity_pct = soilReading.air_humidity;
+  }
+
+  const { scoreCrop } = require('./cropEvaluation');
+  if (typeof scoreCrop !== 'function') return [];
+
+  const eligibleCrops = db.crops.filter(c => c.suitable_seasons.includes(season));
+  const candidateList = eligibleCrops.length ? eligibleCrops : db.crops.slice(0, 10);
+
+  return candidateList
+    .map(crop => scoreCrop(crop, soilReading, farm, history, weatherAdjusted))
+    .sort((a, b) => b.final_score - a.final_score)
+    .map((r, i) => ({ ...r, rank: i + 1 }));
+}
+
 // ─────────────────────────────────────────────────────────────
-// POST /api/soil-sensor/ingest — ESP32 pushes a reading
-//
-// Supports two kinds of devices, in the same payload shape:
-//  - A full soil sensor: nitrogen, phosphorus, potassium, ph, organic_carbon
-//    (all required together) -> computes a real soil_health_score.
-//  - A simpler env sensor (e.g. DHT11 + analog soil moisture probe, no NPK/pH
-//    capability): just air_temperature / air_humidity / soil_moisture. These
-//    are never part of the health score — they're shown as supplementary
-//    info tiles in Live Sensor mode.
-// A request may send nutrients only, env fields only, or both. Whatever
-// isn't sent in THIS request is carried over from the farm's last known
-// reading, so an env-only device doesn't blank out an existing soil test
-// (and vice versa) — each device just updates the fields it actually has.
+// POST /api/soil-sensor/ingest — Soil Scout / ESP32 pushes reading
 // ─────────────────────────────────────────────────────────────
 router.post('/ingest', requireDeviceKey, (req, res) => {
-  const {
-    farm_id = 101, device_id,
-    nitrogen, phosphorus, potassium, ph, organic_carbon,
-    air_temperature, air_humidity, soil_moisture, tds, conductivity,
-  } = req.body;
+  console.log(`📡 [Sensor Ingest] Incoming reading from device "${req.body?.device_id || req.body?.deviceId || 'Soil-Scout-01'}" (Farm ${req.body?.farm_id || 101})`);
+  console.log(`   Payload:`, JSON.stringify(req.body));
 
-  const nutrientFields = { nitrogen, phosphorus, potassium, ph, organic_carbon };
-  const nutrientsProvided = Object.values(nutrientFields).some(v => v !== undefined);
-  if (nutrientsProvided) {
-    const missing = Object.entries(nutrientFields).filter(([, v]) => v === undefined || v === null || Number.isNaN(Number(v)));
-    if (missing.length) {
-      return res.status(400).json({ error: `Nitrogen/phosphorus/potassium/ph/organic_carbon must be sent together — missing/invalid: ${missing.map(([k]) => k).join(', ')}` });
+  const farm_id = Number(req.body.farm_id || 101);
+  const device_id = req.body.device_id || req.body.deviceId || 'Soil-Scout-01';
+
+  // Support field aliases from Soil Scout serial output
+  const rawN = req.body.nitrogen !== undefined ? req.body.nitrogen : (req.body.n !== undefined ? req.body.n : req.body.estimated_n);
+  const rawP = req.body.phosphorus !== undefined ? req.body.phosphorus : (req.body.p !== undefined ? req.body.p : req.body.estimated_p);
+  const rawK = req.body.potassium !== undefined ? req.body.potassium : (req.body.k !== undefined ? req.body.k : req.body.estimated_k);
+  const rawPh = req.body.ph !== undefined ? req.body.ph : req.body.pH;
+  let rawOc = req.body.organic_carbon !== undefined ? req.body.organic_carbon : req.body.oc;
+
+  const rawTemp = req.body.air_temperature !== undefined ? req.body.air_temperature : (req.body.temperature !== undefined ? req.body.temperature : req.body.temp);
+  const rawHumidity = req.body.air_humidity !== undefined ? req.body.air_humidity : req.body.humidity;
+  const rawMoist = req.body.soil_moisture !== undefined ? req.body.soil_moisture : req.body.moisture;
+  const rawLight = req.body.light !== undefined ? req.body.light : (req.body.sunlight !== undefined ? req.body.sunlight : req.body.light_pct);
+  const rawTds = req.body.tds;
+  const rawConductivity = req.body.conductivity;
+  const latitude = req.body.latitude;
+  const longitude = req.body.longitude;
+
+  // Resolve TDS or derive from electrical conductivity (EC in µS/cm * 0.5 ≈ TDS in ppm)
+  const resolvedTds = rawTds !== undefined
+    ? Number(rawTds)
+    : (rawConductivity !== undefined ? Math.round(Number(rawConductivity) * 0.5) : undefined);
+
+  // Auto-estimate Organic Carbon if omitted but other nutrients or moisture/TDS are present
+  if ((rawOc === undefined || rawOc === null) && (rawN !== undefined || resolvedTds !== undefined || rawMoist !== undefined)) {
+    rawOc = estimateOrganicCarbon(resolvedTds, rawMoist !== undefined ? Number(rawMoist) : 0);
+  }
+
+  // Parse sensor reliability status (e.g. "no (too dry)" or false)
+  let isReliable = true;
+  let reliabilityNote = 'Reliable';
+  const rawReliable = req.body.reading_reliable !== undefined ? req.body.reading_reliable : req.body.reliable;
+  if (rawReliable !== undefined) {
+    if (typeof rawReliable === 'boolean') {
+      isReliable = rawReliable;
+      reliabilityNote = isReliable ? 'Reliable' : 'Unreliable';
+    } else {
+      const relStr = String(rawReliable).toLowerCase();
+      isReliable = !relStr.includes('no') && !relStr.includes('false') && !relStr.includes('dry');
+      reliabilityNote = String(rawReliable);
     }
   }
 
-  // Allow explicit TDS or auto-derive from conductivity (EC in µS/cm * 0.5 ≈ TDS in ppm)
-  const resolvedTds = tds !== undefined
-    ? Number(tds)
-    : (conductivity !== undefined ? Math.round(Number(conductivity) * 0.5) : undefined);
+  // Auto-flag dry probe condition (e.g. moisture 0% causes 0 TDS and uncalibrated pH/NPK)
+  if (rawMoist !== undefined && Number(rawMoist) <= 0) {
+    isReliable = false;
+    reliabilityNote = 'Unreliable (Soil is too dry - 0% moisture). Moisten soil for accurate probe readings.';
+  }
 
-  const envFields = { air_temperature, air_humidity, soil_moisture, tds: resolvedTds };
+  const nutrientFields = { nitrogen: rawN, phosphorus: rawP, potassium: rawK, ph: rawPh, organic_carbon: rawOc };
+  const nutrientsProvided = [rawN, rawP, rawK, rawPh].some(v => v !== undefined && v !== null);
+
+  if (nutrientsProvided) {
+    const missing = Object.entries(nutrientFields).filter(([, v]) => v === undefined || v === null || Number.isNaN(Number(v)));
+    if (missing.length) {
+      console.warn(`⚠️ [Sensor Ingest] 400 Bad Request: Missing nutrient fields:`, missing.map(([k]) => k));
+      return res.status(400).json({ error: `Nutrient fields missing or invalid: ${missing.map(([k]) => k).join(', ')}` });
+    }
+  }
+
+  const envFields = { air_temperature: rawTemp, air_humidity: rawHumidity, soil_moisture: rawMoist, tds: resolvedTds, light: rawLight };
   for (const [key, v] of Object.entries(envFields)) {
     if (v !== undefined && Number.isNaN(Number(v))) {
       return res.status(400).json({ error: `${key} must be a number if provided` });
     }
   }
+
   if (!nutrientsProvided && Object.values(envFields).every(v => v === undefined)) {
-    return res.status(400).json({ error: 'Provide either the full nutrient set (nitrogen/phosphorus/potassium/ph/organic_carbon) or at least one of air_temperature/air_humidity/soil_moisture/tds' });
+    return res.status(400).json({ error: 'Provide either nutrients (N, P, K, pH) or environment values (temperature, moisture, tds, light)' });
   }
 
   const prevStatus = db.live_sensor_status[farm_id];
   const prevReading = prevStatus ? prevStatus.last_reading : null;
-  // Fall back to the farm's latest nutrient reading from ANY source (manual
-  // entry, seed data, a prior ESP32 post) when live_sensor_status has none
-  // yet for this farm — e.g. right after a server restart.
   const lastNutrients = (prevReading && prevReading.nitrogen !== undefined && prevReading.nitrogen !== null)
     ? prevReading
     : getLatestNutrientReading(Number(farm_id));
 
-  // Carry over whichever side (nutrients vs env) wasn't sent in this request.
+  // Carry over whichever side wasn't sent in this request
   const numeric = nutrientsProvided
     ? {
-        nitrogen: Number(nitrogen), phosphorus: Number(phosphorus), potassium: Number(potassium),
-        ph: Number(ph), organic_carbon: Number(organic_carbon),
+        nitrogen: Number(rawN), phosphorus: Number(rawP), potassium: Number(rawK),
+        ph: Number(rawPh), organic_carbon: Number(rawOc),
       }
     : (lastNutrients
       ? {
@@ -116,30 +186,45 @@ router.post('/ingest', requireDeviceKey, (req, res) => {
     farm_id: Number(farm_id),
     recorded_date: new Date().toISOString().slice(0, 10),
     ...(numeric || {}),
-    air_temperature: air_temperature !== undefined ? Number(air_temperature) : (prevReading ? prevReading.air_temperature : null),
-    air_humidity: air_humidity !== undefined ? Number(air_humidity) : (prevReading ? prevReading.air_humidity : null),
-    soil_moisture: soil_moisture !== undefined ? Number(soil_moisture) : (prevReading ? prevReading.soil_moisture : null),
+    air_temperature: rawTemp !== undefined ? Number(rawTemp) : (prevReading ? prevReading.air_temperature : null),
+    air_humidity: rawHumidity !== undefined ? Number(rawHumidity) : (prevReading ? prevReading.air_humidity : null),
+    soil_moisture: rawMoist !== undefined ? Number(rawMoist) : (prevReading ? prevReading.soil_moisture : null),
+    light: rawLight !== undefined ? Number(rawLight) : (prevReading ? prevReading.light : null),
     tds: resolvedTds !== undefined ? Number(resolvedTds) : (prevReading ? prevReading.tds : null),
+    latitude: latitude !== undefined ? Number(latitude) : (prevReading ? prevReading.latitude : null),
+    longitude: longitude !== undefined ? Number(longitude) : (prevReading ? prevReading.longitude : null),
+    is_reliable: isReliable,
+    reliability_note: reliabilityNote,
     soil_health_score: score,
     deficiencies,
     source: 'esp32',
   };
 
-  // Only add to the scored soil-test history when nutrients were actually
-  // freshly measured in THIS request — not when `numeric` is just carried
-  // over from a prior (possibly seeded/demo) reading. Otherwise an env-only
-  // device re-stamps old data as a "new" entry every time it pings, which
-  // would re-tag seeded demo numbers as fresh and defeat the whole point
-  // of not showing fake data.
-  if (nutrientsProvided) db.soil_data.push(entry);
+  // Persist sensor entry in soil_data table so dashboard and analysis can read it
+  db.soil_data.push(entry);
 
   db.live_sensor_status[farm_id] = {
-    device_id: device_id || 'esp32-unknown',
+    device_id: device_id || 'Soil-Scout-01',
     last_seen: Date.now(),
     last_reading: entry,
   };
 
-  res.json({ success: true, soil_id: entry.soil_id, soil_health_score: score, deficiencies, adequate });
+  // Run instant crop prediction based on this sensor reading
+  const predictions = evaluateCropsFromReading(entry, farm_id);
+  const topCrop = predictions[0] || null;
+
+  res.json({
+    success: true,
+    soil_id: entry.soil_id,
+    soil_health_score: score,
+    deficiencies,
+    adequate,
+    is_reliable: isReliable,
+    reliability_note: reliabilityNote,
+    top_predicted_crop: topCrop ? topCrop.crop : null,
+    predicted_crops: predictions.slice(0, 5),
+    reading: entry,
+  });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -160,6 +245,35 @@ router.get('/latest', (req, res) => {
     seconds_ago: Math.round(ageMs / 1000),
     device_id: status.device_id,
     reading: status.last_reading,
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// GET /api/soil-sensor/predict?farm_id=101&season=Kharif — instant crop predictions from sensor
+// ─────────────────────────────────────────────────────────────
+router.get('/predict', (req, res) => {
+  const farm_id = parseInt(req.query.farm_id) || 101;
+  const season = req.query.season || 'Kharif';
+  const status = db.live_sensor_status[farm_id];
+
+  const soilReading = (status && status.last_reading)
+    ? status.last_reading
+    : ([...db.soil_data].filter(s => s.farm_id === farm_id).sort((a,b) => b.soil_id - a.soil_id)[0] || {
+        ph: 6.5, nitrogen: 50, phosphorus: 40, potassium: 60, soil_health_score: 58
+      });
+
+  const predictions = evaluateCropsFromReading(soilReading, farm_id, season);
+
+  res.json({
+    farm_id,
+    season,
+    device_id: status?.device_id || 'manual/default',
+    connected: status ? (Date.now() - status.last_seen <= LIVE_WINDOW_MS) : false,
+    sensor_reading: soilReading,
+    is_reliable: soilReading.is_reliable !== undefined ? soilReading.is_reliable : true,
+    reliability_note: soilReading.reliability_note || 'Reading recorded',
+    top_predicted_crop: predictions[0]?.crop || 'Millets',
+    predictions: predictions.slice(0, 6),
   });
 });
 

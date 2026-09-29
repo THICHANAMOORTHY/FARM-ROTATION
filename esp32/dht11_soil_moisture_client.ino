@@ -62,7 +62,7 @@ const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 // `ipconfig` / `ifconfig`, the WiFi adapter's IPv4), NOT localhost (the
 // ESP32 is a different device on the network), including "http://" and
 // the port, e.g. "http://192.168.1.42:3000".
-const char* SERVER_HOST = "http://10.243.107.129:3000"; // <-- your backend LAN IP
+const char* SERVER_HOST = "http://10.216.224.129:3000"; // <-- your backend LAN IP
 const char* INGEST_PATH = "/api/soil-sensor/ingest";
 
 // Must exactly match ESP32_DEVICE_KEY in backend/.env

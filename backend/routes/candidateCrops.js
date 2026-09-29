@@ -7,8 +7,12 @@ router.get('/', (req, res) => {
   const farm_id = parseInt(req.query.farm_id) || 101;
   const season  = req.query.season || 'Kharif';
 
-  const farm = db.farms.find(f => f.farm_id === farm_id);
-  if (!farm) return res.status(404).json({ error: 'Farm not found' });
+  let farm = db.farms.find(f => f.farm_id === farm_id);
+  if (!farm) {
+    farm = (typeof db.ensureFarm === 'function')
+      ? db.ensureFarm(farm_id)
+      : (db.farms[0] || { farm_id, irrigation_type: 'Drip' });
+  }
 
   // Detect penalized crops from history
   const history   = db.crop_history.filter(h => h.farm_id === farm_id);

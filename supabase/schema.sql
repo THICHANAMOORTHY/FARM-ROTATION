@@ -180,17 +180,19 @@ CREATE TABLE IF NOT EXISTS recommendations (
     created_at          TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 13. Users — Account credentials for Farmer Mode & B2B Enterprise Hub
+-- 13. Users — Account credentials for farmers
 CREATE TABLE IF NOT EXISTS users (
     user_id              SERIAL PRIMARY KEY,
-    role                 VARCHAR(10) NOT NULL CHECK (role IN ('farmer', 'buyer')),
+    role                 VARCHAR(10) NOT NULL DEFAULT 'farmer' CHECK (role IN ('farmer')),
     name                 VARCHAR(120) NOT NULL,
     email                VARCHAR(150) UNIQUE NOT NULL,
     phone                VARCHAR(20),
-    org_name             VARCHAR(150),
-    farmer_id            INT REFERENCES farmers(farmer_id) ON DELETE SET NULL,
-    buyer_id             INT,
-    password_hash        VARCHAR(255) NOT NULL,
+    -- No foreign keys on purpose: farmer/farm profiles are rebuilt in memory
+    -- from this row at login (see ensureProfile in backend/routes/auth.js), so the
+    -- farmers table doesn't contain these IDs. If you created this table earlier
+    -- with a FK, run: ALTER TABLE users DROP CONSTRAINT IF EXISTS users_farmer_id_fkey;
+    farmer_id            INT,
+    password_hash       VARCHAR(255) NOT NULL,
     email_verified        BOOLEAN DEFAULT FALSE,
     verification_token   VARCHAR(255),
     verification_expires  TIMESTAMPTZ,

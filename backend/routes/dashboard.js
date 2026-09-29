@@ -8,11 +8,20 @@ router.get('/', (req, res) => {
   const farm    = db.farms.find(f => f.farm_id === farm_id);
   const farmer  = farm ? db.farmers.find(f => f.farmer_id === farm.farmer_id) : null;
 
-  // Latest soil data
+  // Latest soil data — null when the farm has never had a soil test. Nothing is
+  // invented for that case; the client shows a "run a soil analysis" prompt.
   const soil = [...db.soil_data]
     .filter(s => s.farm_id === farm_id)
-    .sort((a, b) => b.soil_id - a.soil_id)[0]
-    || { soil_health_score: 58, deficiencies: ['Low Nitrogen', 'Low Organic Carbon'] };
+    .sort((a, b) => b.soil_id - a.soil_id)[0] || null;
+
+  // Latest sensor status & reading from the sensor table
+  const sensorStatus = db.live_sensor_status[farm_id];
+  const liveSensor = sensorStatus?.last_reading || null;
+
+  // Direct sensor light value from sensor table
+  const sensorLight = (liveSensor && liveSensor.light !== undefined && liveSensor.light !== null)
+    ? liveSensor.light
+    : (soil && soil.light !== undefined && soil.light !== null ? soil.light : null);
 
   // Best recommendation
   const bestEval = db.crop_evaluations
@@ -39,8 +48,11 @@ router.get('/', (req, res) => {
   const simLog = db.soil_simulation_log
     .filter(sl => recPlan && sl.plan_id === recPlan.plan_id)
     .sort((a, b) => a.season_order - b.season_order);
-  const recovery = [soil.soil_health_score, ...simLog.map(s => s.predicted_soil_health)];
-  while (recovery.length < 4) recovery.push(recovery[recovery.length - 1] + 7);
+  let recovery = null;
+  if (soil) {
+    recovery = [soil.soil_health_score, ...simLog.map(s => s.predicted_soil_health)];
+    while (recovery.length < 4) recovery.push(recovery[recovery.length - 1] + 7);
+  }
 
   // Why this plan
   const why = [];
@@ -65,20 +77,36 @@ router.get('/', (req, res) => {
   res.json({
     farm: {
       farm_id,
-      name:           farm?.location_name || 'Demo Farm',
-      area_acres:     farm?.area_acres    || 4.5,
+      name:           farm?.location_name || 'Demo Farm',      area_acres:     farm?.area_acres    || 4.5,
       irrigation:     farm?.irrigation_type || 'Drip',
       farmer_name:    farmer?.name || 'Ramesh Kumar',
     },
-    farm_health:            soil.soil_health_score,
-    soil_alerts:            soil.deficiencies || [],
-    soil_data: {
+    has_soil_data:          Boolean(soil),
+    farm_health:            soil ? soil.soil_health_score : null,
+    soil_alerts:            soil ? (soil.deficiencies || []) : [],
+    light:                  sensorLight,
+    sensor_data: (liveSensor || (soil && soil.source === 'esp32')) ? {
+      device_id:   sensorStatus?.device_id || 'Soil-Scout-01',
+      light:       sensorLight,
+      temperature: liveSensor?.air_temperature ?? soil?.air_temperature,
+      moisture:    liveSensor?.soil_moisture ?? soil?.soil_moisture,
+      tds:         liveSensor?.tds ?? soil?.tds,
+      is_reliable: liveSensor?.is_reliable ?? soil?.is_reliable,
+      last_seen:   sensorStatus?.last_seen || null,
+    } : null,
+    soil_data: soil ? {
       nitrogen:      soil.nitrogen,
       phosphorus:    soil.phosphorus,
       potassium:     soil.potassium,
       ph:            soil.ph,
       organic_carbon:soil.organic_carbon,
-    },
+      light:         sensorLight,
+      temperature:   soil.air_temperature,
+      moisture:      soil.soil_moisture,
+      tds:           soil.tds,
+      source:        soil.source,
+      recorded_date: soil.recorded_date,
+    } : null,
     recommended_crop: {
       name:  recCrop?.name  || 'Green Gram',
       score: bestEval?.final_score || 88.5,

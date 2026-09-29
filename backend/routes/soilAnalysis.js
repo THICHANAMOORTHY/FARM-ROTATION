@@ -9,24 +9,27 @@ router.post('/', (req, res) => {
   if ([nitrogen, phosphorus, potassium, ph, organic_carbon].some(v => v === undefined)) {
     return res.status(400).json({ error: 'All soil parameters required (N, P, K, ph, organic_carbon)' });
   }
+  const values = [nitrogen, phosphorus, potassium, ph, organic_carbon].map(Number);
+  if (values.some(v => !Number.isFinite(v))) {
+    return res.status(400).json({ error: 'Soil parameters must be numbers' });
+  }
+  const [n, p, k, phVal, oc] = values;
 
-  const { score, deficiencies, adequate } = computeHealth({ nitrogen, phosphorus, potassium, ph, organic_carbon });
+  const { score, deficiencies, adequate } = computeHealth({ nitrogen: n, phosphorus: p, potassium: k, ph: phVal, organic_carbon: oc });
 
-  // Persist to in-memory store
+  // Append a new reading. Every "latest reading" lookup (dashboard, recommendation,
+  // rotation, simulation) picks the highest soil_id for the farm, so no older row
+  // needs to be touched — history stays intact.
   const entry = {
     soil_id: db.counters.soil_id++,
-    farm_id,
+    farm_id: Number(farm_id),
     recorded_date: new Date().toISOString().slice(0, 10),
-    nitrogen, phosphorus, potassium, ph, organic_carbon,
+    nitrogen: n, phosphorus: p, potassium: k, ph: phVal, organic_carbon: oc,
     soil_health_score: score,
     deficiencies,
     source: 'manual',
   };
   db.soil_data.push(entry);
-
-  // Also update latest entry for farm
-  const existing = db.soil_data.find(s => s.farm_id === farm_id && s.soil_id !== entry.soil_id);
-  if (existing) Object.assign(existing, entry);
 
   res.json({
     soil_id:          entry.soil_id,

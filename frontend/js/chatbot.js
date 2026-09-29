@@ -316,8 +316,8 @@
   function showWelcomeGreeting() {
     const isTa = (currentLang === 'ta');
     const greetingText = isTa
-      ? `வணக்கம்! நான் உங்கள் **UZHAVU KAAPPAAN (உழவு காப்பான் AI)** 🌱\n\nஉங்கள் நிலத்தின் மண் வளம் (மதிப்பெண்: 63, தழைச்சத்து: 42 kg/ha), 3-பருவ தக்காளி சாகுபடி வரலாறு மற்றும் 782,000+ மண்டி சந்தை விலைகளின் அடிப்படையில் நான் தமிழில் வழிகாட்டுகிறேன். கேள்விகளை கேட்க மேலே உள்ள **குரல் மூலம் பேச** பொத்தானை அல்லது கீழே உள்ள விருப்பங்களை பயன்படுத்தவும்!`
-      : `Hello! I am your **UZHAVU KAAPPAAN AI Agronomist** 🌱\n\nI have full context of your 4.5-acre farm, your current soil test (Score: 63, N: 42 kg/ha), continuous tomato cultivation history, and 782k+ live APMC Mandi rates. Speak or type below!`;
+      ? `வணக்கம்! நான் உங்கள் **UZHAVU KAAPPAAN (உழவு காப்பான் AI)** 🌱\n\nஉங்கள் நிலத்தின் மண் வளம் (மதிப்பெண்: 63, தழைச்சத்து: 42 kg/ha), 3-பருவ தக்காளி சாகுபடி வரலாறு மற்றும் 23,000+ மண்டி சந்தை விலைகளின் அடிப்படையில் நான் தமிழில் வழிகாட்டுகிறேன். கேள்விகளை கேட்க மேலே உள்ள **குரல் மூலம் பேச** பொத்தானை அல்லது கீழே உள்ள விருப்பங்களை பயன்படுத்தவும்!`
+      : `Hello! I am your **UZHAVU KAAPPAAN AI Agronomist** 🌱\n\nI have full context of your 4.5-acre farm, your current soil test (Score: 63, N: 42 kg/ha), continuous tomato cultivation history, and 23k+ APMC Mandi market quotes. Speak or type below!`;
 
     const initialSuggestions = isTa
       ? ["அடுத்த பயிர் என்ன நடலாம்?", "என் மண் வளம் ஏன் குறைந்துள்ளது?", "மண்டி சந்தை விலைகள் என்ன?", "3-பருவ சுழற்சி திட்டம்"]

@@ -42,7 +42,7 @@ endobj
 endobj
 8 0 obj
 <<
-/Author (\(anonymous\)) /CreationDate (D:20260929211817+05'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260929211817+05'00') /Producer (ReportLab PDF Library - \(opensource\)) 
+/Author (\(anonymous\)) /CreationDate (D:20260929212821+05'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260929212821+05'00') /Producer (ReportLab PDF Library - \(opensource\)) 
   /Subject (\(unspecified\)) /Title (\(anonymous\)) /Trapped /False
 >>
 endobj
@@ -53,24 +53,24 @@ endobj
 endobj
 10 0 obj
 <<
-/Length 22517
+/Length 22542
 >>
 stream
 1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
 q
-1 0 0 1 22.1378 757.8898 cm
+1 0 0 1 22.1378 747.8898 cm
 q
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
 q
-1 0 0 1 6 21 cm
+1 0 0 1 6 31 cm
 q
 .023529 .372549 .27451 rg
 BT 1 0 0 1 0 21 Tm /F2 15 Tf 18 TL /F3 15 Tf 18 TL (n) Tj /F2 15 Tf 18 TL ( UZHAVU KAAPPAAN \() Tj /F3 15 Tf 18 TL (nnnn) Tj /F2 15 Tf 18 TL T* /F3 15 Tf 18 TL (nnnnnnnn) Tj /F2 15 Tf 18 TL (\)) Tj T* ET
 Q
 Q
 q
-1 0 0 1 6 11 cm
+1 0 0 1 6 21 cm
 q
 BT 1 0 0 1 0 2 Tm 10 TL /F2 8 Tf .278431 .333333 .411765 rg (Smart Crop Rotation & Farmer Soil Feeding Action Plan) Tj T* ET
 Q
@@ -78,29 +78,29 @@ Q
 q
 1 0 0 1 6 1 cm
 q
-BT 1 0 0 1 0 2 Tm 10 TL /F2 8 Tf .278431 .333333 .411765 rg (Data Mode:) Tj /F1 8 Tf ( ) Tj /F3 8 Tf 10 TL (n) Tj /F1 8 Tf 10 TL ( Verified Lab Ingestion \(Device: soil-scout-01\) \267 Certified P025 Model) Tj T* ET
+BT 1 0 0 1 0 12 Tm 10 TL /F2 8 Tf .278431 .333333 .411765 rg (Data Mode:) Tj /F1 8 Tf ( ) Tj /F3 8 Tf 10 TL (n) Tj /F1 8 Tf 10 TL ( Live IoT Soil Scout Probe \(Device: soil-scout-01\) \267 Certified P025) Tj T* (Model) Tj T* ET
 Q
 Q
 q
-1 0 0 1 316 47 cm
+1 0 0 1 316 57 cm
 q
 BT 1 0 0 1 0 2.5 Tm 10 TL /F2 7.5 Tf .2 .254902 .333333 rg (Farmer:) Tj /F1 7.5 Tf ( Ramesh Kumar | ) Tj /F2 7.5 Tf (Land Area:) Tj /F1 7.5 Tf ( 4.5 Acres) Tj T* ET
 Q
 Q
 q
-1 0 0 1 316 37 cm
+1 0 0 1 316 47 cm
 q
-BT 1 0 0 1 0 2.5 Tm 10 TL /F2 7.5 Tf .2 .254902 .333333 rg (Location:) Tj /F1 7.5 Tf ( Coimbatore, Tamil Nadu | ) Tj /F2 7.5 Tf (Irrigation:) Tj /F1 7.5 Tf ( Drip) Tj T* ET
+BT 1 0 0 1 0 2.5 Tm 10 TL /F2 7.5 Tf .2 .254902 .333333 rg (Location:) Tj /F1 7.5 Tf ( Coimbatore, Tamil Nadu | ) Tj /F2 7.5 Tf (Irrigation:) Tj /F1 7.5 Tf ( Drip Irrigation) Tj T* ET
+Q
+Q
+q
+1 0 0 1 316 27 cm
+q
+BT 1 0 0 1 0 12.5 Tm 10 TL /F2 7.5 Tf .2 .254902 .333333 rg (Plan Ref ID:) Tj /F1 7.5 Tf ( #UK-P025-FARM-101 | ) Tj /F2 7.5 Tf (Report Date:) Tj /F1 7.5 Tf ( 29 Sep 2026,) Tj T* (09:28 PM IST) Tj T* ET
 Q
 Q
 q
 1 0 0 1 316 17 cm
-q
-BT 1 0 0 1 0 12.5 Tm 10 TL /F2 7.5 Tf .2 .254902 .333333 rg (Plan Ref ID:) Tj /F1 7.5 Tf ( #UK-P025-FARM-101 | ) Tj /F2 7.5 Tf (Report Date:) Tj /F1 7.5 Tf ( 29 Sep 2026,) Tj T* (09:18 PM IST) Tj T* ET
-Q
-Q
-q
-1 0 0 1 316 7 cm
 q
 BT 1 0 0 1 0 2.5 Tm 10 TL /F2 7.5 Tf .2 .254902 .333333 rg (Live Reading:) Tj /F1 7.5 Tf ( Active & Calibrated) Tj T* ET
 Q
@@ -110,7 +110,7 @@ Q
 Q
 Q
 q
-1 0 0 1 28 754.6898 cm
+1 0 0 1 28 744.6898 cm
 q
 1.2 w
 1 J
@@ -119,13 +119,13 @@ n 0 0 m 539.2756 0 l S
 Q
 Q
 q
-1 0 0 1 28 738.6898 cm
+1 0 0 1 28 728.6898 cm
 q
 BT 1 0 0 1 0 2.5 Tm 12 TL /F2 9.5 Tf .058824 .090196 .164706 rg (1. Live Sensor Diagnostic & Soil Fertility Telemetry) Tj T* ET
 Q
 Q
 q
-1 0 0 1 22.1378 697.6898 cm
+1 0 0 1 22.1378 687.6898 cm
 q
 .972549 .980392 .988235 rg
 n 0 39 551 -15 re f*
@@ -218,10 +218,10 @@ Q
 Q
 Q
 q
-1 0 0 1 28 694.6898 cm
+1 0 0 1 28 684.6898 cm
 Q
 q
-1 0 0 1 22.1378 604.6898 cm
+1 0 0 1 22.1378 594.6898 cm
 q
 .92549 .992157 .960784 rg
 n 0 90 551 -15 re f*
@@ -272,7 +272,7 @@ q
 1 0 0 1 101 63 cm
 q
 .117647 .160784 .231373 rg
-BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (42.0 kg/ha) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (45.0 kg/ha) Tj T* ET
 Q
 Q
 q
@@ -286,7 +286,7 @@ q
 1 0 0 1 256 63 cm
 q
 .862745 .14902 .14902 rg
-BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (-38.0 kg/ha \(Deficit\)) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (-35.0 kg/ha \(Deficit\)) Tj T* ET
 Q
 Q
 q
@@ -341,7 +341,7 @@ q
 1 0 0 1 101 33 cm
 q
 .117647 .160784 .231373 rg
-BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (55.0 kg/ha) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (52.0 kg/ha) Tj T* ET
 Q
 Q
 q
@@ -355,7 +355,7 @@ q
 1 0 0 1 256 33 cm
 q
 .85098 .466667 .023529 rg
-BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (-5.0 kg/ha \(Sub-optimal\)) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (-8.0 kg/ha \(Sub-optimal\)) Tj T* ET
 Q
 Q
 q
@@ -375,7 +375,7 @@ q
 1 0 0 1 101 18 cm
 q
 .117647 .160784 .231373 rg
-BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (6.50) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (6.80) Tj T* ET
 Q
 Q
 q
@@ -409,7 +409,7 @@ q
 1 0 0 1 101 3 cm
 q
 .117647 .160784 .231373 rg
-BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (0.52%) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (0.55%) Tj T* ET
 Q
 Q
 q
@@ -423,7 +423,7 @@ q
 1 0 0 1 256 3 cm
 q
 .862745 .14902 .14902 rg
-BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (-0.28% Deficit) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (-0.25% Deficit) Tj T* ET
 Q
 Q
 q
@@ -456,16 +456,16 @@ Q
 Q
 Q
 q
-1 0 0 1 28 601.6898 cm
+1 0 0 1 28 591.6898 cm
 Q
 q
-1 0 0 1 28 586.6898 cm
+1 0 0 1 28 576.6898 cm
 q
 BT 1 0 0 1 0 2.5 Tm 12 TL /F2 9.5 Tf .058824 .090196 .164706 rg (2. Prescribed Soil Feeding & Fertilizer Dosage Schedule \(for 4.5 Acres Land\)) Tj T* ET
 Q
 Q
 q
-1 0 0 1 22.1378 446.6898 cm
+1 0 0 1 22.1378 436.6898 cm
 q
 .937255 .964706 1 rg
 n 0 138 551 -15 re f*
@@ -652,16 +652,16 @@ Q
 Q
 Q
 q
-1 0 0 1 28 443.6898 cm
+1 0 0 1 28 433.6898 cm
 Q
 q
-1 0 0 1 28 428.6898 cm
+1 0 0 1 28 418.6898 cm
 q
 BT 1 0 0 1 0 2.5 Tm 12 TL /F2 9.5 Tf .058824 .090196 .164706 rg (3. Agronomic Risk Assessment & Recommended Restorative Crop Rotation) Tj T* ET
 Q
 Q
 q
-1 0 0 1 22.1378 351.6898 cm
+1 0 0 1 22.1378 341.6898 cm
 q
 .941176 .992157 .956863 rg
 n 0 75 551 -15 re f*
@@ -692,7 +692,7 @@ Q
 q
 1 0 0 1 6 3 cm
 q
-BT 1 0 0 1 0 45 Tm 9 TL /F2 9 Tf .023529 .372549 .27451 rg (Green Gram \(Top Match: 88.5%\)) Tj /F1 7.2 Tf .117647 .160784 .231373 rg  T* (\177 ) Tj /F2 7.2 Tf (Crop Family:) Tj /F1 7.2 Tf ( Legume) Tj  T* (\177 ) Tj /F2 7.2 Tf (Duration:) Tj /F1 7.2 Tf ( 65-75 Days) Tj  T* (\177 ) Tj /F2 7.2 Tf (Est. Net Profit:) Tj /F1 7.2 Tf ( Rs. 29,000 / acre) Tj  T* (\177 ) Tj /F2 7.2 Tf (Biological Role:) Tj /F1 7.2 Tf ( Fixes 35-45 kg N/ha naturally and) Tj T* (breaks fungal disease cycles.) Tj T* ET
+BT 1 0 0 1 0 45 Tm 9 TL /F2 9 Tf .023529 .372549 .27451 rg (Green Gram \(Top Match: 88.5%\)) Tj /F1 7.2 Tf .117647 .160784 .231373 rg  T* (\177 ) Tj /F2 7.2 Tf (Crop Family:) Tj /F1 7.2 Tf ( Legume) Tj  T* (\177 ) Tj /F2 7.2 Tf (Duration:) Tj /F1 7.2 Tf ( 65-75 Days) Tj  T* (\177 ) Tj /F2 7.2 Tf (Est. Net Profit:) Tj /F1 7.2 Tf ( Rs. 33,500 / acre) Tj  T* (\177 ) Tj /F2 7.2 Tf (Biological Role:) Tj /F1 7.2 Tf ( Fixes 35-45 kg N/ha naturally and) Tj T* (breaks fungal disease cycles.) Tj T* ET
 Q
 Q
 q
@@ -725,16 +725,16 @@ Q
 Q
 Q
 q
-1 0 0 1 28 348.6898 cm
+1 0 0 1 28 338.6898 cm
 Q
 q
-1 0 0 1 28 333.6898 cm
+1 0 0 1 28 323.6898 cm
 q
 BT 1 0 0 1 0 2.5 Tm 12 TL /F2 9.5 Tf .058824 .090196 .164706 rg (4. Multi-Season Financial Returns & Soil Health Recovery Trajectory) Tj T* ET
 Q
 Q
 q
-1 0 0 1 22.1378 241.6898 cm
+1 0 0 1 22.1378 231.6898 cm
 q
 .945098 .960784 .976471 rg
 n 0 90 551 -15 re f*
@@ -836,7 +836,7 @@ Q
 q
 1 0 0 1 479 63 cm
 q
-BT 1 0 0 1 0 1.8 Tm 9 TL /F2 7.2 Tf .117647 .160784 .231373 rg (58 / 100) Tj /F1 7.2 Tf ( \(Current\)) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm 9 TL /F2 7.2 Tf .117647 .160784 .231373 rg (62 / 100) Tj /F1 7.2 Tf ( \(Current\)) Tj T* ET
 Q
 Q
 q
@@ -864,27 +864,27 @@ q
 1 0 0 1 241 48 cm
 q
 .117647 .160784 .231373 rg
-BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (Rs. 41,500) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (Rs. 46,000) Tj T* ET
 Q
 Q
 q
 1 0 0 1 316 48 cm
 q
 .117647 .160784 .231373 rg
-BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (Rs. 29,000) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (Rs. 33,500) Tj T* ET
 Q
 Q
 q
 1 0 0 1 394 48 cm
 q
 .117647 .160784 .231373 rg
-BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (Rs. 130,500) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F1 7.2 Tf 9 TL (Rs. 150,750) Tj T* ET
 Q
 Q
 q
 1 0 0 1 479 48 cm
 q
-BT 1 0 0 1 0 1.8 Tm 9 TL /F2 7.2 Tf .117647 .160784 .231373 rg (65 / 100) Tj /F1 7.2 Tf ( \(+7 pts\)) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm 9 TL /F2 7.2 Tf .117647 .160784 .231373 rg (69 / 100) Tj /F1 7.2 Tf ( \(+7 pts\)) Tj T* ET
 Q
 Q
 q
@@ -932,7 +932,7 @@ Q
 q
 1 0 0 1 479 33 cm
 q
-BT 1 0 0 1 0 1.8 Tm 9 TL /F2 7.2 Tf .117647 .160784 .231373 rg (72 / 100) Tj /F1 7.2 Tf ( \(+7 pts\)) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm 9 TL /F2 7.2 Tf .117647 .160784 .231373 rg (76 / 100) Tj /F1 7.2 Tf ( \(+7 pts\)) Tj T* ET
 Q
 Q
 q
@@ -980,7 +980,7 @@ Q
 q
 1 0 0 1 479 18 cm
 q
-BT 1 0 0 1 0 1.8 Tm 9 TL /F2 7.2 Tf .117647 .160784 .231373 rg (79 / 100) Tj /F1 7.2 Tf ( \(Restored\)) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm 9 TL /F2 7.2 Tf .117647 .160784 .231373 rg (82 / 100) Tj /F1 7.2 Tf ( \(Restored\)) Tj T* ET
 Q
 Q
 q
@@ -1008,28 +1008,28 @@ q
 1 0 0 1 241 3 cm
 q
 .023529 .372549 .27451 rg
-BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (Rs. 142,200) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (Rs. 146,700) Tj T* ET
 Q
 Q
 q
 1 0 0 1 316 3 cm
 q
 .023529 .372549 .27451 rg
-BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (Rs. 97,500 / ac) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (Rs. 102,000 / ac) Tj T* ET
 Q
 Q
 q
 1 0 0 1 394 3 cm
 q
 .023529 .372549 .27451 rg
-BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (Rs. 438,750 Total) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (Rs. 459,000 Total) Tj T* ET
 Q
 Q
 q
 1 0 0 1 479 3 cm
 q
 .086275 .639216 .290196 rg
-BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (79 / 100 \(Restored\)) Tj T* ET
+BT 1 0 0 1 0 1.8 Tm /F2 7.2 Tf 9 TL (82 / 100 \(Restored\)) Tj T* ET
 Q
 Q
 q
@@ -1058,10 +1058,10 @@ Q
 Q
 Q
 q
-1 0 0 1 28 238.6898 cm
+1 0 0 1 28 228.6898 cm
 Q
 q
-1 0 0 1 22.1378 185.1898 cm
+1 0 0 1 22.1378 175.1898 cm
 q
 .972549 .980392 .988235 rg
 n 0 53.5 551 -53.5 re f*
@@ -1070,7 +1070,7 @@ BT /F1 10 Tf 12 TL ET
 q
 1 0 0 1 6 3 cm
 q
-BT 1 0 0 1 0 40.3 Tm 9.5 TL /F2 7.2 Tf .117647 .160784 .231373 rg /F3 7.2 Tf 9.5 TL (n) Tj /F2 7.2 Tf 9.5 TL ( Mandatory Agronomic Field Guidelines for Ramesh Kumar:) Tj /F1 7.2 Tf  T* (1. ) Tj /F2 7.2 Tf (Bio-Inoculation:) Tj /F1 7.2 Tf ( Treat Green Gram seeds with ) Tj /F4 7.2 Tf (Rhizobium) Tj /F1 7.2 Tf ( bio-fertilizer @ 25g/kg seed to maximize natural nodulation.) Tj  T* (2. ) Tj /F2 7.2 Tf (Input Cost Savings:) Tj /F1 7.2 Tf ( Do NOT exceed 15 kg Urea/acre; legume root nodules satisfy nitrogen demand while cutting input expenses.) Tj  T* (3. ) Tj /F2 7.2 Tf (Crop Residue Retention:) Tj /F1 7.2 Tf ( Do not burn crop stubbles. Plough haulms back into soil to lift Organic Carbon from 0.52% towards 0.8%.) Tj  T* (4. ) Tj /F2 7.2 Tf (Precision IoT Monitoring:) Tj /F1 7.2 Tf ( Keep Soil Scout probe clean; observe moisture reading \(45%\) to trigger drip irrigation at 35%.) Tj T* ET
+BT 1 0 0 1 0 40.3 Tm 9.5 TL /F2 7.2 Tf .117647 .160784 .231373 rg /F3 7.2 Tf 9.5 TL (n) Tj /F2 7.2 Tf 9.5 TL ( Mandatory Agronomic Field Guidelines for Ramesh Kumar:) Tj /F1 7.2 Tf  T* (1. ) Tj /F2 7.2 Tf (Bio-Inoculation:) Tj /F1 7.2 Tf ( Treat Green Gram seeds with ) Tj /F4 7.2 Tf (Rhizobium) Tj /F1 7.2 Tf ( bio-fertilizer @ 25g/kg seed to maximize natural nodulation.) Tj  T* (2. ) Tj /F2 7.2 Tf (Input Cost Savings:) Tj /F1 7.2 Tf ( Do NOT exceed 15 kg Urea/acre; legume root nodules satisfy nitrogen demand while cutting input expenses.) Tj  T* (3. ) Tj /F2 7.2 Tf (Crop Residue Retention:) Tj /F1 7.2 Tf ( Do not burn crop stubbles. Plough haulms back into soil to lift Organic Carbon from 0.55% towards 0.8%.) Tj  T* (4. ) Tj /F2 7.2 Tf (Precision IoT Monitoring:) Tj /F1 7.2 Tf ( Keep Soil Scout probe clean; observe moisture reading \(45%\) to trigger drip irrigation at 35%.) Tj T* ET
 Q
 Q
 q
@@ -1086,10 +1086,10 @@ Q
 Q
 Q
 q
-1 0 0 1 28 182.1898 cm
+1 0 0 1 28 172.1898 cm
 Q
 q
-1 0 0 1 22.1378 146.1898 cm
+1 0 0 1 22.1378 136.1898 cm
 q
 0 0 0 rg
 BT /F1 10 Tf 12 TL ET
@@ -1128,7 +1128,7 @@ xref
 trailer
 <<
 /ID 
-[<c590d6802f14317746bd26fadbe8ac0c><c590d6802f14317746bd26fadbe8ac0c>]
+[<081885d3cced890a514ea12feaac4206><081885d3cced890a514ea12feaac4206>]
 % ReportLab generated PDF document -- digest (opensource)
 
 /Info 8 0 R
@@ -1136,5 +1136,5 @@ trailer
 /Size 11
 >>
 startxref
-23720
+23745
 %%EOF

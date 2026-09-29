@@ -17,24 +17,27 @@ VIEW_LOADERS['soil-analysis'] = async function loadSoilAnalysis() {
   } catch(_) {}
 };
 
-// ── Manual / Live (ESP32) mode switcher ─────────────────────
+// ── Manual / Live (ESP32 / Soil Scout) mode switcher ─────────────────────
 function setSoilDataMode(mode) {
   soilDataMode = mode;
   const manualBtn = document.getElementById('soil-mode-btn-manual');
   const liveBtn = document.getElementById('soil-mode-btn-live');
   const banner = document.getElementById('sensor-live-banner');
+  const predictBanner = document.getElementById('sensor-predict-banner');
   const sliderIds = ['n-slider', 'p-slider', 'k-slider', 'ph-slider', 'oc-slider'];
 
   if (mode === 'live') {
     manualBtn?.classList.remove('active');
     liveBtn?.classList.add('active');
     if (banner) banner.style.display = 'flex';
+    if (predictBanner) predictBanner.style.display = 'block';
     sliderIds.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
     startSensorPolling();
   } else {
     liveBtn?.classList.remove('active');
     manualBtn?.classList.add('active');
     if (banner) banner.style.display = 'none';
+    if (predictBanner) predictBanner.style.display = 'none';
     const extraTiles = document.getElementById('sensor-extra-readings');
     if (extraTiles) extraTiles.style.display = 'none';
     sliderIds.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = false; });
@@ -65,7 +68,7 @@ async function pollSensorOnce() {
     const data = await apiGet(`/soil-sensor/latest?farm_id=${state.farm_id}`);
     if (!data.ever_connected) {
       dot.className = 'sensor-live-dot error';
-      text.textContent = '⚠ No ESP32 has ever reported for this farm yet. Check that the device is powered on and on the same network.';
+      text.textContent = '⚠ No Soil Scout / ESP32 sensor has reported for this farm yet. Connect your device to push live readings.';
       return;
     }
     if (data.connected) {
@@ -73,7 +76,7 @@ async function pollSensorOnce() {
       text.textContent = `🟢 Live · device "${data.device_id}" · updated ${data.seconds_ago}s ago`;
     } else {
       dot.className = 'sensor-live-dot stale';
-      text.textContent = `🟡 Signal lost · showing last known reading from ${data.seconds_ago}s ago (device "${data.device_id}")`;
+      text.textContent = `🟡 Signal standby · last reading from ${data.seconds_ago}s ago (device "${data.device_id}")`;
     }
     if (data.reading) prefillSliders(data.reading);
   } catch (err) {
@@ -83,16 +86,11 @@ async function pollSensorOnce() {
 }
 
 function prefillSliders(soil) {
-  // A live sensor reading may only carry env fields (temp/humidity/soil
-  // moisture) with no nutrient data yet — e.g. a simple DHT11 device with
-  // no NPK/pH capability, before any full soil test has ever been recorded
-  // for this farm. Leave the corresponding sliders untouched rather than
-  // setting them to NaN in that case.
   if (soil.nitrogen       !== undefined && soil.nitrogen       !== null) setSlider('n-slider',  soil.nitrogen,  'n-val');
   if (soil.phosphorus     !== undefined && soil.phosphorus     !== null) setSlider('p-slider',  soil.phosphorus,'p-val');
   if (soil.potassium      !== undefined && soil.potassium      !== null) setSlider('k-slider',  soil.potassium, 'k-val');
-  if (soil.ph              !== undefined && soil.ph             !== null) setSlider('ph-slider', soil.ph * 10,   'ph-val', v => (v/10).toFixed(1));
-  if (soil.organic_carbon !== undefined && soil.organic_carbon !== null) setSlider('oc-slider', soil.organic_carbon * 100, 'oc-val', v => (v/100).toFixed(2));
+  if (soil.ph              !== undefined && soil.ph             !== null) setSlider('ph-slider', Math.round(soil.ph * 10),   'ph-val', v => (v/10).toFixed(1));
+  if (soil.organic_carbon !== undefined && soil.organic_carbon !== null) setSlider('oc-slider', Math.round(soil.organic_carbon * 100), 'oc-val', v => (v/100).toFixed(2));
 
   updateSensorExtraTiles(soil);
 }
@@ -101,20 +99,43 @@ function updateSensorExtraTiles(soil) {
   const wrap = document.getElementById('sensor-extra-readings');
   if (!wrap) return;
 
-  const hasAnyEnvField = ['air_temperature', 'air_humidity', 'soil_moisture', 'tds', 'conductivity']
+  const hasAnyEnvField = ['air_temperature', 'soil_moisture', 'tds', 'conductivity', 'light', 'is_reliable']
     .some(k => soil[k] !== undefined && soil[k] !== null);
   wrap.style.display = hasAnyEnvField ? 'grid' : 'none';
+
+  const predictBanner = document.getElementById('sensor-predict-banner');
+  if (predictBanner && soilDataMode === 'live') predictBanner.style.display = 'block';
+
   if (!hasAnyEnvField) return;
 
   const tempEl = document.getElementById('sensor-temp-val');
-  const humEl = document.getElementById('sensor-humidity-val');
   const moistEl = document.getElementById('sensor-soil-moisture-val');
+  const lightEl = document.getElementById('sensor-light-val');
   const tdsEl = document.getElementById('sensor-tds-val');
   const tdsStatusEl = document.getElementById('sensor-tds-status');
+  const reliableEl = document.getElementById('sensor-reliable-val');
+  const reliableSub = document.getElementById('sensor-reliable-sub');
+  const dryWarning = document.getElementById('sensor-dry-warning');
 
   if (tempEl) tempEl.textContent = (soil.air_temperature !== undefined && soil.air_temperature !== null) ? `${soil.air_temperature.toFixed(1)} °C` : '— °C';
-  if (humEl) humEl.textContent = (soil.air_humidity !== undefined && soil.air_humidity !== null) ? `${soil.air_humidity.toFixed(0)} %` : '— %';
   if (moistEl) moistEl.textContent = (soil.soil_moisture !== undefined && soil.soil_moisture !== null) ? `${soil.soil_moisture.toFixed(0)} %` : '— %';
+  if (lightEl) lightEl.textContent = (soil.light !== undefined && soil.light !== null) ? `${soil.light.toFixed(0)} %` : '— %';
+
+  // Reliability & Moisture check
+  const isReliable = soil.is_reliable !== undefined ? soil.is_reliable : (soil.soil_moisture > 5);
+  if (reliableEl) {
+    if (isReliable) {
+      reliableEl.textContent = '🟢 Reliable';
+      reliableEl.style.color = '#10b981';
+      if (reliableSub) reliableSub.textContent = 'Optimal probe moisture';
+      if (dryWarning) dryWarning.style.display = 'none';
+    } else {
+      reliableEl.textContent = '⚠️ Unreliable';
+      reliableEl.style.color = '#f59e0b';
+      if (reliableSub) reliableSub.textContent = soil.reliability_note || 'Soil too dry for probe';
+      if (dryWarning) dryWarning.style.display = 'block';
+    }
+  }
 
   const rawTds = (soil.tds !== undefined && soil.tds !== null)
     ? Number(soil.tds)
@@ -148,6 +169,86 @@ function updateSensorExtraTiles(soil) {
     }
   }
 }
+
+// ── Instant Crop Prediction from Sensor Readings ───────────────
+async function predictCropsFromSensor() {
+  const btn = document.getElementById('btn-predict-sensor');
+  const out = document.getElementById('sensor-predictions-output');
+  if (!btn || !out) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Calculating Suitability…';
+  out.style.display = 'block';
+  out.innerHTML = `<div class="loading-wrap" style="padding:16px"><div class="spinner"></div><span style="font-size:13px;color:var(--text-secondary)">Predicting optimal crops from sensor parameters...</span></div>`;
+
+  try {
+    const data = await apiGet(`/soil-sensor/predict?farm_id=${state.farm_id}`);
+    const top = data.predictions?.[0];
+
+    const isTa = (window.i18n && window.i18n.getLanguage() === 'ta');
+    const topName = top ? (window.tCrop ? tCrop(top.crop) : top.crop) : 'None';
+    const topScore = top ? top.final_score : 0;
+    const scoreColor = topScore >= 80 ? '#22c55e' : topScore >= 65 ? '#f59e0b' : '#ef4444';
+
+    let html = `
+      <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;margin-bottom:12px">
+        <div class="flex items-center justify-between gap-12" style="flex-wrap:wrap">
+          <div class="flex items-center gap-12">
+            <span style="font-size:32px">${cropIcon(top?.crop)}</span>
+            <div>
+              <div style="font-size:12px;font-weight:600;text-transform:uppercase;color:var(--green-400)">🥇 #1 Recommended Crop from Sensor</div>
+              <div style="font-size:20px;font-weight:700;color:var(--text-primary)">${topName} (${top?.crop_family || 'Legume'})</div>
+              <div style="font-size:12px;color:var(--text-secondary)">Est. Yield: ${top?.predicted_yield || 0} kg/acre · Est. Profit: ₹${(top?.predicted_profit || 0).toLocaleString('en-IN')} / acre</div>
+            </div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:28px;font-weight:800;color:${scoreColor}">${topScore} <span style="font-size:14px;color:var(--text-muted)">/100</span></div>
+            <div style="font-size:11px;color:var(--text-muted)">Suitability Score</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text-secondary)">Top Alternative Crops Predicted for this Sensor Profile:</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px">
+    `;
+
+    data.predictions.slice(1, 5).forEach(c => {
+      const cName = window.tCrop ? tCrop(c.crop) : c.crop;
+      html += `
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;display:flex;align-items:center;justify-content:space-between">
+          <div class="flex items-center gap-8">
+            <span style="font-size:20px">${cropIcon(c.crop)}</span>
+            <div>
+              <div style="font-weight:600;font-size:13px">${cName}</div>
+              <div style="font-size:11px;color:var(--text-muted)">${c.water_requirement} Water</div>
+            </div>
+          </div>
+          <span style="font-weight:700;color:var(--green-400);font-size:14px">${c.final_score}</span>
+        </div>
+      `;
+    });
+
+    html += `
+      </div>
+      <div class="flex items-center gap-12" style="justify-content:flex-end">
+        <button type="button" class="btn btn-secondary" onclick="navigateTo('evaluation')" style="font-size:12px;padding:6px 14px">
+          View Full Evaluation Leaderboard →
+        </button>
+        <button type="button" class="btn btn-primary" onclick="navigateTo('rotation')" style="font-size:12px;padding:6px 14px">
+          Generate Multi-Season Crop Rotation →
+        </button>
+      </div>
+    `;
+
+    out.innerHTML = html;
+  } catch(err) {
+    out.innerHTML = `<div class="alert-banner warning">⚠ Failed to calculate sensor crop prediction: ${err.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<span>⚡</span> Refresh Sensor Prediction`;
+  }
+}
+window.predictCropsFromSensor = predictCropsFromSensor;
 
 function setSlider(sliderId, value, valId, formatter) {
   const slider = document.getElementById(sliderId);
