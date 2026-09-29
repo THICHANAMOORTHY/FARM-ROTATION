@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "public": false,
+  "rewrites": [
+    {
+      "source": "/api/:match*",
+      "destination": "https://farm-rotation.onrender.com/api/:match*"
+    },
+    {
+      "source": "/download/:match*",
+      "destination": "https://farm-rotation.onrender.com/download/:match*"
+    },
+    {
+      "source": "/downloads/:match*",
+      "destination": "https://farm-rotation.onrender.com/downloads/:match*"
+    },
+    {
+      "source": "/((?!api|download|downloads).*)",
+      "destination": "/frontend/$1"
+    }
+  ]
+}
