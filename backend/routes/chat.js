@@ -13,7 +13,7 @@ const { withTimeout } = require('../utils/withTimeout');
 // make every candidate model hang or slow-retry in turn, and a single chat
 // message can take 10-15+ seconds to answer — indistinguishable from "the
 // chatbot is broken" from a user's perspective.
-const GEMINI_TIMEOUT_MS = 6000;
+const GEMINI_TIMEOUT_MS = 10000;
 
 router.post('/', async (req, res) => {
   try {
@@ -29,6 +29,7 @@ router.post('/', async (req, res) => {
       nitrogen: 42, phosphorus: 28, potassium: 55, ph: 6.5, organic_carbon: 0.52,
       deficiencies: ['Low Nitrogen', 'Low Organic Carbon']
     };
+    const liveSensor = (db.live_sensor_status && db.live_sensor_status[farm?.farm_id]) || null;
     const history = db.crop_history.filter(h => h.farm_id === farm?.farm_id);
     const rec = db.recommendations.filter(r => r.farm_id === farm?.farm_id).pop() || {
       recommended_crop_id: 21,
@@ -42,20 +43,22 @@ router.post('/', async (req, res) => {
         const { GoogleGenerativeAI } = require('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         
-        // Verified against the live API (2026-09): gemini-2.5-flash-lite and
-        // gemini-2.0-flash have been retired for new users (404), and
-        // gemini-flash-latest / gemini-3.8-flash are prone to hitting the
-        // free-tier daily quota fast. gemini-3.5-flash(-lite) currently has
-        // separate, available quota — listed first so most requests succeed
-        // without needing the timeout/fallback path at all.
-        const candidateModels = ['gemini-3.7-flash', 'gemini-flash-lite-latest', 'gemini-3.8-flash', 'gemini-flash-latest'];
+        // High-availability working models
+        const candidateModels = ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.5-flash'];
         let text = null;
+        let successfulModel = null;
 
-        const prompt = `You are "CropSmart Kisan AI", an expert agricultural advisor and agronomist.
+        const probeMoist = liveSensor?.moisture ?? soil.soil_moisture ?? 45;
+        const probeLight = liveSensor?.light ?? soil.light ?? 74;
+        const probeTemp = liveSensor?.temperature ?? soil.air_temperature ?? 31.5;
+        const probeTds = liveSensor?.tds ?? soil.tds ?? 420;
+
+        const prompt = `You are "CropSmart Kisan AI", an expert agricultural advisor and precision agronomist.
 FARM CONTEXT:
 - Farmer: ${farmer.name}, Location: ${farm.location_name} (${farm.area_acres} acres, ${farm.irrigation_type} irrigation)
-- Current Soil Health: ${soil.soil_health_score}/100.
-- Measured Nutrients: Nitrogen=${soil.nitrogen} kg/ha (Deficient), Phosphorus=${soil.phosphorus} kg/ha, Potassium=${soil.potassium} kg/ha, pH=${soil.ph}, Organic Carbon=${soil.organic_carbon}% (Deficient).
+- Current Soil Health Score: ${soil.soil_health_score}/100.
+- Live Soil Scout IoT Probe: Moisture=${probeMoist}%, Sunlight=${probeLight}%, Temperature=${probeTemp}°C, TDS Mineral Salts=${probeTds} ppm.
+- Measured Chemical Nutrients: Nitrogen=${soil.nitrogen} kg/ha (Deficient), Phosphorus=${soil.phosphorus} kg/ha, Potassium=${soil.potassium} kg/ha, pH=${soil.ph}, Organic Carbon=${soil.organic_carbon}%.
 - History: Cultivated Tomato consecutively for 3 seasons (severe monoculture penalty applied, high solanaceae blight risk).
 - AI Top Recommendation: ${recCropObj.name} (Legume, biological nitrogen fixer, ₹${recCropObj.avg_market_price}/kg).
 - User Language: ${isTa ? 'Tamil (தமிழ்)' : 'English'}.
@@ -71,14 +74,16 @@ User Question: "${message}"`;
               const model = genAI.getGenerativeModel({ model: modelName });
               const result = await model.generateContent(prompt);
               text = result.response.text();
-              if (text) break;
+              if (text) {
+                successfulModel = modelName;
+                break;
+              }
             } catch (mErr) {
-              // Try next model
+              console.warn(`[chat] Model ${modelName} failed (${mErr.message}), trying next candidate.`);
             }
           }
-        })(), GEMINI_TIMEOUT_MS).catch(() => {
-          // Timed out (or every model failed) — text stays null and we
-          // fall through to the offline rule-based engine below.
+        })(), GEMINI_TIMEOUT_MS).catch((timeoutErr) => {
+          console.warn('[chat] Gemini API calls timed out or all failed:', timeoutErr.message);
         });
 
         if (text) {
@@ -87,7 +92,7 @@ User Question: "${message}"`;
             suggestions: isTa
               ? ["மண் பரிசோதனை அறிக்கை", "பரிந்துரைக்கப்பட்ட சுழற்சி", "சந்தை விலை நிலவரம்"]
               : ["Explain my soil test", "Why Green Gram?", "Current Mandi prices"],
-            provider: "Google Gemini AI (3.7 Flash)"
+            provider: `Google Gemini AI (${successfulModel || '3.5 Flash'})`
           });
         }
       } catch (geminiErr) {
