@@ -58,7 +58,8 @@ app.get(['/download/farmer-plan-pdf', '/download/uzhavu-kaappaan-pdf', '/api/rep
 
   try {
     const { execSync } = require('child_process');
-    execSync(`python generate_farmer_pdf.py --farm-id ${farmId} --out "${tempOutPath}"`, {
+    const pyBin = process.env.PYTHON_BIN || (process.platform === 'win32' ? 'python' : 'python3');
+    execSync(`${pyBin} generate_farmer_pdf.py --farm-id ${farmId} --out "${tempOutPath}"`, {
       cwd: path.join(__dirname, '..'),
       timeout: 10000,
     });
