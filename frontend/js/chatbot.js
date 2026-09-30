@@ -225,33 +225,47 @@
     updateListeningVisuals(false);
   }
 
-  // Text to Speech (Tamil Voice Synthesis)
+  // Text to Speech (Bilingual Voice Synthesis)
   function speakTamilText(rawText, btnElement) {
     if (!synth) return;
     try {
       synth.cancel(); // Stop any previous speech
     } catch(e){}
 
-    // Clean markdown and technical symbols for clean spoken Tamil
-    const cleanText = rawText
+    // Clean markdown and technical symbols for clean spoken voice
+    let cleanText = rawText
+      .replace(/https?:\/\/\S+/g, '')
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*(.*?)\*/g, '$1')
-      .replace(/[#🌱🧪⚠️✅💡📈•✓]/g, '')
-      .replace(/₹\s*([0-9,]+)/g, '$1 ரூபாய் ')
-      .replace(/kg\/ha/g, 'கிலோகிராம் ஒரு ஹெக்டேருக்கு')
-      .replace(/Score:\s*([0-9]+)/g, 'மதிப்பெண் $1')
-      .replace(/\n+/g, '. ');
+      .replace(/[#🌱🧪⚠️✅💡📈•✓🚨🌾⚡]/g, '')
+      .replace(/₹\s*([0-9,]+)/g, '$1 rupees ')
+      .replace(/kg\/ha/g, currentLang === 'ta' ? 'கிலோகிராம் ஒரு ஹெக்டேருக்கு' : 'kg per hectare')
+      .replace(/Score:\s*([0-9]+)/g, currentLang === 'ta' ? 'மதிப்பெண் $1' : 'Score $1')
+      .replace(/\n+/g, '. ')
+      .trim();
+
+    // Spoken excerpt: limit to first 2-3 key sentences for natural snappy audio
+    const sentences = cleanText.split(/(?<=[.?!])\s+/);
+    if (sentences.length > 3) {
+      cleanText = sentences.slice(0, 3).join(' ');
+    } else if (cleanText.length > 280) {
+      cleanText = cleanText.substring(0, 280) + '...';
+    }
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = (currentLang === 'ta') ? 'ta-IN' : 'en-IN';
-    utterance.rate = 0.95; // Natural spoken tempo
+    utterance.rate = (currentLang === 'ta') ? 0.95 : 1.0;
     utterance.pitch = 1.0;
 
-    // Pick best available Tamil or Indian voice
+    // Pick best available voice matching current language
     const voices = synth.getVoices ? synth.getVoices() : [];
-    const taVoice = voices.find(v => v.lang.startsWith('ta') || v.name.toLowerCase().includes('tamil') || v.lang === 'ta-IN');
-    if (taVoice) {
-      utterance.voice = taVoice;
+    if (currentLang === 'ta') {
+      const taVoice = voices.find(v => v.lang.startsWith('ta') || v.name.toLowerCase().includes('tamil') || v.lang === 'ta-IN');
+      if (taVoice) utterance.voice = taVoice;
+    } else {
+      const enVoice = voices.find(v => v.lang === 'en-IN' || v.name.toLowerCase().includes('india')) ||
+                      voices.find(v => v.lang.startsWith('en'));
+      if (enVoice) utterance.voice = enVoice;
     }
 
     if (btnElement) {
@@ -429,7 +443,13 @@
     renderSuggestions([]);
 
     try {
-      const res = await fetch('/api/chat', {
+      const apiEndpoint = (window.API
+        ? (window.API + '/chat')
+        : ((window.location.protocol.startsWith('http') && window.location.port && window.location.port !== '3000' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+            ? `http://${window.location.hostname}:3000/api/chat`
+            : '/api/chat'));
+
+      const res = await fetch(apiEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

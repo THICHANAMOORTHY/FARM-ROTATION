@@ -15,7 +15,8 @@
     }
 
     try {
-      const res = await fetch(`/api/gps-zones?farm_id=${window.state?.farm_id || 101}&lat=${lat}&lon=${lon}`);
+      const apiBase = window.API || '/api';
+      const res = await fetch(`${apiBase}/gps-zones?farm_id=${window.state?.farm_id || 101}&lat=${lat}&lon=${lon}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       zonesData = data;
@@ -272,7 +273,8 @@
     if (btn) btn.innerHTML = '<span>🛰️</span> Syncing NEO-6M…';
 
     try {
-      const res = await fetch(`/api/soil-sensor/latest?farm_id=${farmId}`);
+      const apiBase = window.API || '/api';
+      const res = await fetch(`${apiBase}/soil-sensor/latest?farm_id=${farmId}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const r = data.reading || data.latest_reading;

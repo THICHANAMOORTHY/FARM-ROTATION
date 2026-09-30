@@ -13,7 +13,7 @@ const { withTimeout } = require('../utils/withTimeout');
 // make every candidate model hang or slow-retry in turn, and a single chat
 // message can take 10-15+ seconds to answer — indistinguishable from "the
 // chatbot is broken" from a user's perspective.
-const GEMINI_TIMEOUT_MS = 10000;
+const GEMINI_TIMEOUT_MS = 14000;
 
 router.post('/', async (req, res) => {
   try {
@@ -43,8 +43,14 @@ router.post('/', async (req, res) => {
         const { GoogleGenerativeAI } = require('@google/generative-ai');
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         
-        // High-availability working models
-        const candidateModels = ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-3.5-flash'];
+        // High-availability working models prioritized by lowest latency and availability
+        const candidateModels = [
+          'gemini-3.5-flash-lite',
+          'gemini-3.7-flash',
+          'gemini-3.6-flash',
+          'gemini-3.5-flash',
+          'gemini-3.8-flash'
+        ];
         let text = null;
         let successfulModel = null;
 
@@ -53,7 +59,7 @@ router.post('/', async (req, res) => {
         const probeTemp = liveSensor?.temperature ?? soil.air_temperature ?? 31.5;
         const probeTds = liveSensor?.tds ?? soil.tds ?? 420;
 
-        const prompt = `You are "CropSmart Kisan AI", an expert agricultural advisor and precision agronomist.
+        const prompt = `You are "UZHAVU KAAPPAAN AI" (CropSmart Kisan AI), an expert agricultural advisor and precision agronomist.
 FARM CONTEXT:
 - Farmer: ${farmer.name}, Location: ${farm.location_name} (${farm.area_acres} acres, ${farm.irrigation_type} irrigation)
 - Current Soil Health Score: ${soil.soil_health_score}/100.
@@ -64,7 +70,8 @@ FARM CONTEXT:
 - User Language: ${isTa ? 'Tamil (தமிழ்)' : 'English'}.
 
 CRITICAL INSTRUCTION:
-${isTa ? 'You MUST reply completely in pure, spoken Tamil (தமிழ் எழுத்துக்களில்). Use simple, friendly agricultural vocabulary that Tamil Nadu farmers use, structured with bullet points and emojis. Do not use English sentences.' : 'Respond in clear English with actionable agronomic insights, bullet points and emojis.'}
+Keep response crisp, actionable, high-impact, formatted with bullet points and emojis, strictly under 150-180 words.
+${isTa ? 'You MUST reply completely in pure, spoken Tamil (தமிழ் எழுத்துக்களில்). Use simple, friendly agricultural vocabulary that Tamil Nadu farmers use. Do not use English sentences.' : 'Respond in clear English with actionable agronomic insights, bullet points and emojis.'}
 
 User Question: "${message}"`;
 
@@ -72,8 +79,12 @@ User Question: "${message}"`;
           for (const modelName of candidateModels) {
             try {
               const model = genAI.getGenerativeModel({ model: modelName });
-              const result = await model.generateContent(prompt);
-              text = result.response.text();
+              // Individual model timeout to prevent one slow/503 candidate from blocking others
+              const modelResult = await withTimeout(
+                model.generateContent(prompt),
+                6000
+              );
+              text = modelResult.response.text();
               if (text) {
                 successfulModel = modelName;
                 break;
@@ -92,7 +103,7 @@ User Question: "${message}"`;
             suggestions: isTa
               ? ["மண் பரிசோதனை அறிக்கை", "பரிந்துரைக்கப்பட்ட சுழற்சி", "சந்தை விலை நிலவரம்"]
               : ["Explain my soil test", "Why Green Gram?", "Current Mandi prices"],
-            provider: `Google Gemini AI (${successfulModel || '3.5 Flash'})`
+            provider: `Google Gemini AI (${successfulModel || 'Flash'})`
           });
         }
       } catch (geminiErr) {
@@ -221,20 +232,41 @@ User Question: "${message}"`;
       }
     }
 
-    // Question: Weather advice
-    else if (q.includes("weather") || q.includes("rain") || q.includes("temp") || q.includes("வானிலை") || q.includes("மழை")) {
+    // Question: Irrigation / Water / Drip
+    else if (q.includes("water") || q.includes("irrigat") || q.includes("drip") || q.includes("பாசனம்") || q.includes("நீர்") || q.includes("சொட்டு")) {
       if (isTa) {
-        reply = `🌦️ **தற்போதைய பண்ணை வானிலை (கோவை):**\n\n` +
-          `• **வெப்பநிலை**: 32.2°C\n` +
-          `• **வானிலை நிலை**: மிதமான தூறல் (Light Drizzle 🌦️)\n` +
-          `• **விவசாய ஆலோசனை**: தற்போது நிலவும் மிதமான ஈரப்பதம் பாசிப்பயறு அல்லது உளுந்து விதைப்பதற்கு உகந்த சூழலாகும்.`;
-        suggestions = ["அடுத்த பயிர் என்ன நடலாம்?", "வானிலை வரைபடம்", "மண் பரிசோதனை"];
+        reply = `💧 **பாசன மேலாண்மை ஆலோசனை (#101 பண்ணை - சொட்டு நீர் பாசனம்):**\n\n` +
+          `• **தற்போதைய மண் ஈரப்பதம்**: ${liveSensor?.moisture ?? soil.soil_moisture ?? 45}% (சிறந்த நிலை).\n` +
+          `• **பாசன முறை**: உங்கள் நிலத்தில் சொட்டு நீர் பாசனம் உள்ளதால் 40-50% வரை தண்ணீர் சேமிக்க முடியும்.\n` +
+          `• **பாசிப்பயறு பாசன கால இடைவெளி**: விதைப்பு, பூக்கும் பருவம் மற்றும் காய் பிடிக்கும் பருவத்தில் மட்டும் மிதமான பாசனம் போதுமானது.\n` +
+          `• **அறிவுரை**: அதிகப்படியான நீர் தேங்குவதை தவிர்க்கவும்; வேர் அழுகல் நோய் பரவாமல் தடுக்கும்.`;
+        suggestions = ["அடுத்த பயிர் என்ன நடலாம்?", "வானிலை அறிக்கை", "மண் பரிசோதனை"];
       } else {
-        reply = `🌦️ **Live Farm Weather (Coimbatore Region):**\n\n` +
-          `• **Temperature**: 32.2°C\n` +
-          `• **Conditions**: Light Drizzle (🌦️)\n` +
-          `• **Agronomic Advice**: The current moderate soil moisture from drizzle is ideal for field preparation and direct seed sowing of short-duration legumes.`;
-        suggestions = ["Recommend sowing date", "View Weather Forecast", "Check Soil Health"];
+        reply = `💧 **Precision Irrigation Advisory (Farm #101 - Drip Irrigation):**\n\n` +
+          `• **Current Soil Moisture**: ${liveSensor?.moisture ?? soil.soil_moisture ?? 45}% (Optimal zone: 40–60%).\n` +
+          `• **Water Efficiency**: Drip system provides ~45% water savings compared to flood irrigation.\n` +
+          `• **Green Gram Schedule**: Only 3 critical irrigation cycles needed (Sowing, Flowering at day 30, and Pod development at day 50).\n` +
+          `• **Action**: Avoid waterlogging to prevent root-knot fungal proliferation in warm soil.`;
+        suggestions = ["What crop to plant next?", "View Weather Forecast", "Check Soil Health"];
+      }
+    }
+
+    // Question: Pest & Disease / Blight / Fungus
+    else if (q.includes("pest") || q.includes("disease") || q.includes("blight") || q.includes("fung") || q.includes("பூச்சி") || q.includes("நோய்") || q.includes("கருகல்")) {
+      if (isTa) {
+        reply = `🛡️ **பயிர் பாதுகாப்பு & நோய் தடுப்பு வழிகாட்டல்:**\n\n` +
+          `• **தக்காளி கருகல் நோய் தடுப்பு**: தொடர்ந்து தக்காளி பயிரிட்டதால் மண்ணில் பூஞ்சை வித்துக்கள் தங்கியிருக்க வாய்ப்புள்ளது. பாசிப்பயறு பயிரிடுவதன் மூலம் இந்த நோய் சுழற்சி உடைக்கப்படும்.\n` +
+          `• **இயற்கை பூச்சி விரட்டி**: வேப்பெண்ணெய் கரைசல் (3%) அல்லது 5-இலை கரைசல் தெளிக்கவும்.\n` +
+          `• **மண் கிருமி நீக்கம்**: விதைப்புக்கு முன் வேப்பம் புண்ணாக்கு ஏக்கருக்கு 100 கிலோ இடவும்.\n` +
+          `• **உயிரியல் கட்டுப்பாடு**: டிரைக்கோடெர்மா விரிடி (Trichoderma viride) கொண்டு விதை நேர்த்தி செய்யவும்.`;
+        suggestions = ["அடுத்த பயிர் என்ன நடலாம்?", "உர பரிந்துரை", "மண் பரிசோதனை பார்க்க"];
+      } else {
+        reply = `🛡️ **Integrated Pest & Disease Management (IPM):**\n\n` +
+          `• **Blight & Wilt Mitigation**: 3 seasons of Solanaceae (Tomato) build up soil-borne *Alternaria* and *Fusarium*. Rotating to a legume breaks this pathogen cycle completely.\n` +
+          `• **Bio-fungicide Seed Treatment**: Treat seeds with *Trichoderma viride* (4g/kg seed) or *Pseudomonas fluorescens* before sowing.\n` +
+          `• **Soil Pest Barrier**: Apply 100 kg/acre Neem Cake during land preparation to suppress parasitic nematodes.\n` +
+          `• **Foliar Spray**: 3% Neem Seed Kernel Extract (NSKE) at vegetative stage for sucking pest deterrent.`;
+        suggestions = ["What crop to plant next?", "Explain my soil test", "Fertilizer plan"];
       }
     }
 
