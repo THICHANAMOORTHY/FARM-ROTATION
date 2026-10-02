@@ -13,9 +13,11 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-In `backend/.env` set at least `DEVICE_API_KEY=demo-key` and `ADMIN_TOKEN=admin-demo`.
-Leave the Supabase lines empty for an offline demo (data is kept in memory), or fill them in to
-show the data appearing in Supabase.
+The copied `.env` works as-is for a demo: no database (data kept in memory), device key
+`demo-key`, admin token `admin-demo`. To show data appearing in Supabase, fill in the two
+Supabase lines.
+
+On Windows use `copy .env.example .env` instead of `cp`.
 
 ```bash
 cd ../frontend && npm install
