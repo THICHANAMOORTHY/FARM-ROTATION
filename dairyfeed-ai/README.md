@@ -9,17 +9,21 @@ simple advice to dairy farmers in English and Tamil.
 ## How it works
 
 ```
- ESP32 sensor node ── pH, moisture, temperature, colour ──┐
-        │ UART (sample_id)                                 ├──► FastAPI backend ──► Supabase
- ESP32-CAM node ───── photo of the same sample ───────────┘      (score, risk,       (Postgres +
-                                                                  advisory)            Storage)
-                                                                     │
-                                                    React dashboard (EN / தமிழ்) ◄┘
+ ESP32 sensor node                      readings
+ pH · moisture · DS18B20 · TCS3200 ──────────────────┐
+        │ UART (sample_id)                            ├──► FastAPI backend ──► Supabase
+        ↓                                photo        │    score, risk,        Postgres + Storage
+ ESP32-CAM node ──────────────────────────────────────┘    advisory
+                                                                │
+                                         React dashboard (EN / தமிழ்) ◄──┘
 ```
 
 Every test returns: **Quality** (Good / Moderate / Poor), **Spoilage risk** (Low / Medium / High),
 **Mould risk** (Low / High / Unknown), a **score** from 0 to 100 with its breakdown, and an
 advisory in English and Tamil. If there is no internet, the devices queue data and sync later.
+
+The TCS3200 colour sensor is on the sensor node ESP32; the ESP32-CAM only takes the photo. Full
+diagram, component roles and model inputs: [`docs/architecture.md`](docs/architecture.md).
 
 ## Folders
 

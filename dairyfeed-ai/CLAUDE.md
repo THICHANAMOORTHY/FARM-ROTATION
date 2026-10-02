@@ -18,6 +18,13 @@ A portable device that screens silage on the farm, plus a web app that shows res
 5. A React dashboard (English + Tamil) shows the result, history, and a simple farmer advisory.
 6. If there's no internet, the devices queue data locally and sync later.
 
+Full diagram and component roles: `docs/architecture.md`. Two points that must stay true:
+- The **TCS3200 is on the sensor node ESP32**, not on the camera. The ESP32 gives the RGB colour
+  data; the ESP32-CAM gives the image. The backend joins them by `sample_id`.
+- **ML inputs (first version):** pH + moisture + temperature + RGB + silage image →
+  quality score + spoilage/mould risk. While the dataset is being collected, mould risk stays
+  `Unknown` until the images are labelled.
+
 **Outputs for every test:**
 - Quality: Good / Moderate / Poor
 - Spoilage Risk: Low / Medium / High
@@ -204,6 +211,7 @@ Readings and images can arrive in either order. The prediction must be recompute
   - Temperature: penalize when the sample is more than about 3 °C above ambient (sign of aerobic heating).
   - Visual: mould risk from the image lowers the score; if there is no image, mark mould risk as `Unknown` and do not invent a value.
   - Default weights: pH 40, moisture 30, temperature 20, visual 10.
+- The rules don't use RGB, but RGB is always collected: it is an input feature for the ML model.
 - `predictor.py` uses a trained ML model **only if** a model file exists and its metadata says it passed validation. Otherwise it uses rules. Always record `method` and `model_version`.
 - Every response includes the score breakdown so the farmer and the judges can see why.
 

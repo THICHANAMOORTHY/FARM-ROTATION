@@ -11,6 +11,13 @@ Until a trained model passes validation, the backend uses rule-based scoring. Th
 - Training refuses to run if any class has fewer than 15 samples (configurable).
 - Metrics (per-class precision/recall, confusion matrix, stratified k-fold) are saved next to each model.
 
+## Model inputs and outputs
+
+Inputs: pH, moisture, temperature (sample and ambient), RGB (`rgb_r/g/b`), and the silage image.
+Outputs: quality score and quality, spoilage risk, mould risk. See `../docs/architecture.md`.
+
+Mould risk stays `Unknown` until the images are labelled by experts.
+
 | Path | Role |
 |---|---|
 | `export_dataset.py` | Exports labelled samples from Supabase into `data/` |
