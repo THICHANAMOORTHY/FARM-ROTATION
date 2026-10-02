@@ -170,3 +170,46 @@ def row_to_sample(row: dict[str, Any]) -> Sample:
             synced_from_offline=row.get("synced_from_offline", False),
         ),
     )
+
+
+class LabelRequest(BaseModel):
+    """What an expert sends to POST /api/silage/{sample_id}/label."""
+
+    quality: Quality
+    mould: Literal["Low", "High"] | None = None
+    spoilage: SpoilageRisk | None = None
+    labelled_by: str = Field(min_length=1, max_length=80)
+    reference: str = Field(min_length=1, max_length=120)   # 'expert visual', 'lab report', ...
+
+
+class HistoryPage(BaseModel):
+    items: list[Sample]
+    total: int
+    page: int
+    page_size: int
+
+
+class BulkRequest(BaseModel):
+    """Offline sync. Items are checked one by one, so one bad item never blocks the rest."""
+
+    items: list[dict[str, Any]] = Field(min_length=1, max_length=50)
+
+
+class BulkItemResult(BaseModel):
+    sample_id: str | None
+    # saved: stored now. duplicate: was already stored. rejected: will never be accepted (see detail).
+    status: Literal["saved", "duplicate", "rejected"]
+    detail: str | None = None
+
+
+class BulkResponse(BaseModel):
+    results: list[BulkItemResult]
+
+
+class StatsSummary(BaseModel):
+    total: int
+    awaiting_readings: int          # photo received, readings not yet
+    by_quality: dict[str, int]
+    by_spoilage_risk: dict[str, int]
+    by_mould_risk: dict[str, int]
+    labelled: int

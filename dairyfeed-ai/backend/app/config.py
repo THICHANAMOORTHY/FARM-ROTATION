@@ -15,8 +15,11 @@ class Settings(BaseSettings):
     # Shared secret the ESP32 devices send in the X-Device-Key header.
     device_api_key: str = ""
 
-    # Token for the expert labelling page (used from Phase 2).
+    # Token for the expert labelling page, sent in the X-Admin-Token header.
     admin_token: str = ""
+
+    # Largest photo accepted from the camera node, in bytes.
+    max_image_bytes: int = 5_000_000
 
     # Comma-separated browser origins allowed to call the API.
     cors_origins: str = "http://localhost:5173"

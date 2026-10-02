@@ -3,7 +3,7 @@
 Receives readings and photos from the devices, scores each sample, writes an advisory,
 and stores everything in Supabase.
 
-**Status:** Phase 1 done: rule-based scoring, advisory, `GET /api/health`, `POST /api/silage/test`.
+**Status:** Phases 1–2 done: rule-based scoring, advisory, and every endpoint in `../docs/api.md`.
 
 ## Layout
 
@@ -16,9 +16,9 @@ and stores everything in Supabase.
 | `app/routers/` | API endpoints (see `../docs/api.md`) |
 | `app/services/scoring.py` | Rule-based score, always available |
 | `app/services/predictor.py` | Uses the rules for now; a validated ML model from Phase 7 |
-| `app/services/image_analysis.py` | Mould risk from the photo (Phase 2) |
-| `app/services/samples.py` | Builds sample rows and recomputes the prediction |
-| `app/security.py` | Checks the `X-Device-Key` header |
+| `app/services/image_analysis.py` | Mould risk from the photo: `Unknown` until a validated model exists |
+| `app/services/samples.py` | Stores readings and photos, recomputes the prediction |
+| `app/security.py` | Checks the `X-Device-Key` and `X-Admin-Token` headers |
 | `app/advisory_templates.yaml` | All advisory text, English and Tamil |
 | `app/services/advisory.py` | English and Tamil advice from templates |
 | `app/scoring_config.yaml` | Every threshold and weight |
@@ -84,3 +84,9 @@ All of these numbers are provisional and live only in `scoring_config.yaml`.
 
 Every Tamil string in `app/advisory_templates.yaml` is marked `# TAMIL REVIEW NEEDED`. A native
 speaker should check them before field use.
+
+## Photos and mould risk
+
+Photos are stored in the Supabase Storage bucket `silage-images`, but mould risk stays `Unknown`
+for now. There is no trained image model yet, and a hand-made colour rule would not be reliable.
+Experts label the stored photos, and Phase 7 trains a model on those labels.

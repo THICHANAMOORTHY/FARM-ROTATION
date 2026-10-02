@@ -51,7 +51,7 @@ Each folder has its own README with setup and run commands.
 |---|---|---|
 | 0 | Project structure, database schema, config examples | Done |
 | 1 | Backend core: scoring, advisory, `/api/silage/test` | Done |
-| 2 | Rest of the API | Not started |
+| 2 | Rest of the API | Done |
 | 3 | Sensor node firmware | Not started |
 | 4 | Offline queue and on-device scoring | Not started |
 | 5 | Camera node firmware | Not started |

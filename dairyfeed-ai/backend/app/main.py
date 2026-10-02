@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import health, silage
+from app.routers import advisory, health, image, silage, stats
 
 app = FastAPI(
     title="DairyFeed AI",
@@ -21,3 +21,6 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(silage.router)
+app.include_router(image.router)
+app.include_router(advisory.router)
+app.include_router(stats.router)

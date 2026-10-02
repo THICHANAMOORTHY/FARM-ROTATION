@@ -6,6 +6,8 @@ from app.db import InMemoryRepository, get_repository
 from app.main import app
 
 DEVICE_KEY = "test-device-key"
+ADMIN_TOKEN = "test-admin-token"
+JPEG = b"\xff\xd8\xff\xe0" + b"fake jpeg body"
 
 
 @pytest.fixture
@@ -17,7 +19,9 @@ def repo() -> InMemoryRepository:
 def client(repo: InMemoryRepository):
     """An API client using in-memory storage and a known device key. No Supabase needed."""
     app.dependency_overrides[get_repository] = lambda: repo
-    app.dependency_overrides[get_settings] = lambda: Settings(_env_file=None, device_api_key=DEVICE_KEY)
+    app.dependency_overrides[get_settings] = lambda: Settings(
+        _env_file=None, device_api_key=DEVICE_KEY, admin_token=ADMIN_TOKEN, max_image_bytes=1000
+    )
     yield TestClient(app)
     app.dependency_overrides.clear()
 

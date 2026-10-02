@@ -1,13 +1,15 @@
 """All database access goes through a repository.
 
-- SupabaseRepository: the real database (Supabase Postgres, tables from supabase/schema.sql).
-- InMemoryRepository: a Python dict. Used by tests, and as a fallback when Supabase is not
+- SupabaseRepository: the real database (Supabase Postgres, tables from supabase/schema.sql)
+  and Supabase Storage for the photos.
+- InMemoryRepository: Python dicts. Used by tests, and as a fallback when Supabase is not
   configured (data is then lost when the server restarts).
 
 Rows are flat dicts whose keys are the silage_samples column names.
 """
 
 import logging
+from dataclasses import dataclass
 from datetime import datetime
 from functools import lru_cache
 from typing import Any, Protocol
@@ -17,6 +19,19 @@ from app.config import get_settings
 log = logging.getLogger(__name__)
 
 Row = dict[str, Any]
+
+IMAGE_BUCKET = "silage-images"
+
+
+@dataclass
+class SampleFilters:
+    """History filters. Any field left as None is not filtered on."""
+
+    device_id: str | None = None
+    farm_id: str | None = None
+    feed_type: str | None = None
+    date_from: datetime | None = None
+    date_to: datetime | None = None
 
 
 class SampleRepository(Protocol):
@@ -28,9 +43,21 @@ class SampleRepository(Protocol):
         """Insert the sample, or update it if the sample_id already exists. Returns the stored row."""
         ...
 
+    def list_samples(self, filters: SampleFilters, offset: int, limit: int) -> tuple[list[Row], int]:
+        """Newest first. Returns (one page of rows, total number of matching rows)."""
+        ...
+
+    def count_samples(self, column: str | None = None, value: Any = None, device_id: str | None = None) -> int:
+        """Count samples, optionally where column == value (value None means the column is empty)."""
+        ...
+
     def touch_device(self, device_id: str, seen_at: datetime) -> None:
         """Record that a device has just been seen (creates the device row if new)."""
         ...
+
+    def save_image(self, path: str, data: bytes) -> None: ...
+
+    def get_image(self, path: str) -> bytes | None: ...
 
 
 class InMemoryRepository:
@@ -39,6 +66,7 @@ class InMemoryRepository:
     def __init__(self) -> None:
         self.samples: dict[str, Row] = {}
         self.devices: dict[str, Row] = {}
+        self.images: dict[str, bytes] = {}
         self._next_id = 1
 
     def get_sample(self, sample_id: str) -> Row | None:
@@ -47,6 +75,10 @@ class InMemoryRepository:
 
     def save_sample(self, row: Row) -> Row:
         stored = dict(row)
+        # Store times as datetime objects, like the database does, so they sort and compare correctly.
+        for key in ("created_at", "image_received_at", "labelled_at"):
+            if isinstance(stored.get(key), str):
+                stored[key] = datetime.fromisoformat(stored[key])
         existing = self.samples.get(stored["sample_id"])
         if existing:
             stored["id"] = existing["id"]
@@ -56,9 +88,36 @@ class InMemoryRepository:
         self.samples[stored["sample_id"]] = stored
         return dict(stored)
 
+    def list_samples(self, filters: SampleFilters, offset: int, limit: int) -> tuple[list[Row], int]:
+        def matches(row: Row) -> bool:
+            for key in ("device_id", "farm_id", "feed_type"):
+                wanted = getattr(filters, key)
+                if wanted is not None and row.get(key) != wanted:
+                    return False
+            if filters.date_from and row["created_at"] < filters.date_from:
+                return False
+            if filters.date_to and row["created_at"] > filters.date_to:
+                return False
+            return True
+
+        rows = sorted((r for r in self.samples.values() if matches(r)), key=lambda r: r["created_at"], reverse=True)
+        return [dict(r) for r in rows[offset : offset + limit]], len(rows)
+
+    def count_samples(self, column: str | None = None, value: Any = None, device_id: str | None = None) -> int:
+        rows = [r for r in self.samples.values() if device_id is None or r["device_id"] == device_id]
+        if column is not None:
+            rows = [r for r in rows if r.get(column) == value]
+        return len(rows)
+
     def touch_device(self, device_id: str, seen_at: datetime) -> None:
         device = self.devices.setdefault(device_id, {"device_id": device_id, "pending_sync": 0})
         device["last_seen_at"] = seen_at
+
+    def save_image(self, path: str, data: bytes) -> None:
+        self.images[path] = data
+
+    def get_image(self, path: str) -> bytes | None:
+        return self.images.get(path)
 
 
 class SupabaseRepository:
@@ -83,12 +142,51 @@ class SupabaseRepository:
         return result.data[0] if result.data else None
 
     def save_sample(self, row: Row) -> Row:
-        result = self.client.table("silage_samples").upsert(self._to_json(row), on_conflict="sample_id").execute()
+        result = self.client.table("silage_samples").upsert(
+            self._to_json(row), on_conflict="sample_id", default_to_null=False
+        ).execute()
         return result.data[0]
+
+    def list_samples(self, filters: SampleFilters, offset: int, limit: int) -> tuple[list[Row], int]:
+        query = self.client.table("silage_samples").select("*", count="exact")
+        for key in ("device_id", "farm_id", "feed_type"):
+            wanted = getattr(filters, key)
+            if wanted is not None:
+                query = query.eq(key, wanted)
+        if filters.date_from:
+            query = query.gte("created_at", filters.date_from.isoformat())
+        if filters.date_to:
+            query = query.lte("created_at", filters.date_to.isoformat())
+        result = query.order("created_at", desc=True).range(offset, offset + limit - 1).execute()
+        return result.data, result.count or 0
+
+    def count_samples(self, column: str | None = None, value: Any = None, device_id: str | None = None) -> int:
+        # head=True asks only for the count, not the rows.
+        query = self.client.table("silage_samples").select("sample_id", count="exact", head=True)
+        if device_id is not None:
+            query = query.eq("device_id", device_id)
+        if column is not None:
+            query = query.is_(column, "null") if value is None else query.eq(column, value)
+        return query.execute().count or 0
 
     def touch_device(self, device_id: str, seen_at: datetime) -> None:
         payload = {"device_id": device_id, "last_seen_at": seen_at.isoformat()}
-        self.client.table("silage_devices").upsert(payload, on_conflict="device_id").execute()
+        self.client.table("silage_devices").upsert(
+            payload, on_conflict="device_id", default_to_null=False  # missing columns get their defaults
+        ).execute()
+
+    def save_image(self, path: str, data: bytes) -> None:
+        # upsert: a retried upload replaces the file instead of failing.
+        self.client.storage.from_(IMAGE_BUCKET).upload(
+            path, data, {"content-type": "image/jpeg", "upsert": "true"}
+        )
+
+    def get_image(self, path: str) -> bytes | None:
+        try:
+            return self.client.storage.from_(IMAGE_BUCKET).download(path)
+        except Exception:  # the storage client raises when the file does not exist
+            log.exception("Could not download image %s", path)
+            return None
 
 
 @lru_cache
