@@ -25,8 +25,9 @@ def test_offline_mode_uses_bulk_sync(client, repo):
 
 
 def test_profiles_produce_the_expected_quality(client):
-    good = run(client, DEVICE_KEY, count=10, profile="good", photo=False, seed=4)
-    poor = run(client, DEVICE_KEY, count=10, profile="poor", photo=False, seed=5)
+    # Many samples and several seeds, so the demo's "--profile poor" is always Poor.
+    good = run(client, DEVICE_KEY, count=50, profile="good", photo=False, seed=4)
+    poor = [r for seed in range(5) for r in run(client, DEVICE_KEY, count=40, profile="poor", photo=False, seed=100 + seed)]
     assert {r["prediction"]["quality"] for r in good} == {"Good"}
     assert {r["prediction"]["quality"] for r in poor} == {"Poor"}
 
@@ -41,3 +42,11 @@ def test_samples_match_the_firmware_shape():
     assert low <= sample["readings"]["ph"] <= high
     assert set(sample["readings"]["rgb"]) == {"r", "g", "b"}
     assert sample["flags"] == {"simulated": True}
+
+
+def test_days_zero_means_now(client, repo):
+    from datetime import datetime, timezone
+
+    run(client, DEVICE_KEY, count=5, days=0, photo=False, seed=8)
+    now = datetime.now(timezone.utc)
+    assert all(abs((now - row["created_at"]).total_seconds()) < 5 for row in repo.samples.values())

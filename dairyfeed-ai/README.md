@@ -72,6 +72,12 @@ cd frontend && npm install && npm run dev
 | 5 | Camera node firmware | Waiting for hardware |
 | 6 | Frontend dashboard | Done |
 | 7 | ML pipeline | Done (no model yet: needs real labelled data) |
-| 8 | Docs | Not started |
+| 8 | Docs: judges' guide, demo script | Done |
+
+## For judges
+
+- [`docs/judges-guide.md`](docs/judges-guide.md): what it does, how the score works, where the AI
+  fits and why it is gated, design decisions, testing, and known limits.
+- [`docs/demo-script.md`](docs/demo-script.md): an 8-minute live demo with no hardware needed.
 
 This folder is separate from the UZHAVU KAAPPAAN crop-rotation app in the rest of the repository.

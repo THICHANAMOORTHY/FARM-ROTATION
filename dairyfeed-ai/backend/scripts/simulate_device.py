@@ -28,10 +28,11 @@ import httpx
 PHOTO = Path(__file__).with_name("simulated_photo.jpg")  # a grey card that says "SIMULATED"
 
 # Typical ranges for each quality profile (provisional, matching scoring_config.yaml's ideas).
-PROFILES: dict[str, dict[str, tuple[float, float]]] = {
-    "good": {"ph": (3.8, 4.4), "moisture": (60, 70), "rise": (-1.0, 2.0)},
-    "moderate": {"ph": (4.5, 4.9), "moisture": (55, 74), "rise": (2.0, 5.0)},
-    "poor": {"ph": (5.0, 6.0), "moisture": (45, 85), "rise": (5.0, 11.0)},
+# "moisture" lists one or more ranges; one is picked at random (poor silage is too dry OR too wet).
+PROFILES: dict[str, dict[str, Any]] = {
+    "good": {"ph": (3.8, 4.4), "moisture": [(60, 70)], "rise": (-1.0, 2.0)},
+    "moderate": {"ph": (4.5, 4.9), "moisture": [(55, 74)], "rise": (2.0, 5.0)},
+    "poor": {"ph": (5.2, 6.0), "moisture": [(45, 52), (78, 85)], "rise": (5.0, 11.0)},
 }
 FEED_TYPES = ["maize_silage", "sorghum_silage", "napier_silage"]
 
@@ -44,7 +45,7 @@ def make_reading(profile: str, rng: random.Random) -> dict[str, Any]:
     darkness = {"good": 0, "moderate": 25, "poor": 55}[profile]
     return {
         "ph": round(rng.uniform(*ranges["ph"]), 2),
-        "moisture_pct": round(rng.uniform(*ranges["moisture"]), 1),
+        "moisture_pct": round(rng.uniform(*rng.choice(ranges["moisture"])), 1),
         "moisture_raw": rng.randint(11000, 15000),
         "sample_temp_c": round(ambient + rng.uniform(*ranges["rise"]), 1),
         "ambient_temp_c": round(ambient, 1),
@@ -91,10 +92,12 @@ def run(
     now = datetime.now(timezone.utc).replace(microsecond=0)
 
     # Spread samples over the last `days` days, oldest first, so trend charts have something to show.
+    # A little random jitter (never more than the gap between samples), so --days 0 means "now".
     samples = []
+    spacing = days * 86400 / count
     for i in range(count):
-        created_at = now - timedelta(days=days) + timedelta(seconds=(days * 86400) * (i + 1) / count)
-        created_at -= timedelta(seconds=rng.randint(0, 600))
+        created_at = now - timedelta(days=days) + timedelta(seconds=spacing * (i + 1))
+        created_at -= timedelta(seconds=rng.randint(0, int(min(600, spacing))))
         samples.append(make_sample(rng.choice(devices), created_at, rng.randint(1, 9999), pick_profile(profile, rng), rng))
 
     results = []
