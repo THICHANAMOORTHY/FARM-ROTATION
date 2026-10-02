@@ -15,8 +15,9 @@ and stores everything in Supabase.
 | `app/models/` | Pydantic request and response schemas |
 | `app/routers/` | API endpoints (see `../docs/api.md`) |
 | `app/services/scoring.py` | Rule-based score, always available |
-| `app/services/predictor.py` | Uses the rules for now; a validated ML model from Phase 7 |
-| `app/services/image_analysis.py` | Mould risk from the photo: `Unknown` until a validated model exists |
+| `app/services/predictor.py` | Uses a trained model only if it passed validation; otherwise the rules |
+| `app/services/features.py` | Model inputs, shared with `ml/` so training and live use match |
+| `app/services/image_analysis.py` | Mould risk from the photo: validated image model, else `Unknown` |
 | `app/services/samples.py` | Stores readings and photos, recomputes the prediction |
 | `app/security.py` | Checks the `X-Device-Key` and `X-Admin-Token` headers |
 | `app/advisory_templates.yaml` | All advisory text, English and Tamil |
@@ -87,9 +88,16 @@ speaker should check them before field use.
 
 ## Photos and mould risk
 
-Photos are stored in the Supabase Storage bucket `silage-images`, but mould risk stays `Unknown`
-for now. There is no trained image model yet, and a hand-made colour rule would not be reliable.
-Experts label the stored photos, and Phase 7 trains a model on those labels.
+Photos are stored in the Supabase Storage bucket `silage-images`. Mould risk stays `Unknown`
+until an image model trained on expert labels passes validation (`../ml/README.md`). No
+hand-made colour rule decides mould.
+
+## Trained models
+
+`predictor.py` looks in `ml/models/` (or `ML_MODELS_DIR`) at start-up and uses the newest model
+of each kind whose `metadata.json` says `passed_validation: true` and whose inputs match
+`features.py`. Restart the backend after training. If you created the database before Phase 7,
+re-run `supabase/schema.sql` once: it adds the `mould_model_version` column.
 
 ## Device simulator (no hardware needed)
 

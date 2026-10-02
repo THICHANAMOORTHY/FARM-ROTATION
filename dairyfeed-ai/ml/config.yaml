@@ -1,0 +1,35 @@
+# ============================================================
+# DairyFeed AI — ML training settings
+# PROVISIONAL: pass thresholds to be agreed with the expert team.
+# ============================================================
+
+# Refuse to train if ANY class has fewer samples than this (CLAUDE.md section 7).
+min_samples_per_class: 15
+
+# Stratified k-fold cross-validation
+cv_folds: 5
+random_state: 42
+
+# A model is used by the backend ONLY if it passes ALL of these on cross-validation.
+# Otherwise it is saved for the record with passed_validation: false and ignored.
+pass_criteria:
+  min_recall_per_class: 0.70   # never miss too many of any class (e.g. Poor silage)
+  min_macro_f1: 0.70
+
+# Every class each model must be able to predict. A missing class means refusal:
+# a quality model that has never seen "Poor" must never be used.
+targets:
+  quality:
+    label_column: label_quality
+    classes: [Good, Moderate, Poor]
+  spoilage:
+    label_column: label_spoilage
+    classes: [Low, Medium, High]
+  mould:
+    label_column: label_mould
+    classes: [Low, High]
+
+random_forest:
+  n_estimators: 300
+  min_samples_leaf: 2
+  class_weight: balanced   # the classes are rarely equal in size

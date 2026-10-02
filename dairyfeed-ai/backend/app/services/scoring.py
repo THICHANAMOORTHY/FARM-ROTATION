@@ -67,7 +67,11 @@ def quality_from_score(score: int, spoilage: str, mould: str, config: dict[str, 
     else:
         quality = "Poor"
 
-    # Caps: some findings limit the quality whatever the score.
+    return apply_quality_caps(quality, spoilage, mould, config)
+
+
+def apply_quality_caps(quality: str, spoilage: str, mould: str, config: dict[str, Any]) -> str:
+    """Some findings limit the quality, whatever the score or model says (a safety rule)."""
     order = ["Poor", "Moderate", "Good"]
     caps = config["quality_caps"]
     if spoilage == "High":

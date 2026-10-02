@@ -45,7 +45,7 @@ def apply_prediction(row: Row) -> Row:
 
     # Mould risk only comes from a photo. No photo means Unknown — never a guessed value.
     mould_risk = row.get("mould_risk") if row.get("image_path") else None
-    prediction = predict(readings, mould_risk or "Unknown")
+    prediction = predict(row, mould_risk or "Unknown")
     advisory = build_advisory(readings, prediction.quality, prediction.spoilage_risk, prediction.mould_risk)
 
     row.update(
@@ -125,7 +125,8 @@ def store_image(repo: SampleRepository, sample_id: str, data: bytes) -> tuple[Ro
     repo.save_image(path, data)  # file first: a row must never point at a missing photo
 
     row = existing or new_row(sample_id, device_id, now)
-    row.update(image_path=path, image_received_at=now, mould_risk=mould_risk_from_image(data))
+    mould_risk, mould_model_version = mould_risk_from_image(data)
+    row.update(image_path=path, image_received_at=now, mould_risk=mould_risk, mould_model_version=mould_model_version)
 
     saved = repo.save_sample(apply_prediction(row))
     repo.touch_device(device_id, now)

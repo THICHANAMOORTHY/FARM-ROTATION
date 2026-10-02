@@ -72,6 +72,10 @@ create table if not exists silage_samples (
     synced_from_offline  boolean not null default false
 );
 
+-- 2b. Added in Phase 7. "add column if not exists" also upgrades a database created earlier.
+-- Which image model produced mould_risk (null = no model: mould_risk is Unknown).
+alter table silage_samples add column if not exists mould_model_version text;
+
 -- 3. Indexes (sample_id is already unique-indexed by the constraint above)
 create index if not exists silage_samples_device_time_idx
     on silage_samples (device_id, created_at desc);

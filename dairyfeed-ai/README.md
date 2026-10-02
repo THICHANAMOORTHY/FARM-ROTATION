@@ -71,7 +71,7 @@ cd frontend && npm install && npm run dev
 | 4 | Offline queue and on-device scoring | Waiting for hardware |
 | 5 | Camera node firmware | Waiting for hardware |
 | 6 | Frontend dashboard | Done |
-| 7 | ML pipeline | Not started |
+| 7 | ML pipeline | Done (no model yet: needs real labelled data) |
 | 8 | Docs | Not started |
 
 This folder is separate from the UZHAVU KAAPPAAN crop-rotation app in the rest of the repository.

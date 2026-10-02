@@ -1,0 +1,2 @@
+# The ML scripts import backend/app/services/features.py, so they use the backend's packages.
+-r ../backend/requirements.txt

@@ -212,6 +212,7 @@ Readings and images can arrive in either order. The prediction must be recompute
   - Visual: mould risk from the image lowers the score; if there is no image, mark mould risk as `Unknown` and do not invent a value.
   - Default weights: pH 40, moisture 30, temperature 20, visual 10.
 - The rules don't use RGB, but RGB is always collected: it is an input feature for the ML model.
+- Model inputs live in `backend/app/services/features.py`, shared by `ml/` and the backend. ML replaces quality/spoilage/mould only; the score and breakdown always come from the rules, and the quality caps always apply.
 - `predictor.py` uses a trained ML model **only if** a model file exists and its metadata says it passed validation. Otherwise it uses rules. Always record `method` and `model_version`.
 - Every response includes the score breakdown so the farmer and the judges can see why.
 

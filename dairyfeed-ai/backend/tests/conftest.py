@@ -10,6 +10,20 @@ ADMIN_TOKEN = "test-admin-token"
 JPEG = b"\xff\xd8\xff\xe0" + b"fake jpeg body"
 
 
+@pytest.fixture(autouse=True)
+def no_trained_models(tmp_path, monkeypatch):
+    """Every test starts with an empty models folder, so results never depend on what's in ml/models.
+    Tests that need a model write one into this folder."""
+    from app.services import predictor
+
+    folder = tmp_path / "models"
+    folder.mkdir()
+    monkeypatch.setattr(predictor, "models_dir", lambda: folder)
+    predictor.load_validated_model.cache_clear()
+    yield folder
+    predictor.load_validated_model.cache_clear()
+
+
 @pytest.fixture
 def repo() -> InMemoryRepository:
     return InMemoryRepository()

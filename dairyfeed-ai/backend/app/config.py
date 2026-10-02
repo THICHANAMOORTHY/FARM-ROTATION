@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     # Largest photo accepted from the camera node, in bytes.
     max_image_bytes: int = 5_000_000
 
+    # Folder with trained models (ml/models). Empty = the repo's dairyfeed-ai/ml/models.
+    ml_models_dir: str = ""
+
     # Comma-separated browser origins allowed to call the API.
     cors_origins: str = "http://localhost:5173"
 
