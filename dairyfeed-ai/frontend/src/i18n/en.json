@@ -1,0 +1,134 @@
+{
+  "app": {
+    "title": "DairyFeed AI",
+    "tagline": "Silage quality screening"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "history": "History",
+    "devices": "Devices",
+    "label": "Label"
+  },
+  "footer": {
+    "note": "Screening tool, not a lab test. It does not detect toxins, mycotoxins, protein or fibre."
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Could not load data: {{message}}",
+    "retry": "Try again",
+    "none": "None",
+    "simulated": "Simulated",
+    "demo": "Demo",
+    "simulatedHint": "Test data from the simulator, not a real sample",
+    "ruleBased": "Rule-based",
+    "aiModel": "AI model {{version}}",
+    "viewDetails": "View details",
+    "back": "Back",
+    "never": "Never",
+    "noData": "No tests yet. Run a test on the device, or the simulator."
+  },
+  "quality": {
+    "label": "Quality",
+    "Good": "Good",
+    "Moderate": "Moderate",
+    "Poor": "Poor"
+  },
+  "risk": {
+    "spoilage": "Spoilage risk",
+    "mould": "Mould risk",
+    "Low": "Low",
+    "Medium": "Medium",
+    "High": "High",
+    "Unknown": "Unknown"
+  },
+  "score": {
+    "label": "Score",
+    "outOf": "out of 100"
+  },
+  "advisory": {
+    "title": "Advice"
+  },
+  "feed": {
+    "maize_silage": "Maize silage",
+    "sorghum_silage": "Sorghum silage",
+    "napier_silage": "Napier silage",
+    "other": "Other"
+  },
+  "readings": {
+    "title": "Readings",
+    "ph": "pH",
+    "moisture": "Moisture",
+    "sampleTemp": "Sample temperature",
+    "ambientTemp": "Air temperature",
+    "temperature": "Temperature",
+    "colour": "Colour (RGB)",
+    "notReceived": "Readings not received yet",
+    "sampleShort": "Sample",
+    "ambientShort": "Air"
+  },
+  "dashboard": {
+    "latest": "Latest test",
+    "summary": "All tests",
+    "total": "Tests",
+    "awaiting": "Waiting for readings",
+    "labelled": "Expert-labelled",
+    "byQuality": "By quality"
+  },
+  "history": {
+    "title": "Test history",
+    "device": "Device",
+    "feedType": "Feed type",
+    "from": "From",
+    "to": "To",
+    "all": "All",
+    "clear": "Clear filters",
+    "trends": "Trends",
+    "trendNote": "Latest {{count}} tests matching the filters",
+    "table": "Tests",
+    "time": "Time",
+    "sample": "Sample",
+    "page": "Page {{page}} of {{pages}}",
+    "previous": "Previous",
+    "next": "Next",
+    "idealRange": "Shaded band: ideal range"
+  },
+  "detail": {
+    "title": "Sample details",
+    "photo": "Photo",
+    "noPhoto": "No photo yet",
+    "breakdown": "How the score was made",
+    "points": "{{earned}} of {{max}} points",
+    "noVisual": "No photo, so not scored",
+    "label": "Expert label",
+    "notLabelled": "Not labelled yet",
+    "labelThis": "Label this sample",
+    "time": "Tested",
+    "timeDevice": "device clock",
+    "timeServer": "server clock",
+    "notFound": "No sample with this ID."
+  },
+  "label": {
+    "title": "Expert labelling",
+    "intro": "Record what the sample really was. Labels are used to train and check the AI model. They never change the device's result.",
+    "token": "Admin token",
+    "tokenHint": "Kept only until you close this tab.",
+    "sampleId": "Sample ID",
+    "quality": "True quality",
+    "mould": "Mould",
+    "spoilage": "Spoilage",
+    "notAssessed": "Not assessed",
+    "labelledBy": "Your name",
+    "reference": "How was it judged?",
+    "referencePlaceholder": "e.g. expert visual, lab report",
+    "save": "Save label",
+    "saved": "Label saved.",
+    "simulatedWarning": "This is simulated data. Its label will never be used for training."
+  },
+  "devices": {
+    "title": "Devices",
+    "lastSeen": "Last seen",
+    "lastReading": "Last reading",
+    "pending": "Waiting to sync",
+    "none": "No devices have sent data yet."
+  }
+}

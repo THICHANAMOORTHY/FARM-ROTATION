@@ -49,6 +49,17 @@ Each folder has its own README with setup and run commands.
 4. Copy the **Project URL** and the **service_role** key from **Project Settings → API** into
    `backend/.env` (see `backend/.env.example`). Keep the service_role key on the server only.
 
+## Try it without hardware
+
+```bash
+# terminal 1: backend
+cd backend && source .venv/bin/activate && uvicorn app.main:app --reload
+# terminal 2: fill it with SIMULATED tests (always flagged, never used for training)
+cd backend && python scripts/simulate_device.py --count 40 --days 14 --devices DF01 DF02
+# terminal 3: dashboard on http://localhost:5173
+cd frontend && npm install && npm run dev
+```
+
 ## Build status
 
 | Phase | Scope | Status |
@@ -56,10 +67,10 @@ Each folder has its own README with setup and run commands.
 | 0 | Project structure, database schema, config examples | Done |
 | 1 | Backend core: scoring, advisory, `/api/silage/test` | Done |
 | 2 | Rest of the API | Done |
-| 3 | Sensor node firmware | Done (needs bench test on hardware) |
-| 4 | Offline queue and on-device scoring | Not started |
-| 5 | Camera node firmware | Not started |
-| 6 | Frontend dashboard | Not started |
+| 3 | Sensor node firmware | Written; not yet compiled or tested on hardware |
+| 4 | Offline queue and on-device scoring | Waiting for hardware |
+| 5 | Camera node firmware | Waiting for hardware |
+| 6 | Frontend dashboard | Done |
 | 7 | ML pipeline | Not started |
 | 8 | Docs | Not started |
 

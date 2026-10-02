@@ -55,6 +55,10 @@ class SampleRepository(Protocol):
         """Record that a device has just been seen (creates the device row if new)."""
         ...
 
+    def list_devices(self) -> list[Row]:
+        """All devices, sorted by device_id."""
+        ...
+
     def save_image(self, path: str, data: bytes) -> None: ...
 
     def get_image(self, path: str) -> bytes | None: ...
@@ -112,6 +116,9 @@ class InMemoryRepository:
     def touch_device(self, device_id: str, seen_at: datetime) -> None:
         device = self.devices.setdefault(device_id, {"device_id": device_id, "pending_sync": 0})
         device["last_seen_at"] = seen_at
+
+    def list_devices(self) -> list[Row]:
+        return [dict(self.devices[key]) for key in sorted(self.devices)]
 
     def save_image(self, path: str, data: bytes) -> None:
         self.images[path] = data
@@ -174,6 +181,9 @@ class SupabaseRepository:
         self.client.table("silage_devices").upsert(
             payload, on_conflict="device_id", default_to_null=False  # missing columns get their defaults
         ).execute()
+
+    def list_devices(self) -> list[Row]:
+        return self.client.table("silage_devices").select("*").order("device_id").execute().data
 
     def save_image(self, path: str, data: bytes) -> None:
         # upsert: a retried upload replaces the file instead of failing.

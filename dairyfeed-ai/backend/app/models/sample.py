@@ -213,3 +213,11 @@ class StatsSummary(BaseModel):
     by_spoilage_risk: dict[str, int]
     by_mould_risk: dict[str, int]
     labelled: int
+
+
+class DeviceStatus(BaseModel):
+    device_id: str
+    name: str | None = None
+    last_seen_at: datetime | None = None
+    pending_sync: int = 0          # queued readings the device reports (from Phase 4)
+    last_sample: Sample | None = None

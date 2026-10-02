@@ -1,0 +1,88 @@
+@import 'tailwindcss';
+
+/* Colour tokens. Light values here; dark values below, selected (not auto-inverted).
+   Status colours (good / warning / critical) are fixed in both modes and always appear
+   with an icon + text, never colour alone. Chart series: blue then orange (validated
+   for colour-blind separation in both modes). */
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface-1: #fcfcfb;
+  --surface-2: #f0efec;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #6f6e69;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.1);
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --accent: #256abf;
+  --sim-bg: #fdf3d7;
+  --sim-text: #6b4e00;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme='light'])) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface-1: #1a1a19;
+    --surface-2: #262624;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #9a998f;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.1);
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --accent: #6da7ec;
+    --sim-bg: #3a2f10;
+    --sim-text: #f5d67a;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface-1: #1a1a19;
+  --surface-2: #262624;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #9a998f;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.1);
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --accent: #6da7ec;
+  --sim-bg: #3a2f10;
+  --sim-text: #f5d67a;
+}
+
+/* Make the tokens available as Tailwind colours: bg-surface, text-ink, border-line, ... */
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--text-primary);
+  --color-ink-2: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-line: var(--border);
+  --color-accent: var(--accent);
+  --color-sim-bg: var(--sim-bg);
+  --color-sim-text: var(--sim-text);
+  --color-good: #0ca30c;
+  --color-warn: #fab219;
+  --color-bad: #d03b3b;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', 'Noto Sans Tamil', sans-serif;
+}
+
+body {
+  background: var(--page);
+  color: var(--text-primary);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}

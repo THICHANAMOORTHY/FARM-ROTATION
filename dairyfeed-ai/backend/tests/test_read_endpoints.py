@@ -100,3 +100,20 @@ def test_stats_summary(client):
     only_df02 = client.get("/api/stats/summary?device_id=DF02").json()
     assert only_df02["total"] == 1
     assert only_df02["by_quality"]["Good"] == 1
+
+
+def test_devices_list_last_seen_and_latest_sample(client):
+    assert client.get("/api/devices").json() == []
+    seed(client)
+    devices = client.get("/api/devices").json()
+    assert [d["device_id"] for d in devices] == ["DF01", "DF02"]
+    assert devices[0]["last_sample"]["sample_id"] == "DF01-2"   # newest DF01 sample
+    assert devices[0]["last_seen_at"] is not None
+    assert devices[0]["pending_sync"] == 0
+
+
+def test_scoring_settings_come_from_the_config(client):
+    body = client.get("/api/scoring").json()
+    assert body["weights"] == {"ph": 40, "moisture": 30, "temperature": 20, "visual": 10}
+    assert body["ideal"] == {"ph": [3.8, 4.5], "moisture_pct": [60, 70], "temperature_rise_max_c": 3.0}
+    assert body["provisional"] is True

@@ -16,6 +16,8 @@ can show results. Labelling needs the header `X-Admin-Token`.
 | GET | `/api/advisory/{sample_id}` | Advisory only |
 | POST | `/api/silage/{sample_id}/label` | Expert labelling (admin token) |
 | GET | `/api/stats/summary` | Counts by quality / risk |
+| GET | `/api/devices` | Devices: last seen, pending sync, latest sample |
+| GET | `/api/scoring` | Score weights and ideal ranges (from `scoring_config.yaml`) |
 
 Readings and images can arrive in either order. The prediction is recomputed whenever either arrives.
 
@@ -137,3 +139,24 @@ Optional `device_id`. Counts for the dashboard cards:
 ```
 
 `awaiting_readings` counts samples that have a photo but no readings yet, so they have no quality.
+
+## GET /api/devices
+
+Every device that has sent data, sorted by `device_id`:
+
+```json
+[{"device_id": "DF01", "name": null, "last_seen_at": "2026-10-02T10:31:00Z",
+  "pending_sync": 0, "last_sample": { /* full sample, or null */ }}]
+```
+
+`pending_sync` is reported by the device once the offline queue exists (Phase 4); until then it is 0.
+
+## GET /api/scoring
+
+The weights and ideal ranges from `scoring_config.yaml`, so the dashboard never copies them:
+
+```json
+{"weights": {"ph": 40, "moisture": 30, "temperature": 20, "visual": 10},
+ "ideal": {"ph": [3.8, 4.5], "moisture_pct": [60, 70], "temperature_rise_max_c": 3.0},
+ "provisional": true}
+```

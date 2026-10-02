@@ -17,8 +17,9 @@ level:
     en: "Silage looks good. Keep the storage sealed and feed as usual."
     ta: "சைலேஜ் நல்ல நிலையில் உள்ளது. சேமிப்பை மூடி வைத்து, வழக்கம் போல் தீவனமாகக் கொடுக்கலாம்."  # TAMIL REVIEW NEEDED
   warn:
-    en: "Silage quality is moderate. Check it before feeding."
-    ta: "சைலேஜ் தரம் நடுத்தரமாக உள்ளது. தீவனமாகக் கொடுக்கும் முன் சரிபார்க்கவும்."  # TAMIL REVIEW NEEDED
+    # "warn" can come from moderate quality OR a medium spoilage risk, so it must not name the quality.
+    en: "Some readings need attention. Check the silage before feeding."
+    ta: "சில அளவீடுகளைக் கவனிக்க வேண்டும். தீவனமாகக் கொடுக்கும் முன் சைலேஜைச் சரிபார்க்கவும்."  # TAMIL REVIEW NEEDED
   danger:
     en: "Silage may be spoiled. Do not feed until it is checked by a veterinarian or animal nutrition expert, or confirmed by a lab."
     ta: "சைலேஜ் கெட்டுப்போயிருக்கலாம். கால்நடை மருத்துவர் அல்லது கால்நடைத் தீவன நிபுணர் சரிபார்க்கும் வரை, அல்லது ஆய்வகம் உறுதி செய்யும் வரை, தீவனமாகக் கொடுக்க வேண்டாம்."  # TAMIL REVIEW NEEDED

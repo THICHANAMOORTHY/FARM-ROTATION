@@ -60,3 +60,10 @@ def test_tips_match_the_problem_found():
     assert "too wet" in advisory.en
     assert "warmer than the air" in advisory.en
     assert "No photo yet" not in advisory.en
+
+
+def test_warn_message_never_contradicts_a_good_quality():
+    # Good quality but medium spoilage risk gives "warn": the text must not call the quality moderate.
+    advisory = build_advisory(GOOD, "Good", "Medium", "Unknown")
+    assert advisory.level == "warn"
+    assert "moderate" not in advisory.en.lower()
