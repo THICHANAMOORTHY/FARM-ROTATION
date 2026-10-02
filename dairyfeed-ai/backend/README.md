@@ -90,3 +90,22 @@ speaker should check them before field use.
 Photos are stored in the Supabase Storage bucket `silage-images`, but mould risk stays `Unknown`
 for now. There is no trained image model yet, and a hand-made colour rule would not be reliable.
 Experts label the stored photos, and Phase 7 trains a model on those labels.
+
+## Device simulator (no hardware needed)
+
+`scripts/simulate_device.py` acts like the sensor and camera nodes: it sends realistic readings
+(same JSON as the firmware) and a placeholder photo that says "SIMULATED".
+
+**Every simulated sample has `flags.simulated = true`** and there is no way to turn that off.
+The dashboard shows them with a "Simulated" badge, and the ML export skips them.
+
+```bash
+# with the server running (uvicorn app.main:app --reload)
+python scripts/simulate_device.py                         # 10 mixed samples from DF01, last 7 days
+python scripts/simulate_device.py --count 40 --days 14 --devices DF01 DF02
+python scripts/simulate_device.py --profile poor --count 3 # good / moderate / poor / mix
+python scripts/simulate_device.py --offline               # via /api/silage/bulk, like an offline sync
+python scripts/simulate_device.py --no-photo
+```
+
+The device key comes from `--key`, or `DEVICE_API_KEY` in the environment or `.env`.

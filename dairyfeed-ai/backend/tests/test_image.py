@@ -48,7 +48,7 @@ def test_second_photo_for_same_sample_is_ignored(client, repo):
 
 def test_non_jpeg_and_oversized_photos_are_rejected(client):
     assert upload(client, data=b"\x89PNG not a jpeg").status_code == 415
-    assert upload(client, data=JPEG + b"x" * 2000).status_code == 413   # test limit is 1000 bytes
+    assert upload(client, data=JPEG + b"x" * 6000).status_code == 413   # test limit is 5000 bytes
 
 
 def test_bad_sample_id_is_rejected(client):
