@@ -1,0 +1,34 @@
+import pytest
+from fastapi.testclient import TestClient
+
+from app.config import Settings, get_settings
+from app.db import InMemoryRepository, get_repository
+from app.main import app
+
+DEVICE_KEY = "test-device-key"
+
+
+@pytest.fixture
+def repo() -> InMemoryRepository:
+    return InMemoryRepository()
+
+
+@pytest.fixture
+def client(repo: InMemoryRepository):
+    """An API client using in-memory storage and a known device key. No Supabase needed."""
+    app.dependency_overrides[get_repository] = lambda: repo
+    app.dependency_overrides[get_settings] = lambda: Settings(_env_file=None, device_api_key=DEVICE_KEY)
+    yield TestClient(app)
+    app.dependency_overrides.clear()
+
+
+def good_request(**overrides) -> dict:
+    """A well-fermented sample. Tests change only the fields they care about."""
+    body = {
+        "sample_id": "DF01-20261002T103015-0007",
+        "device_id": "DF01",
+        "feed_type": "maize_silage",
+        "readings": {"ph": 4.0, "moisture_pct": 65.0, "sample_temp_c": 28.0, "ambient_temp_c": 27.0},
+    }
+    body.update(overrides)
+    return body

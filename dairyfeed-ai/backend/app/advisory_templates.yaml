@@ -1,0 +1,53 @@
+# ============================================================
+# DairyFeed AI — advisory text templates (English + Tamil)
+#
+# TAMIL REVIEW NEEDED: every "ta" string below was machine-drafted and
+# must be checked by a native Tamil speaker before field use.
+#
+# Rules (CLAUDE.md section 8):
+#   - Plain language, short sentences, practical actions.
+#   - "danger" must always say: do not feed until checked by a vet or
+#     animal nutrition expert, or confirmed by a lab.
+#   - Never claim the device detects aflatoxin, mycotoxins, protein or fibre.
+# ============================================================
+
+# One opening message per level. Always shown first.
+level:
+  ok:
+    en: "Silage looks good. Keep the storage sealed and feed as usual."
+    ta: "சைலேஜ் நல்ல நிலையில் உள்ளது. சேமிப்பை மூடி வைத்து, வழக்கம் போல் தீவனமாகக் கொடுக்கலாம்."  # TAMIL REVIEW NEEDED
+  warn:
+    en: "Silage quality is moderate. Check it before feeding."
+    ta: "சைலேஜ் தரம் நடுத்தரமாக உள்ளது. தீவனமாகக் கொடுக்கும் முன் சரிபார்க்கவும்."  # TAMIL REVIEW NEEDED
+  danger:
+    en: "Silage may be spoiled. Do not feed until it is checked by a veterinarian or animal nutrition expert, or confirmed by a lab."
+    ta: "சைலேஜ் கெட்டுப்போயிருக்கலாம். கால்நடை மருத்துவர் அல்லது கால்நடைத் தீவன நிபுணர் சரிபார்க்கும் வரை, அல்லது ஆய்வகம் உறுதி செய்யும் வரை, தீவனமாகக் கொடுக்க வேண்டாம்."  # TAMIL REVIEW NEEDED
+
+# Extra tips, added after the opening message when the reading triggers them.
+tips:
+  ph_high:
+    en: "pH is high, so fermentation may be poor. Check that the storage is sealed airtight."
+    ta: "pH அதிகமாக உள்ளது, நொதித்தல் சரியாக நடக்காமல் இருக்கலாம். சேமிப்பு காற்று புகாமல் மூடப்பட்டுள்ளதா எனச் சரிபார்க்கவும்."  # TAMIL REVIEW NEEDED
+  ph_low:
+    en: "pH is very low. Feed smaller amounts, mixed with other fodder."
+    ta: "pH மிகவும் குறைவாக உள்ளது. மற்ற தீவனத்துடன் கலந்து குறைந்த அளவில் கொடுக்கவும்."  # TAMIL REVIEW NEEDED
+  moisture_low:
+    en: "Silage is too dry, so air can get in and cause heating. Press it down tightly and keep it covered."
+    ta: "சைலேஜ் மிகவும் உலர்ந்துள்ளது, காற்று புகுந்து சூடாகலாம். நன்றாக அழுத்தி, மூடி வைக்கவும்."  # TAMIL REVIEW NEEDED
+  moisture_high:
+    en: "Silage is too wet and may spoil faster. Check for a bad smell and drain any liquid."
+    ta: "சைலேஜ் அதிக ஈரமாக உள்ளது, விரைவில் கெட்டுப்போகலாம். கெட்ட வாசனை உள்ளதா எனப் பார்த்து, தேங்கிய நீரை வடிக்கவும்."  # TAMIL REVIEW NEEDED
+  heating:
+    en: "The sample is warmer than the air, so it may be heating. Remove the spoiled top layer and keep the rest sealed."
+    ta: "மாதிரி காற்றை விடச் சூடாக உள்ளது, சூடாகிக் கெட்டுப்போகலாம். மேலே கெட்டுப்போன அடுக்கை அகற்றி, மீதியை மூடி வைக்கவும்."  # TAMIL REVIEW NEEDED
+  mould_high:
+    en: "The photo shows possible mould. Keep this batch separate and do not mix it with good silage."
+    ta: "படத்தில் பூஞ்சை இருக்கலாம். இந்தத் தொகுதியைத் தனியாக வைத்து, நல்ல சைலேஜுடன் கலக்க வேண்டாம்."  # TAMIL REVIEW NEEDED
+  mould_unknown:
+    en: "No photo yet, so mould was not checked. Look for white, green or black patches."
+    ta: "இன்னும் படம் இல்லை, எனவே பூஞ்சை சரிபார்க்கப்படவில்லை. வெள்ளை, பச்சை அல்லது கருப்புத் திட்டுகள் உள்ளதா எனப் பார்க்கவும்."  # TAMIL REVIEW NEEDED
+
+# Always shown last.
+footer:
+  en: "This is a screening result, not a lab test."
+  ta: "இது ஒரு முதற்கட்டச் சோதனை முடிவு, ஆய்வகச் சோதனை அல்ல."  # TAMIL REVIEW NEEDED

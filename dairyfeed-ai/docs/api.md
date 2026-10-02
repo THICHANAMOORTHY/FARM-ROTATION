@@ -17,3 +17,42 @@ Full request and response examples arrive with each endpoint (Phases 1–2).
 | GET | `/api/stats/summary` | Counts by quality / risk |
 
 Readings and images can arrive in either order. The prediction is recomputed whenever either arrives.
+
+## POST /api/silage/test
+
+Header: `X-Device-Key`. Body:
+
+```json
+{
+  "sample_id": "DF01-20261002T103015-0007",
+  "device_id": "DF01",
+  "created_at": "2026-10-02T10:30:15+05:30",
+  "feed_type": "maize_silage",
+  "farm_id": "optional",
+  "readings": {
+    "ph": 4.2, "moisture_pct": 64.0, "sample_temp_c": 28.4, "ambient_temp_c": 27.1,
+    "moisture_raw": 2150, "rgb": {"r": 112, "g": 98, "b": 41}
+  },
+  "flags": {"simulated": false, "demo": false}
+}
+```
+
+- `sample_id` must start with `device_id` followed by `-`.
+- Send `created_at` only if the device clock is NTP-synced. Without it, server time is used and
+  `time_source` is `server`.
+- `moisture_raw`, `rgb`, `farm_id`, `created_at` and `flags` are optional; the four main readings are required.
+
+Responses:
+
+| Code | When |
+|---|---|
+| 200 | The full sample (CLAUDE.md section 4 shape) with `prediction` and `advisory` |
+| 200 | Same `sample_id` sent again: the first stored result is returned unchanged, so retries are safe |
+| 401 | `X-Device-Key` missing or wrong |
+| 409 | The `sample_id` already belongs to another device |
+| 422 | A value is missing or out of range; `detail` says which |
+| 503 | `DEVICE_API_KEY` is not set on the server |
+
+## GET /api/health
+
+`{"status": "ok", "database": "supabase"}`, or `"memory"` when Supabase is not configured.

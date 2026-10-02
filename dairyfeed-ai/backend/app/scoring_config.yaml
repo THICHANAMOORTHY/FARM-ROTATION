@@ -1,0 +1,75 @@
+# ============================================================
+# DairyFeed AI — scoring thresholds and weights
+#
+# PROVISIONAL: every number here is a starting value, to be tuned
+# during calibration with expert input and real samples.
+#
+# Keep in sync with the C++ copy on the sensor node
+# (firmware/sensor-node/include/scoring_rules.h, Phase 4).
+#
+# How "points" curves work:
+#   Each curve is a list of [reading, fraction] points. The fraction
+#   (0.0 to 1.0) is read off the line between the two nearest points.
+#   Below the first point or above the last, the end value is used.
+#   Component score = fraction x weight.
+# ============================================================
+
+weights:            # must add up to 100
+  ph: 40
+  moisture: 30
+  temperature: 20
+  visual: 10
+
+ph:
+  ideal: [3.8, 4.5]           # well-fermented silage
+  points:
+    - [3.2, 0.0]
+    - [3.8, 1.0]
+    - [4.5, 1.0]
+    - [4.8, 0.5]              # above 4.8: strong penalty
+    - [5.5, 0.0]
+
+moisture_pct:
+  ideal: [60, 70]
+  points:
+    - [45, 0.0]
+    - [55, 0.6]               # below 55%: too dry, penalised
+    - [60, 1.0]
+    - [70, 1.0]
+    - [75, 0.6]               # above 75%: too wet, penalised
+    - [85, 0.0]
+
+# Temperature uses the RISE: sample temperature minus ambient temperature.
+# A sample warmer than the air is a sign of aerobic heating (spoilage starting).
+temperature_rise_c:
+  ideal_max: 3.0
+  points:
+    - [3.0, 1.0]              # up to 3 degC above ambient: fine
+    - [6.0, 0.4]
+    - [10.0, 0.0]
+
+# Visual score from the photo's mould risk.
+# If there is no photo, mould risk is "Unknown": the visual weight is left out
+# and the score is scaled over the remaining weights. No value is invented.
+visual:
+  Low: 1.0
+  High: 0.0
+
+# Quality from the 0-100 score.
+quality:
+  good_min: 75
+  moderate_min: 50
+
+# Some findings limit the quality, whatever the score.
+quality_caps:
+  spoilage_high: Moderate     # high spoilage risk: at best Moderate
+  mould_high: Poor            # likely mould: always Poor
+
+spoilage_risk:
+  # High if either is true, otherwise Medium if either is true, otherwise Low.
+  high:
+    ph_above: 5.0
+    temperature_rise_above: 6.0
+  medium:
+    ph_above: 4.5
+    temperature_rise_above: 3.0

@@ -1,0 +1,23 @@
+"""DairyFeed AI backend. Run with: uvicorn app.main:app --reload"""
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.config import get_settings
+from app.routers import health, silage
+
+app = FastAPI(
+    title="DairyFeed AI",
+    description="Silage quality screening for dairy farmers (SIH 26111). A screening tool, not a lab test.",
+    version="0.1.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_settings().cors_origin_list,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(health.router)
+app.include_router(silage.router)
