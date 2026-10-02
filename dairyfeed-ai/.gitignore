@@ -1,0 +1,19 @@
+# Secrets — never commit
+.env
+firmware/*/include/secrets.h
+
+# Firmware build output
+.pio/
+
+# ML: exported datasets stay local
+ml/data/*
+!ml/data/.gitkeep
+
+# Python
+__pycache__/
+.pytest_cache/
+.venv/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
